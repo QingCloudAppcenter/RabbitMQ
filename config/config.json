@@ -1,0 +1,367 @@
+{
+    "type": "array",
+    "properties": [{
+        "key": "cluster",
+        "description": "RabbitMQ cluster properties",
+        "type": "array",
+        "properties": [{
+            "key": "name",
+            "label": "Name",
+            "description": "The name of the RabbitMQ service",
+            "type": "string",
+            "default": "RabbitMQ",
+            "required": "no"
+        }, {
+            "key": "description",
+            "label": "Description",
+            "description": "The description of the RabbitMQ service",
+            "type": "string",
+            "default": "",
+            "required": "no"
+        }, {
+            "key": "vxnet",
+            "label": "VxNet",
+            "description": "Choose a vxnet to join",
+            "type": "string",
+            "default": "",
+            "required": "yes"
+        }, {
+            "key": "disc",
+            "label": "Disc Node",
+            "description": "Disc Node",
+            "type": "array",
+            "properties": [{
+                "key": "cpu",
+                "label": "CPU",
+                "description": "CPUs of each node",
+                "type": "integer",
+                "default": 1,
+                "range": [1, 2, 4, 8,16],
+                "required": "yes"
+            }, {
+                "key": "memory",
+                "label": "Memory",
+                "description": "Memory of each node",
+                "type": "integer",
+                "default": 2048,
+                "range": [1024, 2048,4096,8192, 16384, 32768, 49152,65536],
+                "required": "yes"
+            }, {
+                "key": "instance_class",
+                "label": "Instance Class",
+                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "type": "integer",
+                "default": 0,
+                "range": [0, 1],
+                "required": "yes"
+            }, {
+                "key": "volume_size",
+                "label": "Volume Size",
+                "description": "The volume size for each instance",
+                "type": "integer",
+                "default": 10,
+                "required": "yes"
+            }, {
+                "key": "count",
+                "label": "Count",
+                "description": "Disc Node Count",
+                "type": "integer",
+                "default": 1,
+                "min":1,
+                 "max":100,
+                "required": "yes"
+            }]
+        },{
+            "key": "ram",
+            "label": "Ram Node",
+            "description": "Ram Node",
+            "type": "array",
+            "properties": [{
+                "key": "cpu",
+                "label": "CPU",
+                "description": "CPUs of each node",
+                "type": "integer",
+                "default": 1,
+                "range": [1, 2, 4, 8,16],
+                "required": "yes"
+            }, {
+                "key": "memory",
+                "label": "Memory",
+                "description": "Memory of each node",
+                "type": "integer",
+                "default": 2048,
+                "range": [1024, 2048,4096,8192, 16384, 32768, 49152,65536],
+                "required": "yes"
+            }, {
+                "key": "instance_class",
+                "label": "Instance Class",
+                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "type": "integer",
+                "default": 0,
+                "range": [0, 1],
+                "required": "yes"
+            },{
+                "key": "volume_size",
+                "label": "Volume Size",
+                "description": "The volume size for each instance",
+                "type": "integer",
+                "default": 10,
+                "required": "yes"
+            },{
+                "key": "count",
+                "label": "Count",
+                "description": "Ram Node Count",
+                "type": "integer",
+                "default": 2,
+                "min":0,
+                 "max":100,
+                "required": "yes"
+            }]
+        },{
+            "key": "client",
+            "label": "client Node",
+            "description": "client Node",
+            "type": "array",
+            "properties": [{
+                "key": "cpu",
+                "label": "CPU",
+                "description": "CPUs of each node",
+                "type": "integer",
+                "default": 1,
+                "range": [1, 2, 4, 8,16],
+                "required": "yes"
+            }, {
+                "key": "memory",
+                "label": "Memory",
+                "description": "Memory of each node",
+                "type": "integer",
+                "default": 1024,
+                "range": [1024, 2048,4096,8192, 16384, 32768, 49152,65536],
+                "required": "yes"
+            }, {
+                "key": "instance_class",
+                "label": "Instance Class",
+                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "type": "integer",
+                "default": 0,
+                "range": [0, 1],
+                "required": "yes"
+            },{
+                "key": "count",
+                "label": "Count",
+                "description": "Client Node Count",
+                "type": "integer",
+                "default": 1,
+                "min":0,
+                 "max":1,
+                "required": "yes"
+            }]
+        },{
+            "key": "haproxy",
+            "label": "Haproxy+Keepalived",
+            "description": "Haproxy+Keepalived",
+            "type": "array",
+            "properties": [{
+                "key": "cpu",
+                "label": "CPU",
+                "description": "CPUs of each node",
+                "type": "integer",
+                "default": 1,
+                "range": [1, 2, 4, 8,16],
+                "required": "yes"
+            }, {
+                "key": "memory",
+                "label": "Memory",
+                "description": "Memory of each node",
+                "type": "integer",
+                "default": 2048,
+                "range": [1024, 2048, 4096,8192, 16384, 32768, 49152,65536],
+                "required": "yes"
+            }, {
+                "key": "instance_class",
+                "label": "Instance Class",
+                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "type": "integer",
+                "default": 0,
+                "range": [0, 1],
+                "required": "yes"
+            }, {
+                "key": "count",
+                "label": "Count",
+                "description": "Haproxy HA Node Count",
+                "type": "integer",
+                "default": 2,
+                "min": 0,
+                "max":2,
+                "required": "yes"
+            }]
+        }
+      ]
+    },{
+        "key": "env",
+        "description": "RabbitMQ service properties",
+        "type": "array",
+        "properties": [{
+            "key": "haproxy_balance_policy",
+            "label": "haproxy_balance_policy",
+            "description": "haproxy balance policy",
+            "type": "string",
+              "default": "roundrobin",
+              "required": "yes",
+              "range": ["roundrobin","leastconn","static-rr","source","uri","url_param"]
+        },{
+            "key": "haproxy_web_port",
+            "label": "haproxy_web_port",
+            "description": "haproxy web port",
+            "type": "integer",
+            "default": 8100,
+            "required": "yes"
+        },{
+            "key": "haproxy_username",
+            "label": "haproxy_username",
+            "description": "haproxy web login usernam",
+            "type": "string",
+            "default": "haproxy",
+            "required": "yes"
+        },{
+            "key": "haproxy_password",
+            "label": "haproxy_password",
+            "description": "haproxy web login passwd",
+            "type": "password",
+            "changeable":true,
+            "default": "haproxy",
+            "required": "yes"
+        },{
+            "key": "num_tcp_acceptors",
+            "label": "num_tcp_acceptors",
+            "description": "Number of Erlang processes that will accept connections for the TCP listeners",
+            "type": "integer",
+            "default": 10,
+             "min":10,
+             "max":200,
+            "required": "yes"
+        }, {
+            "key": "handshake_timeout",
+            "label": "handshake_timeout",
+            "description": "Maximum time for AMQP 0-8/0-9/0-9-1 handshake (after socket connection and SSL handshake), in milliseconds",
+            "type": "integer",
+            "default": 10000,
+            "min":5000,
+            "required": "yes"
+        },    {
+            "key": "vm_memory_high_watermark",
+            "label": "vm_memory_high_watermark",
+            "description": "Memory threshold at which the flow control is triggered",
+            "type": "number",
+            "default": 0.4,
+            "range": [0.3,0.4,0.5,0.6,0.7],
+            "required": "yes"
+        }, {
+            "key": "vm_memory_high_watermark_paging_ratio",
+            "label": "vm_memory_high_watermark_paging_ratio",
+            "description": "Fraction of the high watermark limit at which queues start to page messages out to disc to free up memory",
+            "type": "number",
+            "default": 0.5,
+            "range": [0.3,0.4,0.5,0.6,0.7],
+            "required": "yes"
+        }, {
+            "key": "disk_free_limit",
+            "label": "disk_free_limit",
+            "description": "Disk free space (in bytes) limit of the partition on which RabbitMQ is storing data",
+            "type": "integer",
+            "default": 50000000,
+            "required": "yes"
+        }, {
+            "key": "frame_max",
+            "label": "frame_max",
+            "description": "Maximum permissible size of a frame (in bytes) to negotiate with clients,etting to 0 means unlimited but will trigger a bug in some QPid clients. Setting a larger value may improve throughput; setting a smaller value may improve latency",
+            "type": "integer",
+            "default": 131072,
+            "required": "yes"
+        }, {
+            "key": "channel_max",
+            "label": "channel_max",
+            "description": "Maximum permissible number of channels to negotiate with clients. Setting to 0 means unlimited. Using more channels increases memory footprint of the broker.",
+            "type": "integer",
+            "default": 10,
+            "required": "yes"
+        }, {
+            "key": "heartbeat",
+            "label": "heartbeat",
+            "description": "Value representing the heartbeat delay, in seconds, that the server sends in the connection.tune frame",
+            "type": "integer",
+            "default": 60,
+            "required": "yes"
+        }, {
+            "key": "collect_statistics",
+            "label": "collect_statistics",
+            "description": "Statistics collection mode. Primarily relevant for the management plugin",
+            "type": "string",
+            "range": ["none","coarse","fine"],
+            "default": "none",
+            "required": "yes"
+        },{
+            "key": "collect_statistics_interval",
+            "label": "collect_statistics_interval",
+            "description": "Statistics collection interval in milliseconds. Primarily relevant for the management plugin",
+            "type": "integer",
+            "default": 5000,
+            "required": "yes"
+        }, {
+            "key": "cluster_partition_handling",
+            "label": "cluster_partition_handling",
+            "description": "How to handle network partitions",
+            "type": "string",
+            "range": ["ignore","pause_minority","autoheal"],
+            "default": "ignore",
+            "required": "yes"
+        }, {
+            "key": "hipe_compile",
+            "label": "hipe_compile",
+            "description": "Set to true to precompile parts of RabbitMQ with HiPE, a just-in-time compiler for Erlang. This will increase server throughput at the cost of increased startup time",
+            "type": "boolean",
+              "default": false,
+              "range": [true, false],
+              "required": "yes"
+        }, {
+            "key": "cluster_keepalive_interval",
+            "label": "cluster_keepalive_interval",
+            "description": "How frequently nodes should send keepalive messages to other nodes (in milliseconds)",
+            "type": "integer",
+            "default": 10000,
+            "required": "yes"
+        }, {
+            "key": "background_gc_target_interval",
+            "label": "background_gc_target_interval",
+            "description": "The actual interval will vary depending on how long it takes to execute the operation",
+            "type": "integer",
+            "min":30000,
+            "default": 60000,
+            "required": "yes"
+        },{
+            "key": "background_gc_enabled",
+            "label": "background_gc_enabled",
+            "description": "Disabling background GC may reduce latency for client operations, keeping it enabled may reduce median RAM usage",
+            "type": "boolean",
+            "default": false,
+            "range": [true, false],
+            "required": "yes"
+        },{
+            "key": "reverse_dns_lookups",
+            "label": "reverse_dns_lookups",
+            "description": "Set to true to have RabbitMQ perform a reverse DNS lookup on client connections, and present that information through rabbitmqctl and the management plugin",
+            "type": "boolean",
+              "default": false,
+              "range": [true, false],
+                "required": "yes"
+        },{
+            "key": "proxy_protocol",
+            "label": "proxy_protocol",
+            "description": "Whether or not to enable proxy protocol support. Once enabled, clients cannot directly connect to the broker anymore. They must connect through a load balancer that sends theproxy protocol header to the broker at connection time.This setting applies only to AMQP clients, other protocolslike MQTT or STOMP have their own setting to enable proxy protocol. See the plugins documentation for more information",
+            "type": "boolean",
+              "default": false,
+              "range": [true, false],
+                "required": "yes"
+        }]
+    }]
+}

@@ -1,0 +1,12 @@
+{{getv "/host/ip"}} localhost
+ {{getv "/host/ip"}} {{getv "/host/instance_id"}}
+
+# Hosts
+{{range $dir := lsdir "/hosts/disc/"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
+ {{getv $ip}} {{$dir}}{{end}}
+{{range $dir := lsdir "/hosts/ram/"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
+ {{getv $ip}} {{$dir}}{{end}}
+{{range $dir := lsdir "/hosts/rabbitmq-client/"}}{{$ip := printf "/hosts/rabbitmq-client/%s/ip" $dir}}
+ {{getv $ip}} {{$dir}}{{end}}
+
+

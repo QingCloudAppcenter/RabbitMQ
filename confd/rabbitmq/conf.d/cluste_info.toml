@@ -1,0 +1,6 @@
+[template]
+src = "cluster_info.tmpl"
+dest = "/etc/cluster_info"
+keys = [
+	"/",
+]

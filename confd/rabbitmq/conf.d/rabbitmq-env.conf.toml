@@ -1,0 +1,7 @@
+[template]
+src = "rabbitmq-env.conf.tmpl"
+dest = "/etc/rabbitmq/rabbitmq-env.conf"
+keys = [
+	"/",
+]
+reload_cmd = "/opt/bin/restart.sh"
