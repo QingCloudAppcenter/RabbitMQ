@@ -4,3 +4,4 @@ dest = "/etc/cluster_info"
 keys = [
 	"/",
 ]
+reload_cmd = "/opt/bin/changeHost.sh"

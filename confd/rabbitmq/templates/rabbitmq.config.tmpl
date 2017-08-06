@@ -36,13 +36,13 @@
    %% Maximum time for AMQP 0-8/0-9/0-9-1 handshake (after socket connection
    %% and SSL handshake), in milliseconds.
    %%
-   {handshake_timeout, {{getv "/env/handshake_timeout"}}},
+   {handshake_timeout, {{getv "/env/handshake_timeout" "10000"}}},
 
    %% Set to 'true' to perform reverse DNS lookups when accepting a
    %% connection. Hostnames will then be shown instead of IP addresses
    %% in rabbitmqctl and the management plugin.
    %%
-   {reverse_dns_lookups, {{getv "/env/reverse_dns_lookups"}}},
+   {reverse_dns_lookups, {{getv "/env/reverse_dns_lookups" "false"}}},
 
    %%
    %% Security / AAA
@@ -186,7 +186,7 @@
 
    %% Set the max permissible size of an AMQP frame (in bytes).
    %%
-   {frame_max, {{getv "/env/frame_max"}}},
+   {frame_max, {{getv "/env/frame_max" "131072"}}},
 
    %% Set the max frame size the server will accept before connection
    %% tuning occurs
@@ -196,7 +196,7 @@
    %% Set the max permissible number of channels per connection.
    %% 0 means "no limit".
    %%
-    {channel_max, {{getv "/env/channel_max"}}},
+    {channel_max, {{getv "/env/channel_max" "10"}}},
 
    %% Customising Socket Options.
    %%
@@ -276,7 +276,7 @@
    %% See http://www.rabbitmq.com/partitions.html for further details.
    %%
    %%{cluster_partition_handling, pause_minority},
-   {cluster_partition_handling, {{getv "/env/cluster_partition_handling"}}},
+   {cluster_partition_handling, {{getv "/env/cluster_partition_handling" "ignore"}}},
 
    %% Mirror sync batch size, in messages. Increasing this will speed
    %% up syncing but total batch size in bytes must not exceed 2 GiB.
@@ -304,12 +304,12 @@
 
    %% Set (internal) statistics collection granularity.
    %%
-    {collect_statistics, {{getv "/env/collect_statistics"}}},
+    {collect_statistics, {{getv "/env/collect_statistics" "none"}}},
 
    %% Statistics collection interval (in milliseconds). Increasing
    %% this will reduce the load on management database.
    %%
-    {collect_statistics_interval, {{getv "/env/collect_statistics_interval"}}},
+    {collect_statistics_interval, {{getv "/env/collect_statistics_interval" "5000"}}},
 
    %%
    %% Misc/Advanced Options
@@ -320,7 +320,7 @@
 
    %% Explicitly enable/disable hipe compilation.
    %%
-   {hipe_compile, {{getv "/env/hipe_compile"}}},
+   {hipe_compile, {{getv "/env/hipe_compile" "false"}}},
 
    %% Number of times to retry while waiting for Mnesia tables in a cluster to
    %% become available.
@@ -343,14 +343,14 @@
    %% Disabling background GC may reduce latency for client operations,
    %% keeping it enabled may reduce median RAM usage.
    %%
-   {background_gc_enabled, {{getv "/env/background_gc_enabled"}}},
+   {background_gc_enabled, {{getv "/env/background_gc_enabled" "60000"}}},
    %%
    %% Target (desired) interval (in milliseconds) at which we run background GC.
    %% The actual interval will vary depending on how long it takes to execute
    %% the operation (can be higher than this interval). Values less than
    %% 30000 milliseconds are not recommended.
    %%
-   {background_gc_target_interval, {{getv "/env/background_gc_target_interval"}}},
+   {background_gc_target_interval, {{getv "/env/background_gc_target_interval" "false"}}},
 
    %% Whether or not to enable proxy protocol support.
    %% Once enabled, clients cannot directly connect to the broker
@@ -360,7 +360,7 @@
    %% like MQTT or STOMP have their own setting to enable proxy protocol.
    %% See the plugins documentation for more information.
    %%
-    {proxy_protocol, {{getv "/env/proxy_protocol"}}}
+    {proxy_protocol, {{getv "/env/proxy_protocol" "false"}}}
   ]},
 
  %% ----------------------------------------------------------------------------
@@ -769,4 +769,3 @@
    %% ]}
   ]}
 ].
-

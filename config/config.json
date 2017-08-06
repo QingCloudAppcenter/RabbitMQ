@@ -247,7 +247,7 @@
             "type": "integer",
             "default": 10000,
             "min":5000,
-            "required": "yes"
+            "required": "no"
         },    {
             "key": "vm_memory_high_watermark",
             "label": "vm_memory_high_watermark",
@@ -277,14 +277,14 @@
             "description": "Maximum permissible size of a frame (in bytes) to negotiate with clients,etting to 0 means unlimited but will trigger a bug in some QPid clients. Setting a larger value may improve throughput; setting a smaller value may improve latency",
             "type": "integer",
             "default": 131072,
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "channel_max",
             "label": "channel_max",
             "description": "Maximum permissible number of channels to negotiate with clients. Setting to 0 means unlimited. Using more channels increases memory footprint of the broker.",
             "type": "integer",
             "default": 10,
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "heartbeat",
             "label": "heartbeat",
@@ -299,14 +299,14 @@
             "type": "string",
             "range": ["none","coarse","fine"],
             "default": "none",
-            "required": "yes"
+            "required": "no"
         },{
             "key": "collect_statistics_interval",
             "label": "collect_statistics_interval",
             "description": "Statistics collection interval in milliseconds. Primarily relevant for the management plugin",
             "type": "integer",
             "default": 5000,
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "cluster_partition_handling",
             "label": "cluster_partition_handling",
@@ -314,7 +314,7 @@
             "type": "string",
             "range": ["ignore","pause_minority","autoheal"],
             "default": "ignore",
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "hipe_compile",
             "label": "hipe_compile",
@@ -322,14 +322,14 @@
             "type": "boolean",
               "default": false,
               "range": [true, false],
-              "required": "yes"
+              "required": "no"
         }, {
             "key": "cluster_keepalive_interval",
             "label": "cluster_keepalive_interval",
             "description": "How frequently nodes should send keepalive messages to other nodes (in milliseconds)",
             "type": "integer",
             "default": 10000,
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "background_gc_target_interval",
             "label": "background_gc_target_interval",
@@ -337,7 +337,7 @@
             "type": "integer",
             "min":30000,
             "default": 60000,
-            "required": "yes"
+            "required": "no"
         },{
             "key": "background_gc_enabled",
             "label": "background_gc_enabled",
@@ -345,7 +345,7 @@
             "type": "boolean",
             "default": false,
             "range": [true, false],
-            "required": "yes"
+            "required": "no"
         },{
             "key": "reverse_dns_lookups",
             "label": "reverse_dns_lookups",
@@ -353,7 +353,7 @@
             "type": "boolean",
               "default": false,
               "range": [true, false],
-                "required": "yes"
+                "required": "no"
         },{
             "key": "proxy_protocol",
             "label": "proxy_protocol",
@@ -361,7 +361,7 @@
             "type": "boolean",
               "default": false,
               "range": [true, false],
-                "required": "yes"
+                "required": "no"
         }]
     }]
 }

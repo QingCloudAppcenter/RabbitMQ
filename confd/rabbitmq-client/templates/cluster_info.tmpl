@@ -2,3 +2,4 @@ cluster_id={{getv "/cluster/cluster_id"}}
 sid={{getv "/host/sid"}}
 delete_disc={{range $i, $dir := lsdir  "/deleting-hosts/disc"}}{{$ip := printf "/deleting-hosts/disc/%s/ip" $dir}}{{if $i}},{{end}}rabbit@{{$dir}}{{end}}
 delete_ram={{range $i, $dir := lsdir  "/deleting-hosts/ram"}}{{$ip := printf "/deleting-hosts/ram/%s/ip" $dir}}{{if $i}},{{end}}rabbit@{{$dir}}{{end}}
+hosts={{range $i, $host := ls (printf "/hosts/disc")}}{{$ip := printf "/hosts/disc/%s/ip" $host}}{{if $i}},{{end}}{{getv $ip}}{{end}}
