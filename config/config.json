@@ -355,6 +355,13 @@
               "range": [true, false],
                 "required": "no"
         },{
+            "key": "tracing_user",
+            "label": "tracing_user",
+            "description": "The name of a user as which to create the tracing queues and bindings",
+            "type": "string",
+            "default": "guest",
+            "required": "no"
+        },{
             "key": "proxy_protocol",
             "label": "proxy_protocol",
             "description": "Whether or not to enable proxy protocol support. Once enabled, clients cannot directly connect to the broker anymore. They must connect through a load balancer that sends theproxy protocol header to the broker at connection time.This setting applies only to AMQP clients, other protocolslike MQTT or STOMP have their own setting to enable proxy protocol. See the plugins documentation for more information",
