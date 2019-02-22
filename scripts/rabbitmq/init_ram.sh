@@ -12,7 +12,8 @@ rabbitmq-plugins enable rabbitmq_web_stomp
 rabbitmq-plugins enable rabbitmq_mqtt
 rabbitmq-plugins enable rabbitmq_web_mqtt
 rabbitmq-plugins  enable  rabbitmq_management
-rabbitmq-plugins enable rabbitmq_tracing
+rabbitmq-plugins enable rabbitmq_shovel
+rabbitmq-plugins enable rabbitmq_shovel_management
 sid=$(cat /etc/cluster_info |grep sid=|awk -F = '{print $2}')
 sleep $sid
 rabbitmqctl stop_app
@@ -68,7 +69,7 @@ else
   rabbitmqctl start_app
   if [ $? -eq 0 ]; then
   exit 0
-   else
+   else 
   exit 1
  fi
 fi

@@ -203,8 +203,15 @@
    %% See (http://www.erlang.org/doc/man/inet.html#setopts-2) for
    %% further documentation.
    %%
+      {tcp_listen_options, [binary,
+                     {packet, raw},
+                     {reuseaddr, true},
+                     {backlog, 128},
+                     {nodelay, true},
+                     {exit_on_close, false},
+                     {keepalive, true}]},
    %% {tcp_listen_options, [{backlog,       128},
-   %%                       {nodelay,       true},
+   %%                      {nodelay,       true},
    %%                       {exit_on_close, false}]},
 
    %%
@@ -362,7 +369,7 @@
    %%
     {proxy_protocol, {{getv "/env/proxy_protocol" "false"}}}
   ]},
-{rabbitmq_tracing, [{directory, "/data/log/rabbitmq-tracing"},{username,"{{getv "/env/tracing_user" "false"}}"}]},
+
  %% ----------------------------------------------------------------------------
  %% Advanced Erlang Networking/Clustering Options.
  %%
@@ -728,6 +735,7 @@
    %%
    %% {tag_queries, []}
   ]},
+
   %% Lager controls logging.
   %% See https://github.com/basho/lager for more documentation
   {lager, [
@@ -768,3 +776,5 @@
    %% ]}
   ]}
 ].
+
+

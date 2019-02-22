@@ -59,6 +59,7 @@
                 "label": "Volume Size",
                 "description": "The volume size for each instance",
                 "type": "integer",
+                "auto_scale_step": 10,
                 "default": 10,
                 "required": "yes"
             }, {
@@ -66,6 +67,7 @@
                 "label": "Count",
                 "description": "Disc Node Count",
                 "type": "integer",
+                "auto_scale_step": 1,
                 "default": 1,
                 "min":1,
                  "max":100,
@@ -105,6 +107,7 @@
                 "label": "Volume Size",
                 "description": "The volume size for each instance",
                 "type": "integer",
+                "auto_scale_step": 10,
                 "default": 10,
                 "required": "yes"
             },{
@@ -112,6 +115,7 @@
                 "label": "Count",
                 "description": "Ram Node Count",
                 "type": "integer",
+                "auto_scale_step": 1,
                 "default": 2,
                 "min":0,
                  "max":100,
@@ -283,7 +287,7 @@
             "label": "channel_max",
             "description": "Maximum permissible number of channels to negotiate with clients. Setting to 0 means unlimited. Using more channels increases memory footprint of the broker.",
             "type": "integer",
-            "default": 10,
+            "default": 0,
             "required": "no"
         }, {
             "key": "heartbeat",

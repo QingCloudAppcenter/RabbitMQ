@@ -35,11 +35,52 @@ mode tcp
 #balance roundrobin
 #简单的轮询
 balance {{getv "/env/haproxy_balance_policy"}}
+#timeout 超时时间
+timeout client  3h
+timeout server  3h
 #rabbitmq集群节点配置
 {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
  server rabbit_{{$dir}} {{getv $ip}}:5672 check inter 5000 rise 2 fall 2  {{end}}
 {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
  server rabbit_{{$dir}} {{getv $ip}}:5672 check inter 5000 rise 2 fall 2  {{end}}
+#front-end IP for stomp
+listen RabbitMQ-Cluster-stomp
+bind :61613
+#配置TCP模式
+mode tcp
+#balance rdp-cookie
+#balance leastconn
+#balance source
+#balance roundrobin
+#简单的轮询
+balance {{getv "/env/haproxy_balance_policy"}}
+#timeout 超时时间
+timeout client  3h
+timeout server  3h
+#rabbitmq集群节点配置
+{{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
+ server rabbit_{{$dir}} {{getv $ip}}:61613 check inter 5000 rise 2 fall 2  {{end}}
+{{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
+ server rabbit_{{$dir}} {{getv $ip}}:61613 check inter 5000 rise 2 fall 2  {{end}}
+#front-end IP for mqtt
+listen RabbitMQ-Cluster-mqtt
+bind :1883
+#配置TCP模式
+mode tcp
+#balance rdp-cookie
+#balance leastconn
+#balance source
+#balance roundrobin
+#简单的轮询
+balance {{getv "/env/haproxy_balance_policy"}}
+#timeout 超时时间
+timeout client  3h
+timeout server  3h
+#rabbitmq集群节点配置
+{{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
+ server rabbit_{{$dir}} {{getv $ip}}:1883 check inter 5000 rise 2 fall 2  {{end}}
+{{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
+ server rabbit_{{$dir}} {{getv $ip}}:1883 check inter 5000 rise 2 fall 2  {{end}}
 #rabbitmq-management
 # optional, for proxying management site
 frontend front_rabbitmq_management

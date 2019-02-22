@@ -1,5 +1,5 @@
-
 {{ $replicaIPs := split (getv "/cluster/endpoints/reserved_ips/vip/value") "." }}
+global_defs {
 }
 
 vrrp_script check_haproxy {
@@ -11,7 +11,6 @@ vrrp_instance HAProxy_HA {
     state BACKUP
     interface eth0
     virtual_router_id {{index $replicaIPs 3}}
-    global_defs {
     priority {{getv "/host/sid"}}
     advert_int 2
     nopreempt
@@ -29,3 +28,4 @@ vrrp_instance HAProxy_HA {
         check_haproxy
     }
 }
+

@@ -35,3 +35,4 @@
       echo "Failed to restart RabbitMQ server" 1>&2
       exit 1
 fi
+

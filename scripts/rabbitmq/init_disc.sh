@@ -15,7 +15,8 @@ rabbitmq-plugins enable rabbitmq_mqtt
 rabbitmq-plugins enable rabbitmq_web_mqtt
 rabbitmq-plugins  enable  rabbitmq_management
 rabbitmq-plugins enable rabbitmq_delayed_message_exchange
-rabbitmq-plugins enable rabbitmq_tracing
+rabbitmq-plugins enable rabbitmq_shovel
+rabbitmq-plugins enable rabbitmq_shovel_management
 rabbitmqctl  node_health_check >/dev/null  2>&1
 if [ $? -eq 0 ]; then
    rabbitmqctl  add_user  monitor  monitor4rabbitmq
@@ -24,3 +25,4 @@ if [ $? -eq 0 ]; then
  else
     exit 1
 fi
+

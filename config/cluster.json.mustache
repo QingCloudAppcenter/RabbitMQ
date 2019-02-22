@@ -2,12 +2,21 @@
     "name": {{cluster.name}},
     "description": {{cluster.description}},
     "vxnet": {{cluster.vxnet}},
+    "upgrade_policy": [
+            "appv-6wkhvsts",
+            "appv-et0mu05f",
+            "appv-n2qaxy9j",
+            "appv-bzb2d00d",
+            "appv-s7gt9xid",
+            "appv-8cimgbsu",
+            "appv-kxe5ezdx"
+    ],
     "nodes": [{
       "role":"disc",
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-eyd8esxl"
+            "image": "img-fasn9ctm"
         },
 
         "instance_class": {{cluster.disc.instance_class}},
@@ -26,7 +35,7 @@
          },
             "start": {
               "order": 1,
-                "cmd":"/opt/bin/start.sh"
+                "cmd":"/opt/bin/start_disc.sh"
             },
             "stop": {
               "order": 2,
@@ -56,7 +65,7 @@
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
              "check_cmd": "/opt/bin/health_check.sh",
-             "action_cmd": "/opt/bin/restart.sh"
+             "action_cmd": "/opt/bin/action.sh"
          },
          "monitor": {
                "enable": true,
@@ -93,7 +102,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-eyd8esxl"
+            "image": "img-fasn9ctm"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -112,7 +121,7 @@
          },
             "start": {
               "order": 2,
-                "cmd":"/opt/bin/start.sh"
+                "cmd":"/opt/bin/start_ram.sh"
             },
             "stop": {
               "order": 1,
@@ -142,7 +151,7 @@
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
              "check_cmd": "/opt/bin/health_check.sh",
-             "action_cmd": "/opt/bin/restart.sh"
+             "action_cmd": "/opt/bin/action.sh"
          },
          "monitor": {
                "enable": true,
@@ -179,7 +188,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-hwjv5n09"
+            "image": "img-sy0pwaq5"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -202,9 +211,9 @@
     },{
         "role": "haproxy",
         "container": {
-            "type": "kvm",
+            "type": "lxc",
             "zone": "sh1a",
-            "image": "img-6odf0fen"
+            "image": "img-5e5t5iib"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -227,8 +236,8 @@
             "interval_sec": 60,
             "timeout_sec": 10,
             "action_timeout_sec": 30,
-            "healthy_threshold": 3,
-            "unhealthy_threshold": 3,
+            "healthy_threshold": 2,
+            "unhealthy_threshold": 2,
             "check_cmd": "service haproxy status >/dev/null  2>&1",
             "action_cmd": "service haproxy restart;service keepalived restart"
         }
@@ -256,7 +265,6 @@
         "background_gc_target_interval": {{env.background_gc_target_interval}},
         "proxy_protocol": {{env.proxy_protocol}},
         "tracing_user": {{env.tracing_user}}
-
     },
     "endpoints": {
         "client": {
