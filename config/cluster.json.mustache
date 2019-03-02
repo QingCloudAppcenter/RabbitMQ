@@ -3,20 +3,21 @@
     "description": {{cluster.description}},
     "vxnet": {{cluster.vxnet}},
     "upgrade_policy": [
-            "appv-6wkhvsts",
-            "appv-et0mu05f",
-            "appv-n2qaxy9j",
-            "appv-bzb2d00d",
-            "appv-s7gt9xid",
+            "appv-jumu1r67",
+            "appv-kxe5ezdx",
             "appv-8cimgbsu",
-            "appv-kxe5ezdx"
+            "appv-s7gt9xid",
+            "appv-bzb2d00d",
+            "appv-n2qaxy9j",
+            "appv-et0mu05f",
+            "appv-6wkhvsts"
     ],
     "nodes": [{
       "role":"disc",
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-fasn9ctm"
+            "image": "img-rkz5d986"
         },
 
         "instance_class": {{cluster.disc.instance_class}},
@@ -61,7 +62,7 @@
              "enable": true,
              "interval_sec": 60,
              "timeout_sec": 10,
-             "action_timeout_sec": 30,
+             "action_timeout_sec": 60,
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
              "check_cmd": "/opt/bin/health_check.sh",
@@ -102,7 +103,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-fasn9ctm"
+            "image": "img-rkz5d986"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
