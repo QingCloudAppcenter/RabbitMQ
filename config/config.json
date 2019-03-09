@@ -9,7 +9,7 @@
             "label": "Name",
             "description": "The name of the RabbitMQ service",
             "type": "string",
-            "default": "RabbitMQ",
+            "default": "RabbitMQ 3.6.10",
             "required": "no"
         }, {
             "key": "description",

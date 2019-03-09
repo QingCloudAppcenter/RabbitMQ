@@ -43,8 +43,8 @@ start_rabbitmq () {
         ensure_pid_dir
         set +e
         RABBITMQ_PID_FILE=$PID_FILE $START_PROG $DAEMON \
-            > "${INIT_LOG_DIR}/startup_log" \
-            2> "${INIT_LOG_DIR}/startup_err" \
+            >> "${INIT_LOG_DIR}/startup_log" \
+            2>> "${INIT_LOG_DIR}/startup_err" \
             0<&- &
         $CONTROL wait $PID_FILE >/dev/null 2>&1
         RETVAL=$?
