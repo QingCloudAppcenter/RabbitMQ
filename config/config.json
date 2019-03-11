@@ -26,6 +26,13 @@
             "default": "",
             "required": "yes"
         }, {
+            "key": "resource_group",
+            "label": "Resource Configuration",
+            "description": "Test: 2 disc nodes with 1 HAProxy node; Prod: 2 disc nodes with 2 HAProxy nodes",
+            "type": "string",
+            "default": "Prod",
+            "range": ["Test", "Prod"]
+        }, {
             "key": "disc",
             "label": "Disc Node",
             "description": "Disc Node",
@@ -36,15 +43,17 @@
                 "description": "CPUs of each node",
                 "type": "integer",
                 "default": 1,
-                "range": [1, 2, 4, 8,16],
+                "range": [1, 2, 4, 8, 16, 32],
+                "resource_group": [1, 2],
                 "required": "yes"
             }, {
                 "key": "memory",
                 "label": "Memory",
                 "description": "Memory of each node",
                 "type": "integer",
-                "default": 2048,
-                "range": [1024, 2048,4096,8192, 16384, 32768, 49152,65536],
+                "default": 1024,
+                "range": [1024, 2048, 4096, 8192, 16384, 32768, 49152, 65536, 131072],
+                "resource_group": [1024, 4096],
                 "required": "yes"
             }, {
                 "key": "instance_class",
@@ -53,6 +62,7 @@
                 "type": "integer",
                 "default": 0,
                 "range": [0, 1],
+                "resource_group": [0, 1],
                 "required": "yes"
             }, {
                 "key": "volume_size",
@@ -68,7 +78,7 @@
                 "description": "Disc Node Count",
                 "type": "integer",
                 "auto_scale_step": 1,
-                "default": 1,
+                "default": 2,
                 "min":1,
                  "max":100,
                 "required": "yes"
@@ -84,7 +94,7 @@
                 "description": "CPUs of each node",
                 "type": "integer",
                 "default": 1,
-                "range": [1, 2, 4, 8,16],
+                "range": [1, 2, 4, 8, 16, 32],
                 "required": "yes"
             }, {
                 "key": "memory",
@@ -92,7 +102,7 @@
                 "description": "Memory of each node",
                 "type": "integer",
                 "default": 2048,
-                "range": [1024, 2048,4096,8192, 16384, 32768, 49152,65536],
+                "range": [1024, 2048, 4096, 8192, 16384, 32768, 49152, 65536, 131072],
                 "required": "yes"
             }, {
                 "key": "instance_class",
@@ -101,6 +111,7 @@
                 "type": "integer",
                 "default": 0,
                 "range": [0, 1],
+                "resource_group": [0, 1],
                 "required": "yes"
             },{
                 "key": "volume_size",
@@ -116,7 +127,7 @@
                 "description": "Ram Node Count",
                 "type": "integer",
                 "auto_scale_step": 1,
-                "default": 2,
+                "default": 0,
                 "min":0,
                  "max":100,
                 "required": "yes"
@@ -132,7 +143,7 @@
                 "description": "CPUs of each node",
                 "type": "integer",
                 "default": 1,
-                "range": [1, 2, 4, 8,16],
+                "range": [1, 2, 4, 8, 16, 32],
                 "required": "yes"
             }, {
                 "key": "memory",
@@ -140,7 +151,7 @@
                 "description": "Memory of each node",
                 "type": "integer",
                 "default": 1024,
-                "range": [1024, 2048,4096,8192, 16384, 32768, 49152,65536],
+                "range": [1024, 2048, 4096, 8192, 16384, 32768, 49152, 65536, 131072],
                 "required": "yes"
             }, {
                 "key": "instance_class",
@@ -171,15 +182,17 @@
                 "description": "CPUs of each node",
                 "type": "integer",
                 "default": 1,
-                "range": [1, 2, 4, 8,16],
+                "range": [1, 2, 4, 8, 16, 32],
+                "resource_group": [1, 2],
                 "required": "yes"
             }, {
                 "key": "memory",
                 "label": "Memory",
                 "description": "Memory of each node",
                 "type": "integer",
-                "default": 2048,
-                "range": [1024, 2048, 4096,8192, 16384, 32768, 49152,65536],
+                "default": 1024,
+                "range": [1024, 2048, 4096, 8192, 16384, 32768, 49152, 65536, 131072],
+                "resource_group": [1024, 2048],
                 "required": "yes"
             }, {
                 "key": "instance_class",
@@ -194,9 +207,10 @@
                 "label": "Count",
                 "description": "Haproxy HA Node Count",
                 "type": "integer",
-                "default": 2,
                 "min": 0,
-                "max":2,
+                "max": 2,
+                "default": 1,
+                "resource_group": [1, 2],
                 "required": "yes"
             }]
         }
@@ -211,7 +225,7 @@
             "description": "haproxy balance policy",
             "type": "string",
               "default": "roundrobin",
-              "required": "yes",
+              "required": "no",
               "range": ["roundrobin","leastconn","static-rr","source","uri","url_param"]
         },{
             "key": "haproxy_web_port",
@@ -219,14 +233,14 @@
             "description": "haproxy web port",
             "type": "integer",
             "default": 8100,
-            "required": "yes"
+            "required": "no"
         },{
             "key": "haproxy_username",
             "label": "haproxy_username",
             "description": "haproxy web login usernam",
             "type": "string",
             "default": "haproxy",
-            "required": "yes"
+            "required": "no"
         },{
             "key": "haproxy_password",
             "label": "haproxy_password",
@@ -234,7 +248,7 @@
             "type": "password",
             "changeable":true,
             "default": "haproxy",
-            "required": "yes"
+            "required": "no"
         },{
             "key": "num_tcp_acceptors",
             "label": "num_tcp_acceptors",
@@ -243,7 +257,7 @@
             "default": 10,
              "min":10,
              "max":200,
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "handshake_timeout",
             "label": "handshake_timeout",
@@ -259,7 +273,7 @@
             "type": "number",
             "default": 0.4,
             "range": [0.3,0.4,0.5,0.6,0.7],
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "vm_memory_high_watermark_paging_ratio",
             "label": "vm_memory_high_watermark_paging_ratio",
@@ -267,14 +281,14 @@
             "type": "number",
             "default": 0.5,
             "range": [0.3,0.4,0.5,0.6,0.7],
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "disk_free_limit",
             "label": "disk_free_limit",
             "description": "Disk free space (in bytes) limit of the partition on which RabbitMQ is storing data",
             "type": "integer",
             "default": 50000000,
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "frame_max",
             "label": "frame_max",
@@ -295,7 +309,7 @@
             "description": "Value representing the heartbeat delay, in seconds, that the server sends in the connection.tune frame",
             "type": "integer",
             "default": 60,
-            "required": "yes"
+            "required": "no"
         }, {
             "key": "collect_statistics",
             "label": "collect_statistics",
