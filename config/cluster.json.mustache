@@ -2,7 +2,9 @@
     "name": {{cluster.name}},
     "description": {{cluster.description}},
     "vxnet": {{cluster.vxnet}},
+    "multi_zone_policy": "round_robin",
     "upgrade_policy": [
+            "appv-irmdwt3o",
             "appv-jumu1r67",
             "appv-kxe5ezdx",
             "appv-8cimgbsu",
@@ -239,7 +241,7 @@
             "action_timeout_sec": 30,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "service haproxy status >/dev/null  2>&1",
+            "check_cmd": "service haproxy status >/dev/null 2>&1 && service keepalived status >/dev/null 2>&1",
             "action_cmd": "service haproxy restart;service keepalived restart"
         }
     }],
