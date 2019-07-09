@@ -1,0 +1,13 @@
+---
+- name: common setup
+  hosts: all
+  strategy: free
+
+  tasks:
+  - include_role:
+      name: "{{ service_name }}"
+    loop:
+    - appctl
+    - rabbitmq-server
+    loop_control:
+      loop_var: service_name

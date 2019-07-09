@@ -1,0 +1,15 @@
+hostsFile=/etc/hosts
+
+sed "/^# >> RabbitMQ nodes./,/^# << RabbitMQ nodes./d" $hostsFile > $hostsFile.swap
+
+cat >> $hostsFile.swap << HOSTS_FILE
+# >> RabbitMQ nodes. WARNING: this is managed by script and please don't touch manually.
+{{- range $role := split "disc ram" " " }}
+{{- range $node := ls (printf "/hosts/%s" $role) }}
+{{ getv (printf "/hosts/%s/%s/ip" $role $node) }}	{{ getv (printf "/hosts/%s/%s/instance_id" $role $node) }}
+{{- end }}
+{{- end }}
+# << RabbitMQ nodes. WARNING: this is managed by script and please don't touch manually.
+HOSTS_FILE
+mv $hostsFile.swap $hostsFile
+

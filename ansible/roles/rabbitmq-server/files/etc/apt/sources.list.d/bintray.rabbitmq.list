@@ -1,0 +1,3 @@
+deb https://dl.bintray.com/rabbitmq-erlang/debian xenial erlang-22.x
+deb https://dl.bintray.com/rabbitmq/debian xenial main
+

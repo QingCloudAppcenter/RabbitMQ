@@ -1,0 +1,4 @@
+cat > /var/lib/rabbitmq/.erlang.cookie << ERLANG_COOKIE_EOF
+{{ getv "/cluster/cluster_id" }}
+ERLANG_COOKIE_EOF
+

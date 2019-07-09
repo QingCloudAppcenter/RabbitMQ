@@ -1,0 +1,70 @@
+---
+- name: set variables
+  set_fact:
+    rabbitmq_version: 3.7.15
+
+- name: add apt signing key, will not download if present
+  apt_key:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
+    state: present
+
+- name: install apt https
+  apt:
+    name: apt-transport-https
+    update_cache: yes
+
+- name: set up rabbitmq sources
+  copy:
+    src: files/{{ file_path }}
+    dest: /{{ file_path }}
+  loop:
+  - etc/apt/sources.list.d/
+  loop_control:
+    loop_var: file_path
+
+- name: disable auto start after install
+  systemd:
+    name: rabbitmq-server
+    masked: yes
+
+- name: install
+  apt:
+    name: rabbitmq-server={{ rabbitmq_version }}-1
+    update_cache: yes
+    state: present
+
+- name: disable auto startup on boot
+  systemd:
+    name: rabbitmq-server
+    enabled: no
+
+- name: copy systemd file
+  copy:
+    src: files/lib/systemd/system/
+    dest: /lib/systemd/system/
+    owner: root
+
+- name: copy conf files
+  copy:
+    src: files/opt/app/
+    dest: /opt/app/
+    owner: root
+    group: svc
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
+- name: copy cookie file
+  copy:
+    src: files/{{ file_path }}
+    dest: /{{ file_path }}
+    owner: rabbitmq
+    group: svc
+    mode: preserve
+  loop:
+  - var/lib/rabbitmq/.erlang.cookie
+  loop_control:
+    loop_var: file_path
+
+- name: install confd files
+  include_tasks: ../../utils/tasks/process-confd-files.yml
+
