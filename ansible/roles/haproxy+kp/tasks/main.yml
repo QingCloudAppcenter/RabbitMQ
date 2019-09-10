@@ -1,23 +1,14 @@
 ---
-- name: set variables
-  set_fact:
-    rabbitmq_version: 3.7.15
-    userPasswd: admin #用于远程登陆
-
-- name: update apt for erlang
+- name: update apt for haproxy
   shell: |
-  wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
-  sudo dpkg -i erlang-solutions_1.0_all.deb
-  echo 'deb https://dl.bintray.com/rabbitmq/debian  xenial  erlang-20.x' | sudo tee -a /etc/apt/sources.list.d/erlang-solutions.list
+    apt-get install software-properties-common
+    add-apt-repository ppa:vbernat/haproxy-2.0
+    apt-get update -y
 
-- name: add apt-key
-  apt_key:
-    url: https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
-    state: present
 
-- name: install erlang
+- name: install haproxy
   apt:
-    name: erlang
+    name: ['haproxy=2.0.\*', 'hatop','arping']
     update_cache: yes
     state: present
 
@@ -68,6 +59,36 @@
     name: rabbitmq-server
     enabled: no
 
+- name: Prepare dev env for keepalived
+  apt:
+    update_cache: yes
+    name: ['tree', 'curl', 'gcc', 'libssl-dev', 'libnl-3-dev', 'libnl-genl-3-dev', 'libsnmp-dev']
+    state: present
+
+- name: Prepare directories for keepalived
+  file:
+    path: "/opt/keepalived"
+    state: directory
+
+- name: Download reusable keepalived binaries locally
+  get_url:
+    url: "https://www.keepalived.org/software/keepalived-2.0.18.tar.gz"
+    dest: "/opt/keepalived/keepalived-2.0.18.tar.gz"
+#  delegate_to: localhost
+
+- name: Extract binary
+  unarchive:
+    src: "/opt/keepalived/keepalived-2.0.18.tar.gz"
+    dest: "/opt/keepalived/keepalived-2.0.18"
+    creates: "//opt/keepalived/keepalived-2.0.18/configure"
+    extra_opts: [ --strip-components=1 ]
+
+- name: install keepalived
+  shell: |
+  cd /opt/keepalived/keepalived-2.0.18
+  ./configure
+  make
+  sudo make install
 
 - name: install confd files
   include_tasks: ../../utils/tasks/process-confd-files.yml

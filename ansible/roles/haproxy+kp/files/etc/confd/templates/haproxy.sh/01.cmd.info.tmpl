@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eo pipefail 
+
+cat >> /opt/qingcloud/app-agent/log/cmd.info << CMD_EOF
+{{if exists "/cmd/id"}}{{getv "/cmd/id"}}:{{getv "/cmd/cmd"}}{{end}}
+CMD_EOF
