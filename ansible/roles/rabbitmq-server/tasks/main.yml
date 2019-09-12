@@ -58,8 +58,7 @@
     rabbitmqctl set_user_tags admin administrator
     rabbitmqctl  set_permissions -p "/" admin ".*" ".*" ".*"
     rabbitmqctl add_user monitor  monitor4rabbitmq
-    rabbitmqctl set_user_tags monitor administrator
-    rabbitmqctl  set_permissions -p "/" monitor ".*" ".*" ".*"
+    rabbitmqctl set_user_tags monitor monitoring
     systemctl restart rabbitmq-server
 
 
