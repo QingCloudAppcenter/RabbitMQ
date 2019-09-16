@@ -1,63 +1,26 @@
 ---
+- name: copy binaries
+  copy:
+    src: files/opt/
+    dest: /opt
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
 - name: update apt for haproxy
   shell: |
-    apt-get install software-properties-common
-    add-apt-repository ppa:vbernat/haproxy-2.0
+    apt-get install software-properties-common -y
+    add-apt-repository ppa:vbernat/haproxy-2.0 -y
     apt-get update -y
+    apt install haproxy=2.0.\* -y
 
 
 - name: install haproxy
   apt:
-    name: ['haproxy=2.0.\*', 'hatop','arping']
+    name: ['hatop','arping']
     update_cache: yes
     state: present
-
-- name: add apt_key for rabbitmq
-  shell: |
-  wget -O - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey" | sudo apt-key add -
-
-- name: add apt signing key, will not download if present
-  apt_key:
-    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
-    state: present
-
-- name: add bintray repo for latest Rabbitmq
-  shell: |
-  sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
-  deb https://dl.bintray.com/rabbitmq-erlang/debian bionic erlang-21.x
-  deb https://dl.bintray.com/rabbitmq/debian bionic main
-  EOF
-
-- name: install apt https
-  apt:
-    name: apt-transport-https
-    update_cache: yes
-
-- name: install
-  apt:
-    name: rabbitmq-server={{ rabbitmq_version }}-1
-    update_cache: yes
-    state: present
-
-- name: enabled all plugns
-  shell: 
-    rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_stomp rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_management rabbitmq_delayed_message_exchange rabbitmq_shovel rabbitmq_shovel_management
-
-- name: add users for monitor or login
-  shell: |
-    rabbitmqctl add_user admin {{ userPasswd }}
-    rabbitmqctl set_user_tags admin administrator
-    rabbitmqctl  set_permissions -p "/" admin ".*" ".*" ".*"
-    rabbitmqctl add_user monitor  monitor4rabbitmq
-    rabbitmqctl set_user_tags monitor administrator
-    rabbitmqctl  set_permissions -p "/" monitor ".*" ".*" ".*"
-    systemctl restart rabbitmq-server
-
-
-- name: disable auto startup on boot
-  systemd:
-    name: rabbitmq-server
-    enabled: no
 
 - name: Prepare dev env for keepalived
   apt:
@@ -67,8 +30,13 @@
 
 - name: Prepare directories for keepalived
   file:
-    path: "/opt/keepalived"
+    path: /opt/{{ item }}
+    owner: root
+    group: root
     state: directory
+  with_items:
+    - keepalived
+    - keepalived/keepalived-2.0.18
 
 - name: Download reusable keepalived binaries locally
   get_url:
@@ -80,15 +48,29 @@
   unarchive:
     src: "/opt/keepalived/keepalived-2.0.18.tar.gz"
     dest: "/opt/keepalived/keepalived-2.0.18"
-    creates: "//opt/keepalived/keepalived-2.0.18/configure"
+    creates: "/opt/keepalived/keepalived-2.0.18/configure"
     extra_opts: [ --strip-components=1 ]
+    remote_src: yes
 
 - name: install keepalived
-  shell: |
-  cd /opt/keepalived/keepalived-2.0.18
-  ./configure
-  make
-  sudo make install
+  shell:
+    cmd: |
+      cd /opt/keepalived/keepalived-2.0.18
+      ./configure
+      make
+      sudo make install
+
+- name: create keepalived current link
+  file:
+    src: /opt/keepalived/keepalived-2.0.18
+    dest: /opt/keepalived/current
+    state: link
+
+- name: create keepalived service link
+  file:
+    src: /opt/keepalived/current/keepalived/keepalived.service
+    dest: /etc/systemd/system/keepalived.service
+    state: link
 
 - name: install confd files
   include_tasks: ../../utils/tasks/process-confd-files.yml

@@ -1,14 +1,29 @@
 ---
 - name: set variables
   set_fact:
-    rabbitmq_version: 3.7.15
+    rabbitmq_version: 3.7.17
     userPasswd: admin #用于远程登陆
 
+- name: copy binaries
+  copy:
+    src: files/opt/
+    dest: /opt
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
+- name: download deb
+  get_url:
+    url="https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb"
+    dest="/tmp/erlang-solutions_1.0_all.deb"
+
+- name: apt for erlang
+  apt: deb="/tmp/erlang-solutions_1.0_all.deb"
+  sudo: true
+
 - name: update apt for erlang
-  shell: |
-  wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb
-  sudo dpkg -i erlang-solutions_1.0_all.deb
-  echo 'deb https://dl.bintray.com/rabbitmq/debian  xenial  erlang-20.x' | sudo tee -a /etc/apt/sources.list.d/erlang-solutions.list
+  shell: echo 'deb https://dl.bintray.com/rabbitmq/debian  xenial  erlang-21.x' | sudo tee -a /etc/apt/sources.list.d/erlang-solutions.list
 
 - name: add apt-key
   apt_key:
@@ -22,8 +37,7 @@
     state: present
 
 - name: add apt_key for rabbitmq
-  shell: |
-  wget -O - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey" | sudo apt-key add -
+  shell: wget -O - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey" | sudo apt-key add -
 
 - name: add apt signing key, will not download if present
   apt_key:
@@ -31,11 +45,12 @@
     state: present
 
 - name: add bintray repo for latest Rabbitmq
-  shell: |
-  sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
-  deb https://dl.bintray.com/rabbitmq-erlang/debian bionic erlang-21.x
-  deb https://dl.bintray.com/rabbitmq/debian bionic main
-  EOF
+  shell:
+    cmd: |
+      tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
+      deb https://dl.bintray.com/rabbitmq-erlang/debian bionic erlang-21.x
+      deb https://dl.bintray.com/rabbitmq/debian bionic main
+      EOF
 
 - name: install apt https
   apt:

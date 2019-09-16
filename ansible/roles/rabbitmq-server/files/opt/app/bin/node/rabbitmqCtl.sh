@@ -10,6 +10,11 @@ changeDefaultConfig() {
   sed -i "s/\/var\/log\/rabbitmq/\/data\/rabbitmq\/log/" $defaultConfig
 }
 
+addNode2Cluster() {
+  n1=$(echo $DISC_NODE | awk -F, '{print $1}')
+  rabbitmqctl --quiet join_cluster --disc "rabbit@$n1"
+}
+
 rabbitmq-server-custom() {
   PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/erlang/bin
   NAME=rabbitmq-server
@@ -142,6 +147,7 @@ init() {
   rabbitmq-plugins enable rabbitmq_delayed_message_exchange
   rabbitmq-plugins enable rabbitmq_shovel
   rabbitmq-plugins enable rabbitmq_shovel_management
+  addNode2Cluster
   if [ "$MY_ROLE" = "ram" ]; then
     init_ram
   fi
