@@ -14,14 +14,14 @@
             "appv-et0mu05f",
             "appv-6wkhvsts"
     ],
+    "upgrading_policy": "sequential",
     "nodes": [{
       "role":"disc",
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-8o1kv1al"
+            "image": "img-r5hrbt9o"
         },
-
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
         "cpu": {{cluster.disc.cpu}},
@@ -38,19 +38,19 @@
          },
             "start": {
               "order": 1,
-                "cmd":"appctl rabbitmq-server-custom start"
+                "cmd":"appctl start"
             },
             "stop": {
               "order": 2,
-                "cmd": "appctl rabbitmq-server-custom stop"
+                "cmd": "appctl stop"
             },
             "restart": {
               "order": 1,
-                "cmd": "appctl rabbitmq-server-custom restart"
+                "cmd": "appctl restart"
             },
             "destroy": {
               "order": 2,
-                "cmd": "appctl rabbitmq-server-custom stop"
+                "cmd": "appctl stop"
             },
             "scale_in": {
               "nodes_to_execute_on": 1,
@@ -67,8 +67,8 @@
              "action_timeout_sec": 60,
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
-             "check_cmd": "appctl health_check",
-             "action_cmd": "appctl rabbitmq-server-custom restart"
+             "check_cmd": "appctl check",
+             "action_cmd": "appctl restart"
          },
          "monitor": {
                "enable": true,
@@ -105,7 +105,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-8o1kv1al"
+            "image": "img-r5hrbt9o"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -124,19 +124,19 @@
          },
             "start": {
               "order": 2,
-                "cmd":"appctl rabbitmq-server-custom start"
+                "cmd":"appctl start"
             },
             "stop": {
               "order": 1,
-                "cmd": "appctl rabbitmq-server-custom stop"
+                "cmd": "appctl stop"
             },
             "restart": {
                "order": 2,
-                "cmd": "appctl rabbitmq-server-custom restart"
+                "cmd": "appctl restart"
             },
             "destroy": {
                 "order": 1,
-                "cmd": "appctl rabbitmq-server-custom stop"
+                "cmd": "appctl stop"
             },
             "scale_in": {
                 "nodes_to_execute_on": 1,
@@ -153,12 +153,12 @@
              "action_timeout_sec": 30,
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
-             "check_cmd": "appctl health_check",
-             "action_cmd": "appctl rabbitmq-server-custom restart"
+             "check_cmd": "appctl check",
+             "action_cmd": "appctl restart"
          },
          "monitor": {
                "enable": true,
-               "cmd": "appctl rabbitmq-server-custom MQ_monitor",
+               "cmd": "appctl MQ_monitor",
                "items": {
                 "fd_used": {
                    "unit": "count"
@@ -191,7 +191,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-8o1kv1al"
+            "image": "img-r5hrbt9o"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -204,10 +204,10 @@
              "cmd": "appctl init"
          },
             "start": {
-                "cmd":"appctl rabbitmq-server-custom start"
+                "cmd":"appctl start"
             },
             "stop": {
-                "cmd": "appctl rabbitmq-server-custom stop"
+                "cmd": "appctl stop"
             }
         },
         "advanced_actions": ["scale_horizontal"]
@@ -216,7 +216,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-8o1kv1al"
+            "image": "img-r5hrbt9o"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -224,13 +224,13 @@
         "memory": {{cluster.haproxy.memory}},
         "services": {
               "start": {
-                "cmd":"service haproxy start;service keepalived start"
+                "cmd":"appctl start;service keepalived start"
               },
               "stop": {
-                  "cmd": "service haproxy stop;service keepalived stop"
+                  "cmd": "appctl stop;service keepalived stop"
               },
               "restart": {
-                "cmd": "service haproxy restart;service keepalived restart"
+                "cmd": "appctl restart;service keepalived restart"
               }
         },
         "advanced_actions": ["scale_horizontal"],
@@ -242,7 +242,7 @@
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
             "check_cmd": "service haproxy status >/dev/null 2>&1 && service keepalived status >/dev/null 2>&1",
-            "action_cmd": "service haproxy restart;service keepalived restart"
+            "action_cmd": "appctl restart;appctl restart"
         }
     }],
     "env": {

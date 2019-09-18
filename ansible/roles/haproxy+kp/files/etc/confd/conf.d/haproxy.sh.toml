@@ -5,4 +5,4 @@ mode = "0777"
 keys = [
   "/",
 ]
-reload_cmd = "appctl update haproxy"
+reload_cmd = "/opt/app/bin/tmpl/haprxy.sh; appctl update"

@@ -4,91 +4,33 @@ changeDefaultConfig() {
   defaultConfig=/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.17/sbin/rabbitmq-defaults
   #修改config file location
   sed -i "s/\/etc\/rabbitmq\/rabbitmq/\/opt\/app\/conf\/rabbitmq\/rabbitmq/" $defaultConfig
-  sed -i "s/\/etc\/rabbitmq\/enabled_plugins/\/opt\/app\/conf\/rabbitmq\/enabled_plugins/" $defaultConfig
   sed -i "s/\/etc/\/data/" $defaultConfig
   sed -i "s/\/var\/lib/\/data/" $defaultConfig
   sed -i "s/\/var\/log\/rabbitmq/\/data\/rabbitmq\/log/" $defaultConfig
+  sed -i "s/\/data\/rabbitmq\/enabled_plugins/\/etc\/rabbitmq\/enabled_plugins/" $defaultConfig
 }
 
 addNode2Cluster() {
+  rabbitmqctl stop_app
   n1=$(echo $DISC_NODE | awk -F, '{print $1}')
   rabbitmqctl --quiet join_cluster --disc "rabbit@$n1"
-}
-
-rabbitmq-server-custom() {
-  PATH=/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/erlang/bin
-  NAME=rabbitmq-server
-  DAEMON=/usr/sbin/${NAME}
-  CONTROL=/usr/sbin/rabbitmqctl
-  DESC=rabbitmq-server
-  USER=rabbitmq
-  ROTATE_SUFFIX=
-  INIT_LOG_DIR=/data/rabbitmq/log
-  START_PROG="daemon"
-  LOCK_FILE=/var/lock/subsys/$NAME
-  test -x $DAEMON || exit 0
-  test -x $CONTROL || exit 0
-  RETVAL=0
-  set -e
-  [ -f /etc/default/${NAME} ] && . /etc/default/${NAME}
-  [ -f /etc/sysconfig/${NAME} ] && . /etc/sysconfig/${NAME}
-  case "$1" in
-    start)
-        echo -n "Starting $DESC: "
-        start_rabbitmq
-        echo "$NAME."
-        ;;
-    stop)
-        echo -n "Stopping $DESC: "
-        stop_rabbitmq
-        echo "$NAME."
-        ;;
-    status)
-        status_rabbitmq
-        ;;
-    rotate-logs)
-        echo -n "Rotating log files for $DESC: "
-        rotate_logs_rabbitmq
-        ;;
-    force-reload|reload|restart)
-        echo -n "Restarting $DESC: "
-        restart_rabbitmq
-        echo "$NAME."
-        ;;
-    try-restart)
-        echo -n "Restarting $DESC: "
-        restart_running_rabbitmq
-        echo "$NAME."
-        ;;
-    *)
-        echo "Usage: $0 {start|stop|status|rotate-logs|restart|condrestart|try-restart|reload|force-reload}" >&2
-        RETVAL=1
-        ;;
-  esac
-  exit $RETVAL
+  rabbitmqctl start_app
 }
 
 start_rabbitmq () {
+  _start
+  rabbitmqctl start_app
+  scale_out
   status_rabbitmq quiet
   if [ $RETVAL = 0 ] ; then
       log "RabbitMQ is currently running"
   else
-      # RABBIT_NOFILES_LIMIT from /etc/sysconfig/rabbitmq-server is not handled
-      # automatically
-      if [ "$RABBITMQ_NOFILES_LIMIT" ]; then
-              ulimit -n $RABBITMQ_NOFILES_LIMIT
-      fi
-      systemctl restart rabbitmq-server
-  fi
-}
-
-stop_rabbitmq () {
-  status_rabbitmq quiet
-  if [ $RETVAL = 0 ] ; then
-      set +e
-      $CONTROL stop
-  else
-      echo RabbitMQ is not running
+    # RABBIT_NOFILES_LIMIT from /etc/sysconfig/rabbitmq-server is not handled
+    # automatically
+    if [ "$RABBITMQ_NOFILES_LIMIT" ]; then
+      ulimit -n $RABBITMQ_NOFILES_LIMIT
+    fi
+    systemctl restart rabbitmq-server
   fi
 }
 
@@ -119,7 +61,7 @@ restart_running_rabbitmq () {
   if [ $RETVAL = 0 ] ; then
       restart_rabbitmq
   else
-      echo RabbitMQ is not runnning
+      echo "RabbitMQ is not runnning"
       RETVAL=0
   fi
 }
@@ -129,8 +71,9 @@ restart_rabbitmq() {
   start_rabbitmq
 }
 
-init() {
-  mkdir -p /data/rabbitmq/{log,mnesia,config,schema} 
+init_rabbitmq() {
+  _init
+  mkdir -p /data/rabbitmq/{log,mnesia,config,schema}
   chown -R rabbitmq:rabbitmq /data/
   cookie=$(echo $CLUSTER_ID | awk -F - '{print $2}')
   chmod 750 /var/lib/rabbitmq/.erlang.cookie
@@ -138,53 +81,45 @@ init() {
   chmod 400 /var/lib/rabbitmq/.erlang.cookie
   changeDefaultConfig
   sleep $SID
-  rabbitmq-server-custom start
-  rabbitmq-plugins enable rabbitmq_stomp
-  rabbitmq-plugins enable rabbitmq_web_stomp
-  rabbitmq-plugins enable rabbitmq_mqtt
-  rabbitmq-plugins enable rabbitmq_web_mqtt
-  rabbitmq-plugins enable rabbitmq_management
-  rabbitmq-plugins enable rabbitmq_delayed_message_exchange
-  rabbitmq-plugins enable rabbitmq_shovel
-  rabbitmq-plugins enable rabbitmq_shovel_management
+  systemctl restart rabbitmq-server
+  rabbitmq-plugins --quiet enable rabbitmq_stomp
+  rabbitmq-plugins --quiet enable rabbitmq_web_stomp
+  rabbitmq-plugins --quiet enable rabbitmq_mqtt
+  rabbitmq-plugins --quiet enable rabbitmq_web_mqtt
+  rabbitmq-plugins --quiet enable rabbitmq_management
+  rabbitmq-plugins --quiet enable rabbitmq_delayed_message_exchange
+  rabbitmq-plugins --quiet enable rabbitmq_shovel
+  rabbitmq-plugins --quiet enable rabbitmq_shovel_management
   addNode2Cluster
   if [ "$MY_ROLE" = "ram" ]; then
     init_ram
   fi
-  rabbitmqctl  node_health_check >/dev/null  2>&1
+  rabbitmqctl start_app
+  rabbitmqctl node_health_check >/dev/null 2>&1
   if [ $? -eq 0 ]; then
-     rabbitmqctl  add_user  monitor  monitor4rabbitmq
-     rabbitmqctl  set_user_tags  monitor  monitoring
-     exit 0
-   else
-      exit 1
-  fi
-}
-
-start() {
-  rabbitmqctl node_health_check >/dev/null  2>&1
-  if [ $? -eq 0 ]; then
-       exit 0
-  fi
-  init
-  if [ $? -eq 0 ]; then
-       echo "Start rabbitmq successful"
-       exit 0
-      else
-      echo "Failed to start rabbitmq" 1>&2
-      exit 1
+    rabbitmqctl add_user monitor monitor4rabbitmq
+    rabbitmqctl set_user_tags  monitor monitoring
+    exit 0
+  else
+    exit 1
   fi
 }
 
 
-stop() {
+stop_rabbitmq () {
   PIDS=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
   if [ -z "$PIDS" ]
   then
     echo "RabbitMQ server is not running" 1>&2
     exit 0
   fi
-  rabbitmq-server-custom stop
+  status_rabbitmq quiet
+  if [ $RETVAL = 0 ] ; then
+      set +e
+      $CONTROL stop
+  else
+      echo RabbitMQ is not running
+  fi
   #check
   loop=60
   force=1
@@ -207,65 +142,21 @@ stop() {
 
 }
 
-
 init_ram() {
   rabbitmqctl stop_app
   rabbitmqctl change_cluster_node_type ram
   if [ $? -eq 0 ]; then
-           rabbitmqctl start_app
-           if [ $? -eq 0 ]; then
-               log "Init rabbitmq_ram successful"
-               exit 0
-             else
-               for i in $(seq 0 120); do
-                 pid=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
-                 kill -9 $pid
-                 rm -rf /data/rabbitmq/mnesia*
-                 rabbitmq-server-custom start
-                 rabbitmqctl stop_app
-                 rabbitmqctl change_cluster_node_type ram
-                    if [ $? -eq 0 ]; then
-                       rabbitmqctl start_app
-                       if [ $? -eq 0 ]; then
-                       log "Init rabbitmq_ram successful"
-                       exit 0
-                       fi
-                   fi
-                 sleep 1s
-                 done
-           fi
-    else
-      for i in $(seq 0 120); do
-      pid=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
-      kill -9 $pid
-      rm -rf /data/rabbitmq/mnesia*
-      rabbitmq-server-custom start
-      rabbitmqctl stop_app
-      rabbitmqctl change_cluster_node_type ram
-       if [ $? -eq 0 ]; then
-             rabbitmqctl start_app
-             if [ $? -eq 0 ]; then
-             echo "Init rabbitmq_ram successful"
-              exit 0
-            fi
-         fi
-       sleep 1s
-    done
-  fi
-  rabbitmqctl  node_health_check >/dev/null  2>&1
-  if [ $? -eq 0 ]; then
-     exit 0
-  else
-    sleep 15s
     rabbitmqctl start_app
-    if [ $? -eq 0 ]; then
-    exit 0
-     else 
-    exit 1
-   fi
+  else
+    rabbitmqctl stop_app
+    systemctl stop rabbitmq-server
+    pid=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
+    kill -9 $pid
+    rm -rf /data/rabbitmq/mnesia*
   fi
+  systemctl restart rabbitmq-server
+  rabbitmqctl start_app
 }
-
 
 scale_in() {
   clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
@@ -290,7 +181,7 @@ scale_out() {
       if [ $? -eq 0 ]; then
        rabbitmqctl start_app
      else
-       rabbitmq-server-custom start
+       start
      fi
   fi
 }
@@ -317,7 +208,7 @@ MQ_monitor() {
 
 }
 
-health_check() {
+check_rabbitmq() {
   rabbitmqctl -t 3 node_health_check >/dev/null  2>&1
   if [ $? -eq 0 ]; then
       exit 0
@@ -329,4 +220,59 @@ health_check() {
        exit 2
      fi
   fi
+}
+
+case "$MY_ROLE" in
+  disc) role=rabbitmq ;;
+  ram) role=rabbitmq ;;
+  haproxy) role=extra ;;
+  client) role=extra ;;
+  *) echo "error role"
+esac
+
+init_extra() {
+  _init
+  if [ "$MY_ROLE" = "client" ]; then echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd; fi
+}
+
+start_extra() {
+  _start
+}
+
+stop_extra() {
+  _stop
+}
+
+restart_extra() {
+  _restart
+}
+
+check_extra() {
+  _check
+}
+
+init() {
+  systemctl daemon-reload
+  init_$role
+}
+
+start() {
+  start_$role
+}
+
+stop() {
+  stop_$role
+}
+
+restart() {
+  restart_$role
+}
+
+check() {
+  check_$role
+}
+
+update() {
+  init
+  start
 }

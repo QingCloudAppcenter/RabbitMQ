@@ -54,7 +54,7 @@
 
 - name: install apt https
   apt:
-    name: apt-transport-https
+    name: ['apt-transport-https', 'jq']
     update_cache: yes
 
 - name: install
@@ -63,8 +63,14 @@
     update_cache: yes
     state: present
 
+- name: download and unzip rabbitmq_delayed_message_exchange plugns
+  get_url:
+    url: "https://dl.bintray.com/rabbitmq/community-plugins/3.7.x/rabbitmq_delayed_message_exchange/rabbitmq_delayed_message_exchange-20171201-3.7.x.zip"
+    dest: "/tmp/rabbitmq_delayed_message_exchange-20171201-3.7.x.zip"
+
 - name: enabled all plugns
-  shell: 
+  shell: |
+    unzip /tmp/rabbitmq_delayed_message_exchange-20171201-3.7.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
     rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_stomp rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_management rabbitmq_delayed_message_exchange rabbitmq_shovel rabbitmq_shovel_management
 
 - name: add users for monitor or login

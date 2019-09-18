@@ -17,6 +17,12 @@
     name: root
     state: present
 
+- name: install prepare
+  apt:
+    name: unzip
+    update_cache: yes
+    state: present
+
 - name: copy app files
   copy:
     src: files/opt/app/
