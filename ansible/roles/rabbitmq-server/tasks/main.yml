@@ -1,7 +1,7 @@
 ---
 - name: set variables
   set_fact:
-    rabbitmq_version: 3.7.17
+    rabbitmq_version: 3.7.18
     userPasswd: admin #用于远程登陆
 
 - name: copy binaries

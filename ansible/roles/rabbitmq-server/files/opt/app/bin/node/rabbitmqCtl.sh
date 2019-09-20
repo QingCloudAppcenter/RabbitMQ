@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 changeDefaultConfig() {
-  defaultConfig=/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.17/sbin/rabbitmq-defaults
+  defaultConfig=/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.18/sbin/rabbitmq-defaults
   #修改config file location
   sed -i "s/\/etc\/rabbitmq\/rabbitmq/\/opt\/app\/conf\/rabbitmq\/rabbitmq/" $defaultConfig
   sed -i "s/\/etc/\/data/" $defaultConfig
@@ -11,10 +11,11 @@ changeDefaultConfig() {
 }
 
 addNode2Cluster() {
-  rabbitmqctl stop_app
+  systemctl restart rabbitmq-server #make sure mq has been started
+  rabbitmqctl stop_app > /dev/null 2>&1
   n1=$(echo $DISC_NODE | awk -F, '{print $1}')
-  rabbitmqctl --quiet join_cluster --disc "rabbit@$n1"
-  rabbitmqctl start_app
+  rabbitmqctl --quiet join_cluster --$MY_ROLE "rabbit@$n1"
+  rabbitmqctl start_app > /dev/null 2>&1
 }
 
 start_rabbitmq () {
@@ -22,47 +23,26 @@ start_rabbitmq () {
   rabbitmqctl start_app
   scale_out
   status_rabbitmq quiet
-  if [ $RETVAL = 0 ] ; then
-      log "RabbitMQ is currently running"
-  else
-    # RABBIT_NOFILES_LIMIT from /etc/sysconfig/rabbitmq-server is not handled
-    # automatically
-    if [ "$RABBITMQ_NOFILES_LIMIT" ]; then
-      ulimit -n $RABBITMQ_NOFILES_LIMIT
-    fi
-    systemctl restart rabbitmq-server
-  fi
 }
 
 status_rabbitmq() {
-  set +e
   if [ "$1" != "quiet" ] ; then
-      $CONTROL status 2>&1
+    rabbitmqctl status 2>&1
   else
-      $CONTROL status > /dev/null 2>&1
+    rabbitmqctl status > /dev/null 2>&1
   fi
-  if [ $? != 0 ] ; then
-      RETVAL=3
-  fi
-  set -e
 }
 
 rotate_logs_rabbitmq() {
-  set +e
-  $CONTROL rotate_logs ${ROTATE_SUFFIX}
-  if [ $? != 0 ] ; then
-      RETVAL=1
-  fi
-  set -e
+  rabbitmqctl rotate_logs ${ROTATE_SUFFIX}
 }
 
 restart_running_rabbitmq () {
   status_rabbitmq quiet
   if [ $RETVAL = 0 ] ; then
-      restart_rabbitmq
+    restart_rabbitmq
   else
-      echo "RabbitMQ is not runnning"
-      RETVAL=0
+    echo "RabbitMQ is not runnning"
   fi
 }
 
@@ -73,6 +53,7 @@ restart_rabbitmq() {
 
 init_rabbitmq() {
   _init
+  systemctl stop rabbitmq-server
   mkdir -p /data/rabbitmq/{log,mnesia,config,schema}
   chown -R rabbitmq:rabbitmq /data/
   cookie=$(echo $CLUSTER_ID | awk -F - '{print $2}')
@@ -81,7 +62,6 @@ init_rabbitmq() {
   chmod 400 /var/lib/rabbitmq/.erlang.cookie
   changeDefaultConfig
   sleep $SID
-  systemctl restart rabbitmq-server
   rabbitmq-plugins --quiet enable rabbitmq_stomp
   rabbitmq-plugins --quiet enable rabbitmq_web_stomp
   rabbitmq-plugins --quiet enable rabbitmq_mqtt
@@ -95,67 +75,47 @@ init_rabbitmq() {
     init_ram
   fi
   rabbitmqctl start_app
-  rabbitmqctl node_health_check >/dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    rabbitmqctl add_user monitor monitor4rabbitmq
-    rabbitmqctl set_user_tags  monitor monitoring
+  userInfo=$(rabbitmqctl list_users --formatter=json | jq ".[].user")
+  if [[ "$userInfo" =~ "monitor" ]]; then
     exit 0
   else
-    exit 1
+    rabbitmqctl node_health_check >/dev/null 2>&1 && {
+      rabbitmqctl add_user monitor monitor4rabbitmq
+      rabbitmqctl set_user_tags  monitor monitoring
+    }
   fi
 }
 
 
 stop_rabbitmq () {
   PIDS=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
-  if [ -z "$PIDS" ]
+  if [ -z "$PIDS" ];
   then
     echo "RabbitMQ server is not running" 1>&2
     exit 0
   fi
   status_rabbitmq quiet
-  if [ $RETVAL = 0 ] ; then
-      set +e
-      $CONTROL stop
+  if [ $? -eq 0 ]; then
+      rabbitmqctl stop
   else
       echo RabbitMQ is not running
   fi
-  #check
-  loop=60
-  force=1
-  while [ "$loop" -gt 0 ]
-  do
-    pid=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
-    if [ "x$pid" = "x" ]
-    then
-      force=0
-      break
-    else
-      sleep 3s
-      loop=`expr $loop - 1`
-    fi
-  done
-  if [ "$force" -eq 1 ]
-  then
-   pkill -9 beam
-  fi
-
+  systemctl stop rabbitmq-server
 }
 
 init_ram() {
   rabbitmqctl stop_app
-  rabbitmqctl change_cluster_node_type ram
-  if [ $? -eq 0 ]; then
+  ramNodeInfo=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.ram[]")
+  if [[ "$ramNodeInfo" =~ "$MY_ID" ]]; then
+    t=$(rabbitmqctl change_cluster_node_type ram)
+  fi
+  if [ $t -eq 0 ]; then
     rabbitmqctl start_app
   else
-    rabbitmqctl stop_app
     systemctl stop rabbitmq-server
-    pid=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
-    kill -9 $pid
     rm -rf /data/rabbitmq/mnesia*
   fi
   systemctl restart rabbitmq-server
-  rabbitmqctl start_app
 }
 
 scale_in() {
@@ -169,7 +129,7 @@ scale_in() {
     node=$(echo $i | awk -F \" '{print $2}')
     rabbitmqctl forget_cluster_node $node
   done
-  rabbitmqctl status
+  rabbitmqctl start_app
 }
 
 scale_out() {
@@ -181,7 +141,8 @@ scale_out() {
       if [ $? -eq 0 ]; then
        rabbitmqctl start_app
      else
-       start
+       init
+       systemctl restart rabbitmq-server
      fi
   fi
 }
