@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+rCtl=/etc/init.d/rabbitmq-server
 
 changeDefaultConfig() {
   defaultConfig=/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.18/sbin/rabbitmq-defaults
@@ -10,19 +11,45 @@ changeDefaultConfig() {
   sed -i "s/\/data\/rabbitmq\/enabled_plugins/\/etc\/rabbitmq\/enabled_plugins/" $defaultConfig
 }
 
-addNode2Cluster() {
+addMonitor() {
+  userInfo=$(rabbitmqctl list_users --formatter=json | jq ".[].user")
+  if [[ "$userInfo" =~ "monitor" ]]; then
+    echo "User monitor already exist." 
+  else
+    rabbitmqctl node_health_check >/dev/null 2>&1 && {
+      rabbitmqctl add_user monitor monitor4rabbitmq
+      rabbitmqctl set_user_tags  monitor monitoring
+    }
+  fi
+
+}
+
+addNode2Cluster() { 
   systemctl restart rabbitmq-server #make sure mq has been started
+  addMonitor
+#  local nodes=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.$MY_ROLE[]")
+  systemctl restart rabbitmq-server #make sure mnesia is running
+  if [[ "$?" -ne 0  ]]; then
+    systemctl stop rabbitmq-server ;
+    rm -rf /data/rabbitmq/mnesia/* ;
+    systemctl start rabbitmq-server
+  fi
   rabbitmqctl stop_app > /dev/null 2>&1
   n1=$(echo $DISC_NODE | awk -F, '{print $1}')
-  rabbitmqctl --quiet join_cluster --$MY_ROLE "rabbit@$n1"
-  rabbitmqctl start_app > /dev/null 2>&1
+  if [[ "$n1" =~ "$HOSTNAME" ]]; then 
+    rabbitmqctl start_app > /dev/null 2>&1
+  else 
+    #n2=$(echo $DISC_NODE | awk -F, '{print $2}'); 
+    rabbitmqctl --quiet join_cluster --${MY_ROLE} "rabbit@$n1"
+    rabbitmqctl start_app > /dev/null 2>&1
+  fi
+  echo "finished add node to cluster."
 }
 
 start_rabbitmq () {
   _start
-  rabbitmqctl start_app
+  $rCtl start
   scale_out
-  status_rabbitmq quiet
 }
 
 status_rabbitmq() {
@@ -33,56 +60,25 @@ status_rabbitmq() {
   fi
 }
 
-rotate_logs_rabbitmq() {
-  rabbitmqctl rotate_logs ${ROTATE_SUFFIX}
-}
-
-restart_running_rabbitmq () {
-  status_rabbitmq quiet
-  if [ $RETVAL = 0 ] ; then
-    restart_rabbitmq
-  else
-    echo "RabbitMQ is not runnning"
-  fi
-}
-
-restart_rabbitmq() {
-  stop_rabbitmq
-  start_rabbitmq
-}
-
-init_rabbitmq() {
-  _init
-  systemctl stop rabbitmq-server
+setCookie() {
+  mkdir -p /etc/keepalived
   mkdir -p /data/rabbitmq/{log,mnesia,config,schema}
   chown -R rabbitmq:rabbitmq /data/
   cookie=$(echo $CLUSTER_ID | awk -F - '{print $2}')
   chmod 750 /var/lib/rabbitmq/.erlang.cookie
   echo $cookie >/var/lib/rabbitmq/.erlang.cookie
   chmod 400 /var/lib/rabbitmq/.erlang.cookie
-  changeDefaultConfig
-  sleep $SID
-  rabbitmq-plugins --quiet enable rabbitmq_stomp
-  rabbitmq-plugins --quiet enable rabbitmq_web_stomp
-  rabbitmq-plugins --quiet enable rabbitmq_mqtt
-  rabbitmq-plugins --quiet enable rabbitmq_web_mqtt
-  rabbitmq-plugins --quiet enable rabbitmq_management
-  rabbitmq-plugins --quiet enable rabbitmq_delayed_message_exchange
-  rabbitmq-plugins --quiet enable rabbitmq_shovel
-  rabbitmq-plugins --quiet enable rabbitmq_shovel_management
+}
+
+init_rabbitmq() {
+  _init
+  systemctl stop rabbitmq-server
+  setCookie
+#  changeDefaultConfig
+  sleep ${SID}
   addNode2Cluster
   if [ "$MY_ROLE" = "ram" ]; then
     init_ram
-  fi
-  rabbitmqctl start_app
-  userInfo=$(rabbitmqctl list_users --formatter=json | jq ".[].user")
-  if [[ "$userInfo" =~ "monitor" ]]; then
-    exit 0
-  else
-    rabbitmqctl node_health_check >/dev/null 2>&1 && {
-      rabbitmqctl add_user monitor monitor4rabbitmq
-      rabbitmqctl set_user_tags  monitor monitoring
-    }
   fi
 }
 
@@ -96,9 +92,9 @@ stop_rabbitmq () {
   fi
   status_rabbitmq quiet
   if [ $? -eq 0 ]; then
-      rabbitmqctl stop
+    rabbitmqctl stop
   else
-      echo RabbitMQ is not running
+    echo RabbitMQ is not running
   fi
   systemctl stop rabbitmq-server
 }
@@ -115,7 +111,7 @@ init_ram() {
     systemctl stop rabbitmq-server
     rm -rf /data/rabbitmq/mnesia*
   fi
-  systemctl restart rabbitmq-server
+  $rCtl restart
 }
 
 scale_in() {
@@ -135,15 +131,15 @@ scale_in() {
 scale_out() {
   rabbitmqctl -t 3 node_health_check >/dev/null  2>&1
   if [ $? -eq 0 ]; then
-      exit 0
+    exit 0
   else
-      rabbitmqctl -t 3 status  >/dev/null  2>&1
-      if [ $? -eq 0 ]; then
-       rabbitmqctl start_app
-     else
-       init
-       systemctl restart rabbitmq-server
-     fi
+    rabbitmqctl -t 3 status  >/dev/null  2>&1
+    if [ $? -eq 0 ]; then
+      rabbitmqctl start_app
+    else
+      init
+      systemctl restart rabbitmq-server
+    fi
   fi
 }
 
@@ -172,26 +168,27 @@ MQ_monitor() {
 check_rabbitmq() {
   rabbitmqctl -t 3 node_health_check >/dev/null  2>&1
   if [ $? -eq 0 ]; then
-      exit 0
+    exit 0
   else
-      rabbitmqctl -t 3 status  >/dev/null  2>&1
-      if [ $? -eq 0 ]; then
-       exit 1
-      else
-       exit 2
-     fi
+    rabbitmqctl -t 3 status  >/dev/null  2>&1
+    if [ $? -eq 0 ]; then
+      exit 1
+    else
+      exit 2
+    fi
   fi
 }
 
 case "$MY_ROLE" in
-  disc) role=rabbitmq ;;
-  ram) role=rabbitmq ;;
-  haproxy) role=extra ;;
-  client) role=extra ;;
-  *) echo "error role"
+  disc)    role=rabbitmq  ;;
+  ram)     role=rabbitmq  ;;
+  haproxy) role=extra     ;;
+  client)  role=extra     ;;
+  *)       echo "error role"
 esac
 
 init_extra() {
+  setCookie
   _init
   if [ "$MY_ROLE" = "client" ]; then echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd; fi
 }
@@ -214,23 +211,23 @@ check_extra() {
 
 init() {
   systemctl daemon-reload
-  init_$role
+  init_${role}
 }
 
 start() {
-  start_$role
+  start_${role}
 }
 
 stop() {
-  stop_$role
+  $rCtl stop
 }
 
 restart() {
-  restart_$role
+  $rCtl  restart
 }
 
 check() {
-  check_$role
+  check_${role}
 }
 
 update() {

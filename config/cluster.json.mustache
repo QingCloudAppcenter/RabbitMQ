@@ -20,7 +20,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-o1npmdsl"
+            "image": "img-dtmq8t0t"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -105,7 +105,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-o1npmdsl"
+            "image": "img-dtmq8t0t"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -191,7 +191,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-o1npmdsl"
+            "image": "img-dtmq8t0t"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -216,7 +216,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-o1npmdsl"
+            "image": "img-dtmq8t0t"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -241,8 +241,8 @@
             "action_timeout_sec": 30,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "service haproxy status >/dev/null 2>&1 && service keepalived status >/dev/null 2>&1",
-            "action_cmd": "appctl restart;appctl restart"
+            "check_cmd": "appctl check",
+            "action_cmd": "appctl restart"
         }
     }],
     "env": {

@@ -8,7 +8,7 @@ global_defs {
 }
 
 vrrp_script check_haproxy {
-        script "pidof haproxy"
+        script "/bin/systemctl is-active haproxy"
         interval 2
     }
 
@@ -30,7 +30,7 @@ vrrp_instance HAProxy_HA {
    }
 
     track_script {
-        check_haproxy
+        appctl check
     }
 }
 
