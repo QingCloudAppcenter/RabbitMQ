@@ -88,6 +88,22 @@
     name: rabbitmq-server
     enabled: no
 
+- name: copy conf files
+  copy:
+    src: files/opt/app/
+    dest: /opt/app/
+    owner: root
+    group: svc
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
+- name: copy cookie file
+  copy:
+    dest: /var/lib/rabbitmq/.erlang.cookie
+    content: ""
+    owner: rabbitmq
+    group: svc
+    mode: '0600'
 
 - name: install confd files
   include_tasks: ../../utils/tasks/process-confd-files.yml

@@ -3,9 +3,10 @@ background_gc_enabled = {{ getv "/env/background_gc_enabled" "false" }}
 background_gc_target_interval = {{ getv "/env/background_gc_target_interval" "60000" }}
 channel_max = {{ getv "/env/channel_max" "10" }}
 cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
-{{- range $i, $node := getvs "/hosts/disc/*/instance_id" }}
+{{- range $i, $node := getvs "/hosts/*/*/instance_id" }}
 cluster_formation.classic_config.nodes.{{ add $i 1 }} = rabbit@{{ $node }}
 {{- end }}
+cluster_formation.node_type = {{ getv "/host/role" }}
 cluster_keepalive_interval = {{ getv "/env/cluster_keepalive_interval" "10000" }}
 cluster_partition_handling = {{ getv "/env/cluster_partition_handling" "ignore" }}
 collect_statistics = {{ getv "/env/collect_statistics" "none" }}
