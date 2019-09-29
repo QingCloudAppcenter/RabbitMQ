@@ -20,7 +20,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-dtmq8t0t"
+            "image": "img-9j8lbkn6"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -34,27 +34,27 @@
         "services": {
           "init": {
              "order": 1,
-             "cmd": "appctl init"
+             "cmd": "/opt/app/bin/ctl.sh init"
          },
             "start": {
               "order": 1,
-                "cmd":"appctl start"
+                "cmd":"/opt/app/bin/ctl.sh start"
             },
             "stop": {
               "order": 2,
-                "cmd": "appctl stop"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "restart": {
               "order": 1,
-                "cmd": "appctl restart"
+                "cmd": "/opt/app/bin/ctl.sh restart"
             },
             "destroy": {
               "order": 2,
-                "cmd": "appctl stop"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "scale_in": {
               "nodes_to_execute_on": 1,
-                "cmd": "appctl scale_in",
+                "cmd": "/opt/app/bin/ctl.sh scale_in",
                 "timeout": 86400
             }
         },
@@ -67,12 +67,12 @@
              "action_timeout_sec": 60,
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
-             "check_cmd": "appctl check",
-             "action_cmd": "appctl restart"
+             "check_cmd": "/opt/app/bin/ctl.sh check",
+             "action_cmd": "/opt/app/bin/ctl.sh restart"
          },
          "monitor": {
                "enable": true,
-               "cmd": "appctl MQ_monitor",
+               "cmd": "/opt/app/bin/ctl.sh appMonitor",
                "items": {
                 "fd_used": {
                    "unit": "count"
@@ -105,7 +105,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-dtmq8t0t"
+            "image": "img-9j8lbkn6"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -120,27 +120,27 @@
         "services": {
           "init": {
              "order": 2,
-             "cmd": "appctl init"
+             "cmd": "/opt/app/bin/ctl.sh init"
          },
             "start": {
               "order": 2,
-                "cmd":"appctl start"
+                "cmd":"/opt/app/bin/ctl.sh start"
             },
             "stop": {
               "order": 1,
-                "cmd": "appctl stop"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "restart": {
                "order": 2,
-                "cmd": "appctl restart"
+                "cmd": "/opt/app/bin/ctl.sh restart"
             },
             "destroy": {
                 "order": 1,
-                "cmd": "appctl stop"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "scale_in": {
                 "nodes_to_execute_on": 1,
-                "cmd": "appctl scale_in",
+                "cmd": "/opt/app/bin/ctl.sh scale_in",
                 "timeout": 86400
             }
         },
@@ -153,12 +153,12 @@
              "action_timeout_sec": 30,
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
-             "check_cmd": "appctl check",
-             "action_cmd": "appctl restart"
+             "check_cmd": "/opt/app/bin/ctl.sh check",
+             "action_cmd": "/opt/app/bin/ctl.sh restart"
          },
          "monitor": {
                "enable": true,
-               "cmd": "appctl MQ_monitor",
+               "cmd": "/opt/app/bin/ctl.sh appMonitor",
                "items": {
                 "fd_used": {
                    "unit": "count"
@@ -191,7 +191,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-dtmq8t0t"
+            "image": "img-9j8lbkn6"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -201,13 +201,13 @@
         "user_access": true,
         "services": {
           "init": {
-             "cmd": "appctl init"
+             "cmd": "/opt/app/bin/ctl.sh init"
          },
             "start": {
-                "cmd":"appctl start"
+                "cmd":"/opt/app/bin/ctl.sh start"
             },
             "stop": {
-                "cmd": "appctl stop"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             }
         },
         "advanced_actions": ["scale_horizontal"]
@@ -216,7 +216,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-dtmq8t0t"
+            "image": "img-9j8lbkn6"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -224,13 +224,13 @@
         "memory": {{cluster.haproxy.memory}},
         "services": {
               "start": {
-                "cmd":"appctl start;service keepalived start"
+                "cmd":"/opt/app/bin/ctl.sh start;service keepalived start"
               },
               "stop": {
-                  "cmd": "appctl stop;service keepalived stop"
+                  "cmd": "/opt/app/bin/ctl.sh stop;service keepalived stop"
               },
               "restart": {
-                "cmd": "appctl restart;service keepalived restart"
+                "cmd": "/opt/app/bin/ctl.sh restart;service keepalived restart"
               }
         },
         "advanced_actions": ["scale_horizontal"],
@@ -241,8 +241,8 @@
             "action_timeout_sec": 30,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl restart"
+            "check_cmd": "/opt/app/bin/ctl.sh check",
+            "action_cmd": "/opt/app/bin/ctl.sh restart"
         }
     }],
     "env": {

@@ -32,7 +32,7 @@ addNode2Cluster() {
   addUserMonitor2Node
 #  local nodes=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.$MY_ROLE[]")
   systemctl restart rabbitmq-server #make sure mnesia is running
-  if [[ "$?" -ne 0  ]]; then
+  if [[ "$?" -ne 0 ]]; then
     systemctl stop rabbitmq-server ;
     rm -rf /data/rabbitmq/mnesia/* ;
     systemctl start rabbitmq-server
@@ -50,15 +50,20 @@ addNode2Cluster() {
   echo "addNode2Cluster end" >> $file_log
 }
 
-start_rabbitmq () {
-  echo "start_rabbitmq start" >> $file_log
+startRabbitmq() {
+  echo "startRabbitmq start" >> $file_log
   _start
   $rCtl start
   scale_out
-  echo "start_rabbitmq end" >> $file_log
+  echo "startRabbitmq end" >> $file_log
 }
 
-status_rabbitmq() {
+restartRabbitmq() {
+  stop
+  start
+}
+
+statusRabbitmq() {
   if [ "$1" != "quiet" ] ; then
     rabbitmqctl status 2>&1
   else
@@ -66,41 +71,37 @@ status_rabbitmq() {
   fi
 }
 
-setCookie() {
-  echo "setCookie start" >> $file_log
+setConfFile() {
+  echo "setConfFile start" >> $file_log
   mkdir -p /etc/keepalived
   mkdir -p /data/rabbitmq/{log,mnesia,config,schema}
   chown -R rabbitmq:rabbitmq /data/rabbitmq
-  cookie=$(echo $CLUSTER_ID | awk -F - '{print $2}')
-  chmod 750 /var/lib/rabbitmq/.erlang.cookie
-  echo $cookie >/var/lib/rabbitmq/.erlang.cookie
-  chmod 400 /var/lib/rabbitmq/.erlang.cookie
-  echo "setCookie end" >> $file_log
+  echo "setConfFile end" >> $file_log
 }
 
-init_rabbitmq() {
-  echo "init_rabbitmq start" >> $file_log
+initRabbitmq() {
+  echo "initRabbitmq start" >> $file_log
   _init
   systemctl stop rabbitmq-server
-  setCookie
+  setConfFile
 #  changeDefaultConfig
   sleep ${SID}
   addNode2Cluster
   if [ "$MY_ROLE" = "ram" ]; then
-    init_ram
+    initRam
   fi
-  echo "init_rabbitmq end" >> $file_log
+  echo "initRabbitmq end" >> $file_log
 }
 
 
-stop_rabbitmq () {
+stopRabbitmq () {
   PIDS=`ps ax | grep -i 'beam' | grep -v grep| awk '{print $1}'`
   if [ -z "$PIDS" ];
   then
     echo "RabbitMQ server is not running" 1>&2
     exit 0
   fi
-  status_rabbitmq quiet
+  statusRabbitmq quiet
   if [ $? -eq 0 ]; then
     rabbitmqctl stop
   else
@@ -109,11 +110,12 @@ stop_rabbitmq () {
   systemctl stop rabbitmq-server
 }
 
-init_ram() {
-  echo "init_ram start" >> $file_log
+initRam() {
+  echo "initRam start" >> $file_log
   rabbitmqctl stop_app
-  ramNodeInfo=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.ram[]")
+  ramNodeInfo=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.disc[]")
   if [[ "$ramNodeInfo" =~ "$MY_ID" ]]; then
+    # role=ram, but addnode2cluster failed to join cluster with --ram
     t=$(rabbitmqctl change_cluster_node_type ram)
   fi
   if [ $t -eq 0 ]; then
@@ -123,7 +125,7 @@ init_ram() {
     rm -rf /data/rabbitmq/mnesia*
   fi
   $rCtl restart
-  echo "init_ram end" >> $file_log
+  echo "initRam end" >> $file_log
 }
 
 scale_in() {
@@ -179,7 +181,7 @@ appMonitor() {
 
 }
 
-check_rabbitmq() {
+checkRabbitmq() {
   rabbitmqctl -t 3 node_health_check >/dev/null  2>&1
   if [ $? -eq 0 ]; then
     exit 0
@@ -194,57 +196,57 @@ check_rabbitmq() {
 }
 
 case "$MY_ROLE" in
-  disc)    role=rabbitmq  ;;
-  ram)     role=rabbitmq  ;;
-  haproxy) role=extra     ;;
-  client)  role=extra     ;;
+  disc)    role=Rabbitmq  ;;
+  ram)     role=Rabbitmq  ;;
+  haproxy) role=Extra     ;;
+  client)  role=Extra     ;;
   *)       echo "error role"
 esac
 
-init_extra() {
+initExtra() {
   echo "init_extra start" >> $file_log
-  setCookie
+  setConfFile
   _init
   if [ "$MY_ROLE" = "client" ]; then echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd; fi
     echo "init_extra end" >> $file_log
 }
 
-start_extra() {
+startExtra() {
   _start
 }
 
-stop_extra() {
+stopExtra() {
   _stop
 }
 
-restart_extra() {
+restartExtra() {
   _restart
 }
 
-check_extra() {
+checkExtra() {
   _check
 }
 
 init() {
   systemctl daemon-reload
-  init_${role}
+  init${role}
   echo "init end" >> $file_log
 }
 
 start() {
-  start_${role}
+  start${role}
 }
 
 stop() {
-  $rCtl stop
+  stop${role}
 }
 
 restart() {
-  $rCtl  restart
+  restart${role}
 }
 
 check() {
-  check_${role}
+  check${role}
 }
 
 update() {
