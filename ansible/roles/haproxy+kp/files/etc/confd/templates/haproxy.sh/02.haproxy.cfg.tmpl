@@ -2,8 +2,6 @@
 
 set -eo pipefail 
 
-sed -i "s/\/etc\/haproxy\/haproxy.cfg/\/opt\/app\/conf\/haproxy-KP\/haproxy.cfg/" /lib/systemd/system/haproxy.service
-
 cat >> /opt/app/conf/haproxy-KP/haproxy.cfg << HAPROXY_CONF_EOF
 #logging options
 global

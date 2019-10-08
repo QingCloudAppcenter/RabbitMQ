@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 rCtl=/etc/init.d/rabbitmq-server
+appctlExcuteLog=/data/appctl/logs/appctlExcuteLog.log
 
 changeDefaultConfig() {
   defaultConfig=/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.18/sbin/rabbitmq-defaults
@@ -12,42 +13,54 @@ changeDefaultConfig() {
 }
 
 addUserMonitor2Node() {
+  echo "addUserMonitor2Node start" >> $appctlExcuteLog
   userInfo=$(rabbitmqctl list_users --formatter=json | jq ".[].user")
   if [[ "$userInfo" =~ "monitor" ]]; then
-    echo "User monitor already exist." 
+    echo "User monitor already exist." >> $appctlExcuteLog
   else
-    rabbitmqctl node_health_check >/dev/null 2>&1 && {
-      rabbitmqctl add_user monitor monitor4rabbitmq
-      rabbitmqctl set_user_tags monitor monitoring
-    }
+    rabbitmqctl add_user monitor monitor4rabbitmq
+    rabbitmqctl set_user_tags monitor monitoring
   fi
+  echo "addUserMonitor2Node end" >> $appctlExcuteLog
 }
 
 addNode2Cluster() {
+  echo "addNode2Cluster start" >> $appctlExcuteLog
   systemctl restart rabbitmq-server #make sure mq has been started
   addUserMonitor2Node
 #  local nodes=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.$MY_ROLE[]")
-  systemctl restart rabbitmq-server #make sure mnesia is running
-  if [[ "$?" -ne 0 ]]; then
-    systemctl stop rabbitmq-server ;
-    rm -rf /data/rabbitmq/mnesia/* ;
-    systemctl start rabbitmq-server
+#  local nodes=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.$MY_ROLE[]")
+#  systemctl restart rabbitmq-server #make sure mnesia is running
+#  if [[ "$?" -ne 0  ]]; then
+#    systemctl stop rabbitmq-server ;
+#    rm -rf /data/rabbitmq/mnesia/* ;
+#    systemctl start rabbitmq-server
+#  fi
+  clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
+  allNodes=$(echo $clusterInfo | jq -j '[.nodes]')
+  if [[ "$allNodes" =~ "$HOSTNAME" ]]; then
+    echo `date` "$HOSTNAME has already joined cluster." >> $appctlExcuteLog
+  else
+    rabbitmqctl stop_app > /dev/null 2>&1
+    n1=$(echo $DISC_NODE | awk -F, '{print $1}')
+    if [[ "$n1" =~ "$HOSTNAME" ]]; then 
+      rabbitmqctl start_app > /dev/null 2>&1
+    else 
+      #n2=$(echo $DISC_NODE | awk -F, '{print $2}'); 
+      rabbitmqctl --quiet join_cluster --${MY_ROLE} "rabbit@$n1"
+      rabbitmqctl start_app > /dev/null 2>&1
+    fi
   fi
-  rabbitmqctl stop_app > /dev/null 2>&1
-  n1=$(echo $DISC_NODE | awk -F, '{print $1}')
-  if [[ "$n1" =~ "$HOSTNAME" ]]; then 
-    rabbitmqctl start_app > /dev/null 2>&1
-  else 
-    #n2=$(echo $DISC_NODE | awk -F, '{print $2}'); 
-    rabbitmqctl --quiet join_cluster --${MY_ROLE} "rabbit@$n1"
-    rabbitmqctl start_app > /dev/null 2>&1
-  fi
+  echo "finished add node to cluster." >> $appctlExcuteLog
+  echo "addNode2Cluster end" >> $appctlExcuteLog
 }
 
 startRabbitmq() {
+  echo "startRabbitmq start" >> $appctlExcuteLog
   _start
   $rCtl start
   scale_out
+  echo "startRabbitmq end" >> $appctlExcuteLog
 }
 
 restartRabbitmq() {
@@ -64,14 +77,17 @@ statusRabbitmq() {
 }
 
 setConfFile() {
-  echo "setConfFile start" >> $file_log
+  echo "setConfFile start" >> $appctlExcuteLog
+  sed -i "s/\/etc\/haproxy\/haproxy.cfg/\/opt\/app\/conf\/haproxy-KP\/haproxy.cfg/" /lib/systemd/system/haproxy.service
   mkdir -p /etc/keepalived
   mkdir -p /data/rabbitmq/{log,mnesia,config,schema}
   chown -R rabbitmq:rabbitmq /data/rabbitmq
-  echo "setConfFile end" >> $file_log
+  systemctl daemon-reload
+  echo "setConfFile end" >> $appctlExcuteLog
 }
 
 initRabbitmq() {
+  echo "initRabbitmq start" >> $appctlExcuteLog
   _init
   systemctl stop rabbitmq-server
   setConfFile
@@ -81,6 +97,7 @@ initRabbitmq() {
   if [ "$MY_ROLE" = "ram" ]; then
     initRam
   fi
+  echo "initRabbitmq end" >> $appctlExcuteLog
 }
 
 
@@ -101,6 +118,7 @@ stopRabbitmq () {
 }
 
 initRam() {
+  echo "initRam start" >> $appctlExcuteLog
   rabbitmqctl stop_app
   ramNodeInfo=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.disc[]")
   if [[ "$ramNodeInfo" =~ "$MY_ID" ]]; then
@@ -114,6 +132,7 @@ initRam() {
     rm -rf /data/rabbitmq/mnesia*
   fi
   $rCtl restart
+  echo "initRam end" >> $appctlExcuteLog
 }
 
 scale_in() {
@@ -131,6 +150,7 @@ scale_in() {
 }
 
 scale_out() {
+  echo "scale_out start" >> $appctlExcuteLog
   rabbitmqctl -t 3 node_health_check >/dev/null  2>&1
   if [ $? -eq 0 ]; then
     exit 0
@@ -143,6 +163,7 @@ scale_out() {
       systemctl restart rabbitmq-server
     fi
   fi
+  echo "scale_out end" >> $appctlExcuteLog
 }
 
 appMonitor() {
@@ -190,9 +211,11 @@ case "$MY_ROLE" in
 esac
 
 initExtra() {
+  echo "init_extra start" >> $appctlExcuteLog
   setConfFile
   _init
   if [ "$MY_ROLE" = "client" ]; then echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd; fi
+    echo "init_extra end" >> $appctlExcuteLog
 }
 
 startExtra() {
@@ -212,8 +235,8 @@ checkExtra() {
 }
 
 init() {
-  systemctl daemon-reload
   init${role}
+  echo "init end" >> $appctlExcuteLog
 }
 
 start() {

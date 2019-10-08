@@ -48,8 +48,8 @@
   shell:
     cmd: |
       tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
-      deb https://dl.bintray.com/rabbitmq-erlang/debian bionic erlang-22.x
-      deb https://dl.bintray.com/rabbitmq/debian bionic main
+      deb https://dl.bintray.com/rabbitmq-erlang/debian xenial erlang-22.x
+      deb https://dl.bintray.com/rabbitmq/debian xenial main
       EOF
 
 - name: install apt https
@@ -93,7 +93,7 @@
     src: files/opt/app/
     dest: /opt/app/
     owner: root
-    group: svc
+    group: root
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
@@ -102,7 +102,7 @@
     dest: /var/lib/rabbitmq/.erlang.cookie
     content: ""
     owner: rabbitmq
-    group: svc
+    group: rabbitmq
     mode: '0600'
 
 - name: install confd files
