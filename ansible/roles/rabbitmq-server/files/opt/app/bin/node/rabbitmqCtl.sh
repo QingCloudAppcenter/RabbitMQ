@@ -201,6 +201,7 @@ initExtra() {
 
 startExtra() {
   _start
+  appctl restart
 }
 
 stopExtra() {

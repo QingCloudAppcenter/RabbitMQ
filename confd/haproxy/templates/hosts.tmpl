@@ -1,5 +1,0 @@
-{{getv "/host/ip"}} localhost
- {{getv "/host/ip"}} {{getv "/host/instance_id"}}
-#rabbitmq hosts
-{{range $dir := lsdir "/hosts/rabbitmq/"}}{{$ip := printf "/hosts/rabbitmq/%s/ip" $dir}}
- {{getv $ip}} {{$dir}}{{end}}

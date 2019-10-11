@@ -1,7 +1,0 @@
-[template]
-src = "rabbitmq.config.tmpl"
-dest = "/etc/rabbitmq/rabbitmq.config"
-keys = [
-	"/",
-]
-reload_cmd = "/opt/bin/restart.sh"

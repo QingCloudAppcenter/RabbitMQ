@@ -1,7 +1,0 @@
-[template]
-src = "cluster_info.tmpl"
-dest = "/etc/cluster_info"
-keys = [
-	"/",
-]
-reload_cmd = "/opt/bin/changeHost.sh"
