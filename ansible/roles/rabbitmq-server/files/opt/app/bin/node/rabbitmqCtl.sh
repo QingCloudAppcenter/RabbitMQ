@@ -195,8 +195,11 @@ initExtra() {
   echo `date` "init_extra start" >> $appctlExcuteLog
   setConfFile
   _init
-  if [ "$MY_ROLE" = "client" ]; then echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd; fi
-    echo `date` "init_extra end" >> $appctlExcuteLog
+  if [ "$MY_ROLE" = "client" ]; then
+    systemctl unmask ssh; systemctl restart ssh;
+    echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd;
+  fi
+  echo `date` "init_extra end" >> $appctlExcuteLog
 }
 
 startExtra() {
