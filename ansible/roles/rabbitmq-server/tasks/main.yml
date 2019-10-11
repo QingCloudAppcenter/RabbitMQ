@@ -1,7 +1,7 @@
 ---
 - name: set variables
   set_fact:
-    rabbitmq_version: 3.7.18
+    rabbitmq_version: 3.8.0
     userPasswd: admin #用于远程登陆
 
 - name: copy binaries
@@ -57,29 +57,33 @@
     name: ['apt-transport-https', 'jq']
     update_cache: yes
 
-- name: install
-  apt:
-    name: rabbitmq-server={{ rabbitmq_version }}-2
-    update_cache: yes
-    state: present
+#- name: install
+#  apt:
+#    name: rabbitmq-server={{ rabbitmq_version }}-1
+#    update_cache: yes
+#    state: present
+
+- name: download deb
+  get_url:
+    url="https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb"
+    dest="/tmp/rabbitmq-server_3.8.0-1_all.deb"
+
+- name: apt for rabbitmq
+  apt: deb="/tmp/rabbitmq-server_3.8.0-1_all.deb"
+  sudo: true
 
 - name: download and unzip rabbitmq_delayed_message_exchange plugns
   get_url:
-    url: "https://dl.bintray.com/rabbitmq/community-plugins/3.7.x/rabbitmq_delayed_message_exchange/rabbitmq_delayed_message_exchange-20171201-3.7.x.zip"
-    dest: "/tmp/rabbitmq_delayed_message_exchange-20171201-3.7.x.zip"
+    url="https://dl.bintray.com/rabbitmq/community-plugins/3.8.x/rabbitmq_delayed_message_exchange/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip"
+    dest="/tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip"
 
 - name: enabled all plugns
   shell: |
-    unzip /tmp/rabbitmq_delayed_message_exchange-20171201-3.7.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
+    unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
     rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_stomp rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_management rabbitmq_delayed_message_exchange rabbitmq_shovel rabbitmq_shovel_management
 
-- name: add users for monitor or login
+- name: restart rabbitmq
   shell: |
-    rabbitmqctl add_user admin {{ userPasswd }}
-    rabbitmqctl set_user_tags admin administrator
-    rabbitmqctl  set_permissions -p "/" admin ".*" ".*" ".*"
-    rabbitmqctl add_user monitor  monitor4rabbitmq
-    rabbitmqctl set_user_tags monitor monitoring
     systemctl restart rabbitmq-server
 
 

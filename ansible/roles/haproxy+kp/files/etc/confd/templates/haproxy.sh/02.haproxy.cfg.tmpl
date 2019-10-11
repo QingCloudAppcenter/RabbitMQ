@@ -2,7 +2,7 @@
 
 set -eo pipefail 
 
-cat >> /opt/app/conf/haproxy-KP/haproxy.cfg << HAPROXY_CONF_EOF
+cat > /opt/app/conf/haproxy-KP/haproxy.cfg << HAPROXY_CONF_EOF
 #logging options
 global
   log 127.0.0.1 local0 info

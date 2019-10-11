@@ -2,7 +2,7 @@
 
 set -eo pipefail 
 
-cat >> /etc/keepalived/keepalived.conf << KEEPALIVED_EOF
+cat > /etc/keepalived/keepalived.conf << KEEPALIVED_EOF
 {{ $replicaIPs := split (getv "/cluster/endpoints/reserved_ips/vip/value") "." }}
 global_defs {
 }

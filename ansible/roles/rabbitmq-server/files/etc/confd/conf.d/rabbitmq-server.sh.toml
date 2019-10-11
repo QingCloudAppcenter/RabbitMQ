@@ -5,4 +5,4 @@ mode = "0777"
 keys = [
   "/",
 ]
-reload_cmd = "/opt/app/bin/tmpl/rabbitmq-server.sh; appctl update"
+reload_cmd = "/opt/app/bin/tmpl/rabbitmq-server.sh; appctl restart"

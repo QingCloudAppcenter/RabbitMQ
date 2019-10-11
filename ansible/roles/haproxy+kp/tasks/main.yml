@@ -30,13 +30,14 @@
 
 - name: Prepare directories for keepalived
   file:
-    path: /opt/{{ item }}
+    path: /{{ item }}
     owner: root
     group: root
     state: directory
   with_items:
-    - keepalived
-    - keepalived/keepalived-2.0.18
+    - opt/keepalived
+    - opt/keepalived/keepalived-2.0.18
+    - etc/keepalived
 
 - name: Download reusable keepalived binaries locally
   get_url:
