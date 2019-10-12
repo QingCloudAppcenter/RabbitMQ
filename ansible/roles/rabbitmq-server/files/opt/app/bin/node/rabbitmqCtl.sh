@@ -226,6 +226,11 @@ init() {
 }
 
 start() {
+  if [ -f "/date/appctl/logs/appExcuteLog.log" ]; then
+    echo `date` "app inited" >> $appctlExcuteLog
+  else
+    appctl init
+  fi
   systemctl daemon-reload
   start${role}
 }

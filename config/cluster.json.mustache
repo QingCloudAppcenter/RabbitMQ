@@ -4,6 +4,7 @@
     "vxnet": {{cluster.vxnet}},
     "multi_zone_policy": "round_robin",
     "upgrade_policy": [
+            "appv-okcfn685",
             "appv-irmdwt3o",
             "appv-jumu1r67",
             "appv-kxe5ezdx",
@@ -20,7 +21,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-80d5q1xy"
+            "image": "img-cavdillm"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -105,7 +106,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-80d5q1xy"
+            "image": "img-cavdillm"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -191,7 +192,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-80d5q1xy"
+            "image": "img-cavdillm"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -216,7 +217,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-80d5q1xy"
+            "image": "img-cavdillm"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
