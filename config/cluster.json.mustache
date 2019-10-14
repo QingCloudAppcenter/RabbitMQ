@@ -15,13 +15,13 @@
             "appv-et0mu05f",
             "appv-6wkhvsts"
     ],
-    "upgrading_policy": "sequential",
+    "upgrading_policy": "parallel",
     "nodes": [{
       "role":"disc",
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-cavdillm"
+            "image": "img-aua98851"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -106,7 +106,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-cavdillm"
+            "image": "img-aua98851"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -192,7 +192,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-cavdillm"
+            "image": "img-aua98851"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -217,7 +217,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-cavdillm"
+            "image": "img-aua98851"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},

@@ -59,8 +59,8 @@ setConfFile() {
   echo `date` "setConfFile start" >> $appctlExcuteLog
   sed -i "s/\/etc\/haproxy\/haproxy.cfg/\/opt\/app\/conf\/haproxy-KP\/haproxy.cfg/" /lib/systemd/system/haproxy.service
   mkdir -p /etc/keepalived
-  mkdir -p /data/rabbitmq/{log,mnesia,config,schema}
-  chown -R rabbitmq:rabbitmq /data/rabbitmq
+  mkdir -p /data/{log,mnesia,config,schema}
+  chown -R rabbitmq:rabbitmq /data/{log,mnesia,config,schema}
   systemctl daemon-reload
   echo `date` "setConfFile end" >> $appctlExcuteLog
 }
@@ -101,7 +101,7 @@ stopRabbitmq () {
 
 initRam() {
   echo `date` "initRam start" >> $appctlExcuteLog
-  ramNodeInfo=$(rabbitmqctl cluster_status --formatter=json | jq ".disk_nodes[]")
+  ramNodeInfo=$(rabbitmqctl cluster_status --formatter=json | jq ".nodes.disc[]")
   rabbitmqctl stop_app > /dev/null 2>&1
   echo `date` "initRam cluster-disc-node ::: $ramNodeInfo" >> $appctlExcuteLog
   if [[ "$ramNodeInfo" =~ "$MY_ID" ]]; then
@@ -120,7 +120,7 @@ scale_in() {
   clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
   #allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]]')
   #runningNodes=$(echo $clusterInfo | jq '.running_nodes')
-  deleteNodes=$(echo $clusterInfo | jq -c '[(.disk_nodes[], .ram_nodes[])]-[(.running_nodes[])]')
+  deleteNodes=$(echo $clusterInfo | jq -c '[(.nodes.disc[], .nodes.ram[])]-[(.running_nodes[])]')
   dn=$(echo $deleteNodes | jq '.[]')
   for i in $dn
   do
@@ -197,7 +197,7 @@ initExtra() {
   _init
   if [ "$MY_ROLE" = "client" ]; then
     systemctl unmask ssh; systemctl restart ssh;
-    echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd;
+    echo 'root:rabbitmq' | chpasswd; echo 'ubuntu:rabbitmq' | chpasswd; 
   fi
   echo `date` "init_extra end" >> $appctlExcuteLog
 }
@@ -217,6 +217,12 @@ restartExtra() {
 
 checkExtra() {
   _check
+#  local svc; for svc in $(getServices); do 
+#    systemctl is-active  -q  ${svc%%/*}
+#    if [[ "$?" > "0" ]]; then
+#      exit 1;
+#    fi
+#  done
 }
 
 init() {
@@ -226,7 +232,11 @@ init() {
 }
 
 start() {
-  if [ -f "/date/appctl/logs/appExcuteLog.log" ]; then
+  if [ -f "/data/mnesia/rabbit@$HOSTNAME/nodes_running_at_shutdown" ]; then
+    #that means clutser was upgrading
+    cat /data/mnesia/rabbit@$HOSTNAME/nodes_running_at_shutdown | awk -F, -v  hn="$HOSTNAME" '{for(i=1;i<=NF;i++) if ($i ~ hn) sleep 3*(i-1)}';
+  fi
+  if [ -f "/data/appctl/logs/appExcuteLog.log" ]; then 
     echo `date` "app inited" >> $appctlExcuteLog
   else
     appctl init
