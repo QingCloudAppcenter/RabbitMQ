@@ -28,8 +28,16 @@ addUserMonitor2Node() {
 
 addNode2Cluster() {
   echo `date` "addNode2Cluster start" >> $appctlExcuteLog
-  systemctl restart rabbitmq-server #make sure mq has been started
-  sleep ${SID}
+  local flag=1
+  while [[ "$flag" = "1" ]]; do
+    systemctl restart rabbitmq-server #make sure mq has been started
+    if [[ "$?" = "0" ]]; then
+      flag=0
+    else
+      let t=3 ** [${SID}-1]
+      sleep $t
+    fi
+  done
   addUserMonitor2Node
   echo `date` "addNode2Cluster end" >> $appctlExcuteLog
 }
@@ -232,10 +240,6 @@ init() {
 }
 
 start() {
-  if [ -f "/data/mnesia/rabbit@$HOSTNAME/nodes_running_at_shutdown" ]; then
-    #that means clutser was upgrading
-    cat /data/mnesia/rabbit@$HOSTNAME/nodes_running_at_shutdown | awk -F, -v  hn="$HOSTNAME" '{for(i=1;i<=NF;i++) if ($i ~ hn) sleep 3*(i-1)}';
-  fi
   if [ -f "/data/appctl/logs/appExcuteLog.log" ]; then 
     echo `date` "app inited" >> $appctlExcuteLog
   else
