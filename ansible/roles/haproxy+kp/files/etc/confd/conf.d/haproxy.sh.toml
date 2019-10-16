@@ -1,8 +1,0 @@
-[template]
-src = "haproxy.sh.tmpl"
-dest = "/opt/app/bin/tmpl/haproxy.sh"
-mode = "0777"
-keys = [
-  "/",
-]
-reload_cmd = "/opt/app/bin/tmpl/haproxy.sh"

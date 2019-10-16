@@ -9,11 +9,7 @@
     loop:
     - appctl
     - rabbitmq-server
-<<<<<<< HEAD
     - haproxy
     - keepalived
-=======
-    - haproxy+kp
->>>>>>> 6899b533995a2b8419435c6fb1b1a323f2563d89
     loop_control:
       loop_var: service_name
