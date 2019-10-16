@@ -1,7 +1,11 @@
 ---
 - name: set variables
   set_fact:
+<<<<<<< HEAD
     rabbitmq_version: 3.7.19
+=======
+    rabbitmq_version: 3.8.0
+>>>>>>> 6899b533995a2b8419435c6fb1b1a323f2563d89
     userPasswd: admin #用于远程登陆
 
 - name: copy binaries
@@ -62,6 +66,7 @@
 #    name: rabbitmq-server={{ rabbitmq_version }}-1
 #    update_cache: yes
 #    state: present
+<<<<<<< HEAD
 
 - name: install apt https
   apt:
@@ -110,6 +115,32 @@
 - name: restart rabbitmq
   shell: |
     systemctl restart rabbitmq-server
+=======
+
+- name: download deb
+  get_url:
+    url="https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb"
+    dest="/tmp/rabbitmq-server_3.8.0-1_all.deb"
+
+- name: apt for rabbitmq
+  apt: deb="/tmp/rabbitmq-server_3.8.0-1_all.deb"
+  sudo: true
+
+- name: download and unzip rabbitmq_delayed_message_exchange plugns
+  get_url:
+    url="https://dl.bintray.com/rabbitmq/community-plugins/3.8.x/rabbitmq_delayed_message_exchange/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip"
+    dest="/tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip"
+
+- name: enabled all plugns
+  shell: |
+    unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
+    rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_stomp rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_management rabbitmq_delayed_message_exchange rabbitmq_shovel rabbitmq_shovel_management
+
+- name: restart rabbitmq
+  shell: |
+    systemctl restart rabbitmq-server
+
+>>>>>>> 6899b533995a2b8419435c6fb1b1a323f2563d89
 
 - name: disable auto startup on boot
   systemd:
