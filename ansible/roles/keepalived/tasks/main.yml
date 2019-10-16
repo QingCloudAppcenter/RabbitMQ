@@ -1,0 +1,63 @@
+---
+- name: copy binaries
+  copy:
+    src: files/opt/
+    dest: /opt
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
+- name: Prepare dev env for keepalived
+  apt:
+    update_cache: yes
+    name: ['tree', 'curl', 'gcc', 'libssl-dev', 'libnl-3-dev', 'libnl-genl-3-dev', 'libsnmp-dev']
+    state: present
+
+- name: Prepare directories for keepalived
+  file:
+    path: /{{ item }}
+    owner: root
+    group: root
+    state: directory
+  with_items:
+    - opt/keepalived
+    - opt/keepalived/keepalived-2.0.18
+    - etc/keepalived
+
+- name: Download reusable keepalived binaries locally
+  get_url:
+    url: "https://www.keepalived.org/software/keepalived-2.0.18.tar.gz"
+    dest: "/opt/keepalived/keepalived-2.0.18.tar.gz"
+#  delegate_to: localhost
+
+- name: Extract binary
+  unarchive:
+    src: "/opt/keepalived/keepalived-2.0.18.tar.gz"
+    dest: "/opt/keepalived/keepalived-2.0.18"
+    creates: "/opt/keepalived/keepalived-2.0.18/configure"
+    extra_opts: [ --strip-components=1 ]
+    remote_src: yes
+
+- name: install keepalived
+  shell:
+    cmd: |
+      cd /opt/keepalived/keepalived-2.0.18
+      ./configure
+      make
+      sudo make install
+
+- name: create keepalived current link
+  file:
+    src: /opt/keepalived/keepalived-2.0.18
+    dest: /opt/keepalived/current
+    state: link
+
+- name: create keepalived service link
+  file:
+    src: /opt/keepalived/current/keepalived/keepalived.service
+    dest: /etc/systemd/system/keepalived.service
+    state: link
+
+- name: install confd files
+  include_tasks: ../../utils/tasks/process-confd-files.yml

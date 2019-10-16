@@ -1,11 +1,21 @@
-cat > /opt/app/conf/rabbitmq-server/rabbitmq.conf << MQ_CONF_ENV_EOF
+{{- $myRole := getv "/host/role" }}
+
+cat > /opt/app/conf/rabbitmq/rabbitmq.conf << RABBITMQ_CONF_EOF
 background_gc_enabled = {{ getv "/env/background_gc_enabled" "false" }}
 background_gc_target_interval = {{ getv "/env/background_gc_target_interval" "60000" }}
 channel_max = {{ getv "/env/channel_max" "10" }}
+
+
 cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
-{{- range $i, $node := getvs "/hosts/disc/*/instance_id" }}
+{{- $discNodes := join ( getvs "/hosts/disc/*/instance_id") "," }}
+{{- $ramNodes := join ( getvs "/hosts/ram/*/instance_id") "," }}
+{{- $allNodes := split ( printf "%s%s%s" $discNodes ( and $ramNodes ",") $ramNodes) ","}}
+{{- range $i,$node := $allNodes }}
 cluster_formation.classic_config.nodes.{{ add $i 1 }} = rabbit@{{ $node }}
 {{- end }}
+cluster_formation.node_type = {{ getv "/host/role" }}
+
+
 cluster_keepalive_interval = {{ getv "/env/cluster_keepalive_interval" "10000" }}
 cluster_partition_handling = {{ getv "/env/cluster_partition_handling" "ignore" }}
 collect_statistics = {{ getv "/env/collect_statistics" "none" }}
@@ -31,5 +41,8 @@ tcp_listen_options.recbuf = 196608
 vm_memory_high_watermark.relative = {{ getv "/env/vm_memory_high_watermark" "0.4" }}
 # vm_memory_high_watermark.absolute = {{ getv "/env/vm_memory_high_watermark.absolute" "2G" }}
 vm_memory_high_watermark_paging_ratio = {{ getv "/env/vm_memory_high_watermark_paging_ratio" "0.5" }}
-MQ_CONF_ENV_EOF
+
+log.dir = /data/rabbitmq/log
+
+RABBITMQ_CONF_EOF
 

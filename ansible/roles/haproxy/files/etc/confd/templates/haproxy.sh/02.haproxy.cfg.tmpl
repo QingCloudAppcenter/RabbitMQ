@@ -1,0 +1,108 @@
+
+
+cat > /opt/app/conf/haproxy/haproxy.cfg << HAPROXY_CONF_EOF
+#logging options
+global
+  log 127.0.0.1 local0 info
+  maxconn 65535
+  chroot /usr/local/sbin
+  uid 99
+  gid 99
+  daemon
+  quiet
+  nbproc 20
+  pidfile /var/run/haproxy.pid
+
+defaults
+  log global
+  #Use the 4-tier proxy pattern "mode http" means 7-tier proxy pattern
+  mode tcp
+  #if you set mode to tcp,then you nust change tcplog into httplog
+  option tcplog
+  option dontlognull
+  retries 3
+  option redispatch
+  maxconn 65535
+  contimeout 5s
+  clitimeout 120s
+  srvtimeout 120s
+
+#front-end IP for consumers and producters
+listen RabbitMQ-Cluster
+  bind :5672
+  #配置TCP模式
+  mode tcp
+  #balance rdp-cookie
+  #balance leastconn
+  #balance source
+  #balance roundrobin
+  #simple polling
+  balance {{getv "/env/haproxy_balance_policy"}}
+  timeout client  3h
+  timeout server  3h
+  #rabbitmq cluster node config
+  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
+  server rabbit_{{$dir}} {{getv $ip}}:5672 check inter 5000 rise 2 fall 2  {{end}}
+  {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
+  server rabbit_{{$dir}} {{getv $ip}}:5672 check inter 5000 rise 2 fall 2  {{end}}
+
+#front-end IP for stomp
+listen RabbitMQ-Cluster-stomp
+  bind :61613
+  #TCP mode
+  mode tcp
+  #balance rdp-cookie
+  #balance leastconn
+  #balance source
+  #balance roundrobin
+  #simple polling
+  balance {{getv "/env/haproxy_balance_policy"}}
+  timeout client  3h
+  timeout server  3h
+  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
+   server rabbit_{{$dir}} {{getv $ip}}:61613 check inter 5000 rise 2 fall 2  {{end}}
+  {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
+   server rabbit_{{$dir}} {{getv $ip}}:61613 check inter 5000 rise 2 fall 2  {{end}}
+
+#front-end IP for mqtt
+listen RabbitMQ-Cluster-mqtt
+  bind :1883
+  #TCP mode
+  mode tcp
+  #balance rdp-cookie
+  #balance leastconn
+  #balance source
+  #balance roundrobin
+  balance {{getv "/env/haproxy_balance_policy"}}
+  timeout client  3h
+  timeout server  3h
+  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
+   server rabbit_{{$dir}} {{getv $ip}}:1883 check inter 5000 rise 2 fall 2  {{end}}
+  {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
+   server rabbit_{{$dir}} {{getv $ip}}:1883 check inter 5000 rise 2 fall 2  {{end}}
+
+#rabbitmq-management
+# optional, for proxying management site
+frontend front_rabbitmq_management
+  bind :15672
+  default_backend back_rabbitmq_management
+
+backend back_rabbitmq_management
+  balance source
+  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
+   server rabbit_{{$dir}} {{getv $ip}}:15672 check {{end}}
+   {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
+   server rabbit_{{$dir}} {{getv $ip}}:15672 check {{end}}
+
+# haproxy web monitor infomation
+listen stats
+#bind :8100
+bind :{{getv "/env/haproxy_web_port"}}
+mode http
+stats enable
+stats hide-version
+stats refresh 10s
+stats uri /
+stats auth {{getv "/env/haproxy_username"}}:{{getv "/env/haproxy_password"}}
+
+HAPROXY_CONF_EOF

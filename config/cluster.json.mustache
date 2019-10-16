@@ -4,6 +4,7 @@
     "vxnet": {{cluster.vxnet}},
     "multi_zone_policy": "round_robin",
     "upgrade_policy": [
+            "appv-okcfn685",
             "appv-irmdwt3o",
             "appv-jumu1r67",
             "appv-kxe5ezdx",
@@ -14,14 +15,14 @@
             "appv-et0mu05f",
             "appv-6wkhvsts"
     ],
+    "upgrading_policy": "parallel",
     "nodes": [{
       "role":"disc",
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-wik6x9kr"
+            "image": "img-rvbbjmbt"
         },
-
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
         "cpu": {{cluster.disc.cpu}},
@@ -34,27 +35,27 @@
         "services": {
           "init": {
              "order": 1,
-             "cmd": "/opt/bin/init_disc.sh"
+             "cmd": "/opt/app/bin/ctl.sh init"
          },
             "start": {
               "order": 1,
-                "cmd":"/opt/bin/start_disc.sh"
+                "cmd":"/opt/app/bin/ctl.sh start"
             },
             "stop": {
               "order": 2,
-                "cmd": "/opt/bin/stop.sh"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "restart": {
               "order": 1,
-                "cmd": "/opt/bin/restart.sh"
+                "cmd": "/opt/app/bin/ctl.sh restart"
             },
             "destroy": {
               "order": 2,
-                "cmd": "/opt/bin/destroy.sh"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "scale_in": {
               "nodes_to_execute_on": 1,
-                "cmd": "/opt/bin/scale_in.sh",
+                "cmd": "/opt/app/bin/ctl.sh scale_in",
                 "timeout": 86400
             }
         },
@@ -67,12 +68,12 @@
              "action_timeout_sec": 60,
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
-             "check_cmd": "/opt/bin/health_check.sh",
-             "action_cmd": "/opt/bin/action.sh"
+             "check_cmd": "/opt/app/bin/ctl.sh check",
+             "action_cmd": "/opt/app/bin/ctl.sh restart"
          },
          "monitor": {
                "enable": true,
-               "cmd": "opt/bin/get-monitor.sh",
+               "cmd": "/opt/app/bin/ctl.sh measure",
                "items": {
                 "fd_used": {
                    "unit": "count"
@@ -105,7 +106,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-wik6x9kr"
+            "image": "img-rvbbjmbt"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -120,27 +121,27 @@
         "services": {
           "init": {
              "order": 2,
-             "cmd": "/opt/bin/init_ram.sh"
+             "cmd": "/opt/app/bin/ctl.sh init"
          },
             "start": {
               "order": 2,
-                "cmd":"/opt/bin/start_ram.sh"
+                "cmd":"/opt/app/bin/ctl.sh start"
             },
             "stop": {
               "order": 1,
-                "cmd": "/opt/bin/stop.sh"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "restart": {
                "order": 2,
-                "cmd": "/opt/bin/restart.sh"
+                "cmd": "/opt/app/bin/ctl.sh restart"
             },
             "destroy": {
                 "order": 1,
-                "cmd": "/opt/bin/destroy.sh"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             },
             "scale_in": {
                 "nodes_to_execute_on": 1,
-                "cmd": "/opt/bin/scale_in.sh",
+                "cmd": "/opt/app/bin/ctl.sh scale_in",
                 "timeout": 86400
             }
         },
@@ -153,12 +154,12 @@
              "action_timeout_sec": 30,
              "healthy_threshold": 2,
              "unhealthy_threshold": 2,
-             "check_cmd": "/opt/bin/health_check.sh",
-             "action_cmd": "/opt/bin/action.sh"
+             "check_cmd": "/opt/app/bin/ctl.sh check",
+             "action_cmd": "/opt/app/bin/ctl.sh restart"
          },
          "monitor": {
                "enable": true,
-               "cmd": "opt/bin/get-monitor.sh",
+               "cmd": "/opt/app/bin/ctl.sh measure",
                "items": {
                 "fd_used": {
                    "unit": "count"
@@ -191,7 +192,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-sy0pwaq5"
+            "image": "img-rvbbjmbt"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -201,13 +202,13 @@
         "user_access": true,
         "services": {
           "init": {
-             "cmd": "/opt/bin/init.sh"
+             "cmd": "/opt/app/bin/ctl.sh init"
          },
             "start": {
-                "cmd":"/opt/bin/start.sh"
+                "cmd":"/opt/app/bin/ctl.sh start"
             },
             "stop": {
-                "cmd": "/opt/bin/stop.sh"
+                "cmd": "/opt/app/bin/ctl.sh stop"
             }
         },
         "advanced_actions": ["scale_horizontal"]
@@ -216,7 +217,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-5e5t5iib"
+            "image": "img-rvbbjmbt"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -224,13 +225,13 @@
         "memory": {{cluster.haproxy.memory}},
         "services": {
               "start": {
-                "cmd":"service haproxy start;service keepalived start"
+                "cmd":"/opt/app/bin/ctl.sh start"
               },
               "stop": {
-                  "cmd": "service haproxy stop;service keepalived stop"
+                "cmd": "/opt/app/bin/ctl.sh stop"
               },
               "restart": {
-                "cmd": "service haproxy restart;service keepalived restart"
+                "cmd": "/opt/app/bin/ctl.sh restart"
               }
         },
         "advanced_actions": ["scale_horizontal"],
@@ -241,8 +242,8 @@
             "action_timeout_sec": 30,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "service haproxy status >/dev/null 2>&1 && service keepalived status >/dev/null 2>&1",
-            "action_cmd": "service haproxy restart;service keepalived restart"
+            "check_cmd": "/opt/app/bin/ctl.sh check",
+            "action_cmd": "/opt/app/bin/ctl.sh restart"
         }
     }],
     "env": {

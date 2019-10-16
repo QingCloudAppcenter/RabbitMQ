@@ -12,9 +12,15 @@
   loop_control:
     loop_var: path
 
-- name: create svc group
+- name: create root group
   group:
-    name: svc
+    name: root
+    state: present
+
+- name: install prepare
+  apt:
+    name: unzip
+    update_cache: yes
     state: present
 
 - name: copy app files
@@ -22,7 +28,7 @@
     src: files/opt/app/
     dest: /opt/app
     owner: root
-    group: svc
+    group: root
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 

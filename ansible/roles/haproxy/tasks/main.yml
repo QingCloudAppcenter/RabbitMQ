@@ -1,0 +1,25 @@
+---
+- name: copy binaries
+  copy:
+    src: files/opt/
+    dest: /opt
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
+- name: update apt for haproxy
+  shell: |
+    apt-get install software-properties-common -y
+    add-apt-repository ppa:vbernat/haproxy-2.0 -y
+    apt-get update -y
+    apt install haproxy=2.0.\* -y
+
+- name: install haproxy plugins
+  apt:
+    name: ['hatop','arping']
+    update_cache: yes
+    state: present
+
+- name: install confd files
+  include_tasks: ../../utils/tasks/process-confd-files.yml

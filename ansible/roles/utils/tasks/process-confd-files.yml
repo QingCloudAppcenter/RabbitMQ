@@ -2,7 +2,8 @@
 - name: compile
   shell: |
     compileTmpls() {
-      local srcFiles=${@:2} destFile=$1
+      local commonFiles="$(ls roles/utils/files/etc/confd/templates/*)"
+      local srcFiles="$commonFiles ${@:2}" destFile=$1
       for tmpl in $srcFiles; do
         (cat $tmpl; echo) >> $destFile
       done
@@ -20,6 +21,7 @@
   args:
     executable: /bin/bash
   delegate_to: localhost
+  run_once: True
 
 - name: install
   copy:

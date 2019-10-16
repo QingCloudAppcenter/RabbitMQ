@@ -1,70 +1,137 @@
 ---
 - name: set variables
   set_fact:
-    rabbitmq_version: 3.7.15
+    rabbitmq_version: 3.7.19
+    userPasswd: admin #用于远程登陆
+
+- name: copy binaries
+  copy:
+    src: files/opt/
+    dest: /opt
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
+- name: download deb
+  get_url:
+    url="https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb"
+    dest="/tmp/erlang-solutions_1.0_all.deb"
+
+- name: apt for erlang
+  apt: deb="/tmp/erlang-solutions_1.0_all.deb"
+  sudo: true
+
+- name: update apt for erlang
+  shell: echo 'deb https://dl.bintray.com/rabbitmq/debian  xenial  erlang-22.x' | sudo tee -a /etc/apt/sources.list.d/erlang-solutions.list
+
+- name: add apt-key
+  apt_key:
+    url: https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
+    state: present
+
+- name: install erlang
+  apt:
+    name: erlang
+    update_cache: yes
+    state: present
+
+- name: add apt_key for rabbitmq
+  shell: wget -O - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey" | sudo apt-key add -
 
 - name: add apt signing key, will not download if present
   apt_key:
     url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
     state: present
 
+- name: add bintray repo for latest Rabbitmq
+  shell:
+    cmd: |
+      tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
+      deb https://dl.bintray.com/rabbitmq-erlang/debian xenial erlang-22.x
+      deb https://dl.bintray.com/rabbitmq/debian xenial main
+      EOF
+
 - name: install apt https
   apt:
-    name: apt-transport-https
+    name: ['apt-transport-https', 'jq']
     update_cache: yes
 
-- name: set up rabbitmq sources
-  copy:
-    src: files/{{ file_path }}
-    dest: /{{ file_path }}
-  loop:
-  - etc/apt/sources.list.d/
-  loop_control:
-    loop_var: file_path
+#- name: install
+#  apt:
+#    name: rabbitmq-server={{ rabbitmq_version }}-1
+#    update_cache: yes
+#    state: present
 
-- name: disable auto start after install
-  systemd:
-    name: rabbitmq-server
-    masked: yes
-
-- name: install
+- name: install apt https
   apt:
-    name: rabbitmq-server={{ rabbitmq_version }}-1
+    name: ['apt-transport-https', 'jq']
     update_cache: yes
-    state: present
+
+#- name: download deb
+#  get_url:
+#    url="https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb"
+#    dest="/tmp/rabbitmq-server_3.8.0-1_all.deb"
+
+#- name: apt for rabbitmq
+#  apt: deb="/tmp/rabbitmq-server_3.8.0-1_all.deb"
+#  sudo: true
+- name: download deb
+  get_url:
+    url="https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.19/rabbitmq-server_3.7.19-1_all.deb"
+    dest="/tmp/rabbitmq-server_3.7.19-1_all.deb"
+
+- name: apt for rabbitmq
+  apt: deb="/tmp/rabbitmq-server_3.7.19-1_all.deb"
+  sudo: true
+
+
+#- name: install
+#  shell: |
+#    wget -P /tmp  https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb
+#    dpkg -i /tmp/rabbitmq-server_3.8.0-1_all.deb
+
+#- name: download and unzip rabbitmq_delayed_message_exchange plugns
+ # get_url:
+ #   url="https://dl.bintray.com/rabbitmq/community-plugins/3.8.x/rabbitmq_delayed_message_exchange/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip"
+#    dest="/tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip"
+- name: download and unzip rabbitmq_delayed_message_exchange plugns
+  get_url:
+    url="https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.8.0/rabbitmq_delayed_message_exchange-3.8.0.ez"
+    dest="/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.19/plugins/rabbitmq_delayed_message_exchange-3.8.0.ez"
+
+#unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
+
+- name: enabled all plugns
+  shell: |
+    rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_stomp rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_management rabbitmq_delayed_message_exchange rabbitmq_shovel rabbitmq_shovel_management
+
+
+- name: restart rabbitmq
+  shell: |
+    systemctl restart rabbitmq-server
 
 - name: disable auto startup on boot
   systemd:
     name: rabbitmq-server
     enabled: no
 
-- name: copy systemd file
-  copy:
-    src: files/lib/systemd/system/
-    dest: /lib/systemd/system/
-    owner: root
-
 - name: copy conf files
   copy:
     src: files/opt/app/
     dest: /opt/app/
     owner: root
-    group: svc
+    group: root
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
 - name: copy cookie file
   copy:
-    src: files/{{ file_path }}
-    dest: /{{ file_path }}
+    dest: /var/lib/rabbitmq/.erlang.cookie
+    content: ""
     owner: rabbitmq
-    group: svc
-    mode: preserve
-  loop:
-  - var/lib/rabbitmq/.erlang.cookie
-  loop_control:
-    loop_var: file_path
+    group: rabbitmq
+    mode: '0600'
 
 - name: install confd files
   include_tasks: ../../utils/tasks/process-confd-files.yml
-
