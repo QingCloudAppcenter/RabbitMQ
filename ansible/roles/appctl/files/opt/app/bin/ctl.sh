@@ -139,7 +139,7 @@ restartSvc() {
 
 _initNode() {
   rm -rf /data/lost+found
-  install -d -o syslog -g svc /data/appctl/logs
+  install -d -o syslog -g root /data/appctl/logs
   local svc; for svc in $(getServices -a); do initSvc $svc; done
 }
 

@@ -11,6 +11,3 @@
     group: root
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
-
-- name: install confd files
-  include_tasks: ../../utils/tasks/process-confd-files.yml

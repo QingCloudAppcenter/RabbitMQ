@@ -17,7 +17,7 @@ addUserMonitor2Node() {
 start() {
   log "`date` startMQ start"
   retry 5 2 0 _start
-  addUserMonitor2Node
+  retry 2 1 0 addUserMonitor2Node
   log "`date` startMQ end"
 }
 
@@ -30,13 +30,9 @@ setConfFile() {
   log "`date` setConfFile end"
 }
 
-init() {
+initNode() {
   log "`date` initRabbitmq start"
-  _init
-  if [[ "$MY_ROLE" = "ram" ]]; then
-    #remove plugins from ram node
-    sed -i "s/rabbitmq_delayed_message_exchange,//" /etc/rabbitmq/enabled_plugins
-  fi
+  _initNode
   systemctl stop rabbitmq-server
   setConfFile
   log "`date` initRabbitmq end"
@@ -97,6 +93,6 @@ measure() {
 }
 
 update() {
-  init
+  initNode
   start
 }

@@ -6,8 +6,8 @@
 
 - name: copy binaries
   copy:
-    src: files/opt/
-    dest: /opt
+    src: files/lib/
+    dest: /lib
     owner: root
     group: root
     mode: preserve
@@ -115,15 +115,6 @@
   systemd:
     name: rabbitmq-server
     enabled: no
-
-- name: copy conf files
-  copy:
-    src: files/opt/app/
-    dest: /opt/app/
-    owner: root
-    group: root
-    mode: preserve
-    directory_mode: u=rwx,g=rx,o=
 
 - name: copy cookie file
   copy:

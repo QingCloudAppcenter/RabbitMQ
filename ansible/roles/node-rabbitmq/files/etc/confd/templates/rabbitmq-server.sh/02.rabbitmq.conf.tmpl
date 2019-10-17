@@ -1,6 +1,6 @@
 {{- $myRole := getv "/host/role" }}
 
-cat > /opt/app/conf/rabbitmq-server/rabbitmq.conf << RABBITMQ_CONF_EOF
+cat > /etc/rabbitmq/rabbitmq.conf << RABBITMQ_CONF_EOF
 background_gc_enabled = {{ getv "/env/background_gc_enabled" "false" }}
 background_gc_target_interval = {{ getv "/env/background_gc_target_interval" "60000" }}
 channel_max = {{ getv "/env/channel_max" "10" }}
@@ -42,7 +42,7 @@ vm_memory_high_watermark.relative = {{ getv "/env/vm_memory_high_watermark" "0.4
 # vm_memory_high_watermark.absolute = {{ getv "/env/vm_memory_high_watermark.absolute" "2G" }}
 vm_memory_high_watermark_paging_ratio = {{ getv "/env/vm_memory_high_watermark_paging_ratio" "0.5" }}
 
-log.dir = /data/rabbitmq/log
+log.dir = /data/log
 
 RABBITMQ_CONF_EOF
 

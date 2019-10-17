@@ -1,20 +1,4 @@
 [Unit]
-Description=LVS and VRRP High Availability Monitor
-After=network-online.target syslog.target 
-Wants=network-online.target 
-
-[Service]
-Type=forking
-PIDFile=/run/keepalived.pid
-KillMode=process
-EnvironmentFile=-/usr/local/etc/sysconfig/keepalived
-ExecStart=/usr/local/sbin/keepalived $KEEPALIVED_OPTIONS
-ExecReload=/bin/kill -HUP $MAINPID
-
-[Install]
-WantedBy=multi-user.target
-root@i-i5gf81dw:~# cat /lib/systemd/system/haproxy.service
-[Unit]
 Description=HAProxy Load Balancer
 Documentation=man:haproxy(1)
 Documentation=file:/usr/share/doc/haproxy/configuration.txt.gz

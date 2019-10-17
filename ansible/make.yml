@@ -11,5 +11,9 @@
     - rabbitmq-server
     - haproxy
     - keepalived
+    - node-all
+    - node-client
+    - node-proxy
+    - node-rabbitmq
     loop_control:
       loop_var: service_name

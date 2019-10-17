@@ -1,4 +1,4 @@
-cat > /opt/app/conf/rabbitmq-server/enabled-plugins << ENABLED_PLUGINS_EOF
+cat > /etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
 [
 {{- if eq (getv "/host/role") "disc" }}
   rabbitmq_delayed_message_exchange,

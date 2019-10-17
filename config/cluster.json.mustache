@@ -21,7 +21,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-rvbbjmbt"
+            "image": "img-lga1m5ew"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -35,7 +35,7 @@
         "services": {
           "init": {
              "order": 1,
-             "cmd": "/opt/app/bin/ctl.sh init"
+             "cmd": "/opt/app/bin/ctl.sh initNode"
          },
             "start": {
               "order": 1,
@@ -106,7 +106,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-rvbbjmbt"
+            "image": "img-lga1m5ew"
         },
 
         "instance_class": {{cluster.ram.instance_class}},
@@ -121,7 +121,7 @@
         "services": {
           "init": {
              "order": 2,
-             "cmd": "/opt/app/bin/ctl.sh init"
+             "cmd": "/opt/app/bin/ctl.sh initNode"
          },
             "start": {
               "order": 2,
@@ -192,7 +192,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-rvbbjmbt"
+            "image": "img-lga1m5ew"
         },
 
         "instance_class": {{cluster.client.instance_class}},
@@ -202,7 +202,7 @@
         "user_access": true,
         "services": {
           "init": {
-             "cmd": "/opt/app/bin/ctl.sh init"
+             "cmd": "/opt/app/bin/ctl.sh initNode"
          },
             "start": {
                 "cmd":"/opt/app/bin/ctl.sh start"
@@ -217,7 +217,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-rvbbjmbt"
+            "image": "img-lga1m5ew"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
