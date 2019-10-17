@@ -1,0 +1,8 @@
+[template]
+src = "rabbitmq-server.sh.tmpl"
+dest = "/opt/app/bin/tmpl/rabbitmq-server.sh"
+mode = "0700"
+keys = [
+  "/",
+]
+reload_cmd = "/opt/app/bin/tmpl/rabbitmq-server.sh; appctl reload"
