@@ -1,7 +1,3 @@
 ---
-- name: set variables
-  set_fact:
-    rabbitmq_version: 3.7.19
-
 - name: install confd files
   include_tasks: ../../utils/tasks/process-confd-files.yml

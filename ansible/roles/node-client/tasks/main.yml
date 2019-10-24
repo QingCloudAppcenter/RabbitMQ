@@ -1,8 +1,4 @@
 ---
-- name: set variables
-  set_fact:
-    rabbitmq_version: 3.7.19
-
 - name: copy conf files
   copy:
     src: files/opt/app/

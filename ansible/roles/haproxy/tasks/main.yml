@@ -8,16 +8,25 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
-- name: update apt for haproxy
-  shell: |
-    apt-get install software-properties-common -y
-    add-apt-repository ppa:vbernat/haproxy-2.0 -y
-    apt-get update -y
-    apt install haproxy=2.0.\* -y
-
 - name: install haproxy plugins
   apt:
-    name: ['hatop','arping']
+    name: ['hatop','arping','software-properties-common']
     update_cache: yes
     state: present
 
+- name: add-apt-repository
+  apt_repository:
+    repo: ppa:vbernat/haproxy-2.0
+
+- name: install haproxy
+  apt:
+    name: haproxy=2.0.*
+    update_cache: yes
+    state: present
+
+- name: disable auto startup on boot
+  systemd:
+    name: haproxy
+    enabled: no
+    masked: yes
+    state: stopped

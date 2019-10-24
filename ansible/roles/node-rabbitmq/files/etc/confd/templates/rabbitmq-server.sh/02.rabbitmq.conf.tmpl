@@ -1,6 +1,6 @@
 {{- $myRole := getv "/host/role" }}
 
-cat > /etc/rabbitmq/rabbitmq.conf << RABBITMQ_CONF_EOF
+flush > /etc/rabbitmq/rabbitmq.conf << RABBITMQ_CONF_EOF
 background_gc_enabled = {{ getv "/env/background_gc_enabled" "false" }}
 background_gc_target_interval = {{ getv "/env/background_gc_target_interval" "60000" }}
 channel_max = {{ getv "/env/channel_max" "10" }}

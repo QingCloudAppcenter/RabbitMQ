@@ -4,8 +4,9 @@ global_defs {
 }
 
 vrrp_script check_haproxy {
-        script "/bin/systemctl is-active haproxy"
+        script "/usr/bin/killall -0 haproxy"
         interval 2
+        weight 2
     }
 
 vrrp_instance HAProxy_HA {
@@ -26,7 +27,7 @@ vrrp_instance HAProxy_HA {
    }
 
     track_script {
-        appctl check
+        check_haproxy
     }
 }
 

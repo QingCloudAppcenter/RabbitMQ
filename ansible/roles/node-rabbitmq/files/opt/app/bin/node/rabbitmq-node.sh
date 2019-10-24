@@ -1,46 +1,49 @@
-#!/usr/bin/env bash
+# Error codes
+EC_MEASURE_ERR=300
 
-addUserMonitor2Node() {
-  log "`date` addUserMonitor2Node start"
-  local userInfo=$(rabbitmqctl list_users --formatter=json | jq ".[].user")
-  log "`date` $userInfo"
+
+
+addMonitorUser() {
+  log " addMonitorUser start"
+  local userInfo
+  userInfo=$(rabbitmqctl list_users --formatter=json | jq ".[].user")
+  log " $userInfo"
   if [[ "$userInfo" =~ "monitor" ]]; then
-    log "`date` User monitor already exist."
+    log " User monitor already exist."
   else
     rabbitmqctl add_user monitor monitor4rabbitmq
     rabbitmqctl set_user_tags monitor monitoring
-    log "`date` success add user monitor to node."
+    log " success add user monitor to node."
   fi
-  log "`date` addUserMonitor2Node end"
+  log " addMonitorUser end"
 }
 
 start() {
-  log "`date` startMQ start"
+  log " startMQ start"
   retry 5 2 0 _start
-  retry 2 1 0 addUserMonitor2Node
-  log "`date` startMQ end"
+  retry 2 1 0 initCluster
+  log " startMQ end"
 }
 
 
 setConfFile() {
-  log "`date` setConfFile start"
+  log " setConfFile start"
   mkdir -p /data/{log,mnesia,config,schema}
   chown -R rabbitmq:rabbitmq /data/{log,mnesia,config,schema}
-  systemctl daemon-reload
-  log "`date` setConfFile end"
+  log " setConfFile end"
 }
 
 initNode() {
-  log "`date` initRabbitmq start"
+  log " initRabbitmq start"
   _initNode
-  systemctl stop rabbitmq-server
   setConfFile
-  log "`date` initRabbitmq end"
+  log " initRabbitmq end"
 }
 
 
 scale_in() {
-  local clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
+  local clusterInfo
+  clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
   #allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]]')
   #runningNodes=$(echo $clusterInfo | jq '.running_nodes')
   local deleteNodes=$(echo $clusterInfo | jq -c '[(.nodes.disc[], .nodes.ram[])]-[(.running_nodes[])]')
@@ -54,7 +57,7 @@ scale_in() {
 }
 
 scale_out() {
-  log "`date` scale_out start"
+  log " scale_out start"
   rabbitmqctl -t 3 node_health_check >/dev/null  2>&1
   if [ $? -eq 0 ]; then
     exit 0
@@ -67,20 +70,21 @@ scale_out() {
       systemctl restart rabbitmq-server
     fi
   fi
-  log "`date` scale_out end"
+  log " scale_out end"
 }
 
 measure() {
-  data=$(curl -i -u monitor:monitor4rabbitmq "http://localhost:15672/api/nodes/rabbit@$HOSTNAME" -s |tail -1  |jq -r '{mem_alarm: .mem_alarm, disk_free_alarm: .disk_free_alarm,fd_used:.fd_used,sockets_used:.sockets_used,proc_used:.proc_used,run_queue:.run_queue,mem_used:.mem_used}')
+  data=$(curl --connect-timeout 2 -m 2 -i -u monitor:monitor4rabbitmq "http://localhost:15672/api/nodes/rabbit@$HOSTNAME" -s |tail -1  |jq -r '{mem_alarm: .mem_alarm, disk_free_alarm: .disk_free_alarm,fd_used:.fd_used,sockets_used:.sockets_used,proc_used:.proc_used,run_queue:.run_queue,mem_used:.mem_used}')
   if [ "$data" = "{\"error\":\"not_authorised\",\"reason\":\"Login failed\"}" ];
   then
-      log "func MQ_monitor Login failed"
-      exit 1
+      log "USER monitor Login failed"
+      addMonitorUser
+      exit 300
   fi
   if [ "$data" = "{\"error\":\"Object Not Found\",\"reason\":\"Not Found\"}" ];
   then
     log "func MQ_monitor Url not found"
-    exit 1
+    exit 301
   fi
   fd_used=`echo ${data} | jq .'fd_used'`
   sockets_used=`echo ${data} | jq .'sockets_used'`
@@ -92,7 +96,6 @@ measure() {
 
 }
 
-update() {
-  initNode
-  start
+initCluster() {
+  addMonitorUser
 }

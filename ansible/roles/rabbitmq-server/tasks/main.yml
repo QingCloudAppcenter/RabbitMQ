@@ -2,7 +2,6 @@
 - name: set variables
   set_fact:
     rabbitmq_version: 3.7.19
-    userPasswd: admin #用于远程登陆
 
 - name: copy binaries
   copy:
@@ -63,11 +62,6 @@
 #    update_cache: yes
 #    state: present
 
-- name: install apt https
-  apt:
-    name: ['apt-transport-https', 'jq']
-    update_cache: yes
-
 #- name: download deb
 #  get_url:
 #    url="https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb"
@@ -102,19 +96,12 @@
 
 #unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
 
-- name: enabled all plugns
-  shell: |
-    rabbitmq-plugins enable rabbitmq_management rabbitmq_web_stomp rabbitmq_stomp rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_management rabbitmq_delayed_message_exchange rabbitmq_shovel rabbitmq_shovel_management
-
-
-- name: restart rabbitmq
-  shell: |
-    systemctl restart rabbitmq-server
-
 - name: disable auto startup on boot
   systemd:
     name: rabbitmq-server
     enabled: no
+    masked: yes
+    state: stopped
 
 - name: copy cookie file
   copy:

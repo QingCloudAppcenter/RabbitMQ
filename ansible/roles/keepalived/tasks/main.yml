@@ -56,6 +56,13 @@
 - name: create keepalived service link
   file:
     src: /opt/keepalived/current/keepalived/keepalived.service
-    dest: /etc/systemd/system/keepalived.service
+    dest: /lib/systemd/system/keepalived.service
     state: link
+
+- name: mask services
+  systemd:
+    name: keepalived
+    enabled: no
+    masked: yes
+    state: stopped
 
