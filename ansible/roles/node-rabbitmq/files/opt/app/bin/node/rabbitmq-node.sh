@@ -21,7 +21,7 @@ addMonitorUser() {
 start() {
   log " startMQ start"
   retry 5 2 0 _start
-  retry 2 1 0 initCluster
+  #retry 2 1 0 initCluster
   log " startMQ end"
 }
 

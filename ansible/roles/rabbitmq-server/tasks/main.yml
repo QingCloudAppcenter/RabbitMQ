@@ -111,5 +111,4 @@
     group: rabbitmq
     mode: '0600'
 
-- name: install confd files
-  include_tasks: ../../utils/tasks/process-confd-files.yml
+

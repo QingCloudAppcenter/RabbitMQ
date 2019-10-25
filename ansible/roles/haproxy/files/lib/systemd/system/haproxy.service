@@ -5,6 +5,8 @@ Documentation=file:/usr/share/doc/haproxy/configuration.txt.gz
 After=network.target rsyslog.service
 
 [Service]
+User=root
+Group=root
 EnvironmentFile=-/etc/default/haproxy
 EnvironmentFile=-/etc/sysconfig/haproxy
 Environment="CONFIG=/opt/app/conf/haproxy/haproxy.cfg" "PIDFILE=/run/haproxy.pid" "EXTRAOPTS=-S /run/haproxy-master.sock"

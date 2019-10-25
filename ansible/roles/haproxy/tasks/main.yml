@@ -1,13 +1,4 @@
 ---
-- name: copy binaries
-  copy:
-    src: files/lib/
-    dest: /lib
-    owner: root
-    group: root
-    mode: preserve
-    directory_mode: u=rwx,g=rx,o=
-
 - name: install haproxy plugins
   apt:
     name: ['hatop','arping','software-properties-common']
@@ -24,9 +15,19 @@
     update_cache: yes
     state: present
 
+- name: copy binaries
+  copy:
+    src: files/lib/
+    dest: /lib
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+
 - name: disable auto startup on boot
   systemd:
     name: haproxy
     enabled: no
     masked: yes
     state: stopped
+

@@ -17,11 +17,11 @@
     ],
   "upgrading_policy": "parallel",
   "nodes": [{
-      "role":"disc",
+      "role": "disc",
       "container": {
           "type": "kvm",
           "zone": "sh1a",
-          "image": "img-lga1m5ew"
+          "image": "img-yo8799hz"
         },
       "instance_class": {{cluster.disc.instance_class}},
       "count": {{cluster.disc.count}},
@@ -33,31 +33,32 @@
           "filesystem": "ext4"
         },
       "services": {
-          "init": {
+        "init": {
+          "post_start_service": true,
+          "nodes_to_execute_on": 1,
+          "cmd": "appctl initCluster"
+          },
+        "start": {
           "order": 1,
-          "cmd": "appctl initNode"
-        },
-      "start": {
-          "order": 1,
-          "cmd":"appctl start"
-        },
-      "stop": {
+          "cmd": "appctl start"
+          },
+        "stop": {
           "order": 2,
           "cmd": "appctl stop"
-        },
-      "restart": {
+          },
+        "restart": {
           "order": 1,
           "cmd": "appctl restart"
-        },
-      "destroy": {
+          },
+        "destroy": {
           "order": 2,
           "cmd": "appctl stop"
-        },
-      "scale_in": {
+          },
+        "scale_in": {
           "nodes_to_execute_on": 1,
           "cmd": "appctl scale_in",
           "timeout": 86400
-        }
+          }
       },
       "advanced_actions": ["scale_horizontal"],
       "vertical_scaling_policy": "sequential",
@@ -102,11 +103,11 @@
           "alarm": ["fd_used","mem_used"]
         }
       }, {
-      "role":"ram",
+      "role": "ram",
       "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-lga1m5ew"
+            "image": "img-yo8799hz"
         },
       "instance_class": {{cluster.ram.instance_class}},
       "count": {{cluster.ram.count}},
@@ -118,80 +119,80 @@
             "filesystem": "ext4"
         },
       "services": {
-          "init": {
-            "order": 2,
-            "cmd": "appctl initNode"
-            },
-          "start": {
-            "order": 2,
-            "cmd":"appctl start"
-            },
-          "stop": {
-            "order": 1,
-            "cmd": "appctl stop"
-            },
-          "restart": {
-            "order": 2,
-            "cmd": "appctl restart"
-            },
-          "destroy": {
-            "order": 1,
-            "cmd": "appctl stop"
-            },
-          "scale_in": {
-            "nodes_to_execute_on": 1,
-            "cmd": "appctl scale_in",
-            "timeout": 86400
-            }
+        "init": {
+          "order": 2,
+          "cmd": "appctl initNode"
+          },
+        "start": {
+          "order": 2,
+          "cmd": "appctl start"
+          },
+        "stop": {
+          "order": 1,
+          "cmd": "appctl stop"
+          },
+        "restart": {
+          "order": 2,
+          "cmd": "appctl restart"
+          },
+        "destroy": {
+          "order": 1,
+          "cmd": "appctl stop"
+          },
+        "scale_in": {
+          "nodes_to_execute_on": 1,
+          "cmd": "appctl scale_in",
+          "timeout": 86400
+          }
         },
       "advanced_actions": ["scale_horizontal"],
       "vertical_scaling_policy": "sequential",
       "health_check": {
-            "enable": true,
-            "interval_sec": 60,
-            "timeout_sec": 10,
-            "action_timeout_sec": 30,
-            "healthy_threshold": 2,
-            "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl restart"
+          "enable": true,
+          "interval_sec": 60,
+          "timeout_sec": 10,
+          "action_timeout_sec": 30,
+          "healthy_threshold": 2,
+          "unhealthy_threshold": 2,
+          "check_cmd": "appctl check",
+          "action_cmd": "appctl restart"
         },
       "monitor": {
-            "enable": true,
-            "cmd": "appctl measure",
-            "items": {
-              "fd_used": {
+          "enable": true,
+          "cmd": "appctl measure",
+          "items": {
+            "fd_used": {
+                "unit": "count"
+              },
+            "sockets_used": {
                   "unit": "count"
-                },
-              "sockets_used": {
-                    "unit": "count"
-                },
-              "proc_used": {
-                    "unit": "count"
-                },
-              "run_queue": {
-                    "unit": "count"
-                },
-              "mem_used": {
-                    "unit": "MB"
-                }
               },
-            "groups": {
-                "Fd Used": ["fd_used"],
-                "Sockets Used": ["sockets_used"],
-                "Proc Used": ["proc_used"],
-                "Run Queue": ["run_queue"],
-                "Mem Used": ["mem_used"]
+            "proc_used": {
+                  "unit": "count"
               },
-            "display": ["Mem Used","Fd Used","Sockets Used","Proc Used","Run Queue"],
-            "alarm": ["fd_used","mem_used"]
+            "run_queue": {
+                  "unit": "count"
+              },
+            "mem_used": {
+                  "unit": "MB"
+              }
+            },
+          "groups": {
+              "Fd Used": ["fd_used"],
+              "Sockets Used": ["sockets_used"],
+              "Proc Used": ["proc_used"],
+              "Run Queue": ["run_queue"],
+              "Mem Used": ["mem_used"]
+            },
+          "display": ["Mem Used","Fd Used","Sockets Used","Proc Used","Run Queue"],
+          "alarm": ["fd_used","mem_used"]
         }
       },{
       "role":"client",
       "container": {
           "type": "kvm",
           "zone": "sh1a",
-          "image": "img-lga1m5ew"
+          "image": "img-yo8799hz"
         },
       "instance_class": {{cluster.client.instance_class}},
       "count": {{cluster.client.count}},
@@ -203,7 +204,7 @@
             "cmd": "appctl initNode"
           },
         "start": {
-            "cmd":"appctl start"
+            "cmd": "appctl start"
           },
         "stop": {
             "cmd": "appctl stop"
@@ -215,7 +216,7 @@
       "container": {
           "type": "lxc",
           "zone": "sh1a",
-          "image": "img-lga1m5ew"
+          "image": "img-yo8799hz"
         },
       "instance_class": {{cluster.haproxy.instance_class}},
       "count": {{cluster.haproxy.count}},
@@ -223,12 +224,15 @@
       "memory": {{cluster.haproxy.memory}},
       "services": {
         "start": {
-            "cmd":"appctl start"
+            "order": 3,
+            "cmd": "appctl start"
           },
         "stop": {
+            "order": 3,
             "cmd": "appctl stop"
           },
         "restart": {
+            "order": 3,
             "cmd": "appctl restart"
           }
         },
@@ -275,7 +279,7 @@
         },
       "reserved_ips": {
         "vip": {
-            "value":""
+            "value": ""
         }
       }
     }
