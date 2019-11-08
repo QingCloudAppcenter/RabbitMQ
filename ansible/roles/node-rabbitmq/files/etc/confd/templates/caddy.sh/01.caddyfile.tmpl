@@ -1,0 +1,8 @@
+flush /opt/app/conf/caddy/Caddyfile << CADDYFILE_EOF
+{{ getv "/host/ip" }}:80 {
+  root /data
+  gzip
+  browse 
+  tls off
+}
+CADDYFILE_EOF

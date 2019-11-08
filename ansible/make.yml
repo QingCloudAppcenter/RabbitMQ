@@ -15,5 +15,6 @@
     - node-client
     - node-proxy
     - node-rabbitmq
+    - caddy
     loop_control:
       loop_var: service_name

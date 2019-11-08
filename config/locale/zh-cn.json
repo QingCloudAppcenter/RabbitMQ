@@ -68,5 +68,5 @@
     "Disabling background GC may reduce latency for client operations, keeping it enabled may reduce median RAM usage":"是否启用 GC，开启或许可以减少内存使用",
     "Set to true to have RabbitMQ perform a reverse DNS lookup on client connections, and present that information through rabbitmqctl and the management plugin":"设置为true,可让客户端在连接时让RabbitMQ 执行一个反向DNS查找, 然后通过 rabbitmqctl 和 管理插件来展现信息",
     "Whether or not to enable proxy protocol support. Once enabled, clients cannot directly connect to the broker anymore. They must connect through a load balancer that sends theproxy protocol header to the broker at connection time.This setting applies only to AMQP clients, other protocolslike MQTT or STOMP have their own setting to enable proxy protocol. See the plugins documentation for more information":"是否启用代理协议支持。一旦启用，客户端就不能直接连接到代理了。他们必须通过负载平衡器连接，此设置仅适用于AMQP客户端，其他协议类型的MQTT或STOMP有自己的设置来启用代理协议。有关更多信息，请参阅插件文档",
-    "err_code300": "健康检查过程中发现缺少monitor用户，请确认"
+    "err_code44": "健康检查过程中发现缺少monitor用户，请确认"
 }
