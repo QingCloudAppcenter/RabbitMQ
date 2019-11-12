@@ -75,10 +75,10 @@ scale_out() {
 
 measure() {
   data=$(curl --connect-timeout 2 -m 2 -i -u monitor:monitor4rabbitmq "http://localhost:15672/api/nodes/rabbit@$HOSTNAME" -s |tail -1  |jq -r '{mem_alarm: .mem_alarm, disk_free_alarm: .disk_free_alarm,fd_used:.fd_used,sockets_used:.sockets_used,proc_used:.proc_used,run_queue:.run_queue,mem_used:.mem_used}')
-  if [ "$data" = "{\"error\":\"not_authorised\",\"reason\":\"Login failed\"}" ];
+  if [[ "$data" =~ "Login failed" ]];
   then
       log "USER monitor Login failed"
-      addMonitorUser
+      appctl addMonitorUser
       exit 300
   fi
   if [ "$data" = "{\"error\":\"Object Not Found\",\"reason\":\"Not Found\"}" ];

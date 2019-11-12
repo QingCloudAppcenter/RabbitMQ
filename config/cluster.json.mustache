@@ -1,7 +1,7 @@
 {
-    "name": {{ cluster.name }},
-    "description": {{ cluster.description }},
-    "vxnet": {{ cluster.vxnet }},
+    "name": {{cluster.name}},
+    "description": {{cluster.description}},
+    "vxnet": {{cluster.vxnet}},
     "multi_zone_policy": "round_robin",
     "upgrade_policy": [
         "appv-okcfn685",
@@ -21,14 +21,14 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-yo8799hz"
+            "image": "img-wasw07vb"
         },
-        "instance_class": {{ cluster.disc.instance_class }},
-        "count": {{ cluster.disc.count }},
-        "cpu": {{ cluster.disc.cpu }},
-        "memory": {{ cluster.disc.memory }},
+        "instance_class": {{cluster.disc.instance_class}},
+        "count": {{cluster.disc.count}},
+        "cpu": {{cluster.disc.cpu}},
+        "memory": {{cluster.disc.memory}},
         "volume": {
-            "size": {{ cluster.disc.volume_size }},
+            "size": {{cluster.disc.volume_size}},
             "mount_point": "/data",
             "filesystem": "ext4"
         },
@@ -107,14 +107,14 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-yo8799hz"
+            "image": "img-wasw07vb"
         },
-        "instance_class": {{ cluster.ram.instance_class }},
-        "count": {{ cluster.ram.count }},
-        "cpu": {{ cluster.ram.cpu }},
-        "memory": {{ cluster.ram.memory }},
+        "instance_class": {{cluster.ram.instance_class}},
+        "count": {{cluster.ram.count}},
+        "cpu": {{cluster.ram.cpu}},
+        "memory": {{cluster.ram.memory}},
         "volume": {
-            "size": {{ cluster.ram.volume_size }},
+            "size": {{cluster.ram.volume_size}},
             "mount_point": "/data",
             "filesystem": "ext4"
         },
@@ -192,12 +192,12 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-yo8799hz"
+            "image": "img-wasw07vb"
         },
-        "instance_class": {{ cluster.client.instance_class }},
-        "count": {{ cluster.client.count }},
-        "cpu": {{ cluster.client.cpu }},
-        "memory": {{ cluster.client.memory }},
+        "instance_class": {{cluster.client.instance_class}},
+        "count": {{cluster.client.count}},
+        "cpu": {{cluster.client.cpu}},
+        "memory": {{cluster.client.memory}},
         "user_access": true,
         "services": {
             "init": {
@@ -216,12 +216,12 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-yo8799hz"
+            "image": "img-wasw07vb"
         },
-        "instance_class": {{ cluster.haproxy.instance_class }},
-        "count": {{ cluster.haproxy.count }},
-        "cpu": {{ cluster.haproxy.cpu }},
-        "memory": {{ cluster.haproxy.memory }},
+        "instance_class": {{cluster.haproxy.instance_class}},
+        "count": {{cluster.haproxy.count}},
+        "cpu": {{cluster.haproxy.cpu}},
+        "memory": {{cluster.haproxy.memory}},
         "services": {
             "start": {
                 "order": 3,
@@ -249,28 +249,31 @@
         }
     }],
     "env": {
-        "haproxy_balance_policy": {{ env.haproxy_balance_policy }},
-        "haproxy_web_port": {{ env.haproxy_web_port }},
-        "haproxy_username": {{ env.haproxy_username }},
-        "haproxy_password": {{ env.haproxy_password }},
-        "num_tcp_acceptors": {{ env.num_tcp_acceptors }},
-        "handshake_timeout": {{ env.handshake_timeout }},
-        "reverse_dns_lookups": {{ env.reverse_dns_lookups }},
-        "vm_memory_high_watermark": {{ env.vm_memory_high_watermark }},
-        "vm_memory_high_watermark_paging_ratio": {{ env.vm_memory_high_watermark_paging_ratio }},
-        "disk_free_limit": {{ env.disk_free_limit }},
-        "frame_max": {{ env.frame_max }},
-        "channel_max": {{ env.channel_max }},
-        "heartbeat": {{ env.heartbeat }},
-        "collect_statistics": {{ env.collect_statistics }},
-        "collect_statistics_interval": {{ env.collect_statistics_interval }},
-        "cluster_partition_handling": {{ env.cluster_partition_handling }},
-        "hipe_compile": {{ env.hipe_compile }},
-        "cluster_keepalive_interval": {{ env.cluster_keepalive_interval }},
-        "background_gc_enabled": {{ env.background_gc_enabled }},
-        "background_gc_target_interval": {{ env.background_gc_target_interval }},
-        "proxy_protocol": {{ env.proxy_protocol }},
-        "tracing_user": {{ env.tracing_user }}
+        "haproxy_balance_policy": {{env.haproxy_balance_policy}},
+        "haproxy_web_port": {{env.haproxy_web_port}},
+        "haproxy_username": {{env.haproxy_username}},
+        "haproxy_password": {{env.haproxy_password}},
+        "num_tcp_acceptors": {{env.num_tcp_acceptors}},
+        "handshake_timeout": {{env.handshake_timeout}},
+        "reverse_dns_lookups": {{env.reverse_dns_lookups}},
+        "vm_memory_high_watermark": {{env.vm_memory_high_watermark}},
+        "vm_memory_high_watermark_paging_ratio": {{env.vm_memory_high_watermark_paging_ratio}},
+        "disk_free_limit": {{env.disk_free_limit}},
+        "frame_max": {{env.frame_max}},
+        "channel_max": {{env.channel_max}},
+        "heartbeat": {{env.heartbeat}},
+        "collect_statistics": {{env.collect_statistics}},
+        "collect_statistics_interval": {{env.collect_statistics_interval}},
+        "cluster_partition_handling": {{env.cluster_partition_handling}},
+        "hipe_compile": {{env.hipe_compile}},
+        "cluster_keepalive_interval": {{env.cluster_keepalive_interval}},
+        "background_gc_enabled": {{env.background_gc_enabled}},
+        "background_gc_target_interval": {{env.background_gc_target_interval}},
+        "proxy_protocol": {{env.proxy_protocol}},
+        "tracing_user": {{env.tracing_user}},
+        "log.webViewer.enabled": {{env.log.webViewer.enabled}},
+        "log.webViewer.username": {{env.log.webViewer.username}},
+        "log.webViewer.password": {{env.log.webViewer.password}}
     },
     "endpoints": {
         "client": {

@@ -77,7 +77,6 @@ flush /opt/app/conf/caddy/index.html << HTML_EOF
         {{- if eq . (getv "/host/ip") }}
         <li><span>⊟</span>{{ . }}</li>
         <li><span class="sub-1">⊞</span><a href="./log/">log</a></li>
-        <li><span class="sub-1">⊞</span><a href="./mnesia/">mnesia</a></li>
         {{- else }}
         <li><span>⊞</span><a href="//{{ . }}/">{{ . }}</a></li>
         {{- end }}
@@ -87,7 +86,6 @@ flush /opt/app/conf/caddy/index.html << HTML_EOF
         {{- if eq . (getv "/host/ip") }}
         <li><span>⊟</span>{{ . }}</li>
         <li><span class="sub-1">⊞</span><a href="./log/">log</a></li>
-        <li><span class="sub-1">⊞</span><a href="./mnesia/">mnesia</a></li>
         {{- else }}
         <li><span>⊞</span><a href="//{{ . }}/">{{ . }}</a></li>
         {{- end }}

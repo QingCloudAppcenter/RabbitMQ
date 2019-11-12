@@ -33,13 +33,14 @@
 - name: download caddy binary
   get_url:
     url: https://github.com/caddyserver/caddy/releases/download/v{{ caddy_version }}/caddy_v{{ caddy_version }}_linux_amd64.tar.gz
-    dest: roles/{{ role_name }}/files/tmp/caddy-{{ caddy_version }}.tgz
-  delegate_to: localhost
+    dest: /tmp/caddy-{{ caddy_version }}.tgz
+
 
 - name: install caddy
   unarchive:
-    src: roles/{{ role_name }}/files/tmp/caddy-{{ caddy_version }}.tgz
+    src: /tmp/caddy-{{ caddy_version }}.tgz
     dest: /opt/caddy/current
+    remote_src: yes
 
 - name: transfer files
   copy:
@@ -62,9 +63,6 @@
     - lib/systemd/system/
   loop_control:
     loop_var: file_path
-
-- name: force create symbolic link
-  shell: ln -s -f /opt/app/conf/caddy/index.html /data/index.html
 
 - name: mask caddy service
   systemd:

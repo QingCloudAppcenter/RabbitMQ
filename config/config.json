@@ -80,7 +80,7 @@
                 "auto_scale_step": 1,
                 "default": 2,
                 "min":1,
-                 "max":100,
+                "max":100,
                 "required": "yes"
             }]
         },{
@@ -113,7 +113,7 @@
                 "range": [0, 1],
                 "resource_group": [0, 1],
                 "required": "yes"
-            },{
+            }, {
                 "key": "volume_size",
                 "label": "Volume Size",
                 "description": "The volume size for each instance",
@@ -121,7 +121,7 @@
                 "auto_scale_step": 10,
                 "default": 10,
                 "required": "yes"
-            },{
+            }, {
                 "key": "count",
                 "label": "Count",
                 "description": "Ram Node Count",
@@ -129,7 +129,7 @@
                 "auto_scale_step": 1,
                 "default": 0,
                 "min":0,
-                 "max":100,
+                "max":100,
                 "required": "yes"
             }]
         },{
@@ -161,14 +161,14 @@
                 "default": 0,
                 "range": [0, 1],
                 "required": "yes"
-            },{
+            }, {
                 "key": "count",
                 "label": "Count",
                 "description": "Client Node Count",
                 "type": "integer",
                 "default": 1,
                 "min":0,
-                 "max":1,
+                "max":1,
                 "required": "yes"
             }]
         },{
@@ -214,7 +214,7 @@
                 "required": "yes"
             }]
         }
-      ]
+    ]
     },{
         "key": "env",
         "description": "RabbitMQ service properties",
@@ -224,24 +224,24 @@
             "label": "haproxy_balance_policy",
             "description": "haproxy balance policy",
             "type": "string",
-              "default": "roundrobin",
-              "required": "no",
-              "range": ["roundrobin","leastconn","static-rr","source","uri","url_param"]
-        },{
+            "default": "roundrobin",
+            "required": "no",
+            "range": ["roundrobin", "leastconn", "static-rr", "source", "uri", "url_param"]
+        }, {
             "key": "haproxy_web_port",
             "label": "haproxy_web_port",
             "description": "haproxy web port",
             "type": "integer",
             "default": 8100,
             "required": "no"
-        },{
+        }, {
             "key": "haproxy_username",
             "label": "haproxy_username",
             "description": "haproxy web login usernam",
             "type": "string",
             "default": "haproxy",
             "required": "no"
-        },{
+        }, {
             "key": "haproxy_password",
             "label": "haproxy_password",
             "description": "haproxy web login passwd",
@@ -249,14 +249,14 @@
             "changeable":true,
             "default": "haproxy",
             "required": "no"
-        },{
+        }, {
             "key": "num_tcp_acceptors",
             "label": "num_tcp_acceptors",
             "description": "Number of Erlang processes that will accept connections for the TCP listeners",
             "type": "integer",
             "default": 10,
-             "min":10,
-             "max":200,
+            "min":10,
+            "max":200,
             "required": "no"
         }, {
             "key": "handshake_timeout",
@@ -266,7 +266,7 @@
             "default": 10000,
             "min":5000,
             "required": "no"
-        },    {
+        }, {
             "key": "vm_memory_high_watermark",
             "label": "vm_memory_high_watermark",
             "description": "Memory threshold at which the flow control is triggered",
@@ -318,7 +318,7 @@
             "range": ["none","coarse","fine"],
             "default": "none",
             "required": "no"
-        },{
+        }, {
             "key": "collect_statistics_interval",
             "label": "collect_statistics_interval",
             "description": "Statistics collection interval in milliseconds. Primarily relevant for the management plugin",
@@ -338,9 +338,9 @@
             "label": "hipe_compile",
             "description": "Set to true to precompile parts of RabbitMQ with HiPE, a just-in-time compiler for Erlang. This will increase server throughput at the cost of increased startup time",
             "type": "boolean",
-              "default": false,
-              "range": [true, false],
-              "required": "no"
+            "default": false,
+            "range": [true, false],
+            "required": "no"
         }, {
             "key": "cluster_keepalive_interval",
             "label": "cluster_keepalive_interval",
@@ -356,7 +356,7 @@
             "min":30000,
             "default": 60000,
             "required": "no"
-        },{
+        }, {
             "key": "background_gc_enabled",
             "label": "background_gc_enabled",
             "description": "Disabling background GC may reduce latency for client operations, keeping it enabled may reduce median RAM usage",
@@ -364,29 +364,52 @@
             "default": false,
             "range": [true, false],
             "required": "no"
-        },{
+        }, {
             "key": "reverse_dns_lookups",
             "label": "reverse_dns_lookups",
             "description": "Set to true to have RabbitMQ perform a reverse DNS lookup on client connections, and present that information through rabbitmqctl and the management plugin",
             "type": "boolean",
-              "default": false,
-              "range": [true, false],
-                "required": "no"
-        },{
+            "default": false,
+            "range": [true, false],
+            "required": "no"
+        }, {
             "key": "tracing_user",
             "label": "tracing_user",
             "description": "The name of a user as which to create the tracing queues and bindings",
             "type": "string",
             "default": "guest",
             "required": "no"
-        },{
+        }, {
             "key": "proxy_protocol",
             "label": "proxy_protocol",
             "description": "Whether or not to enable proxy protocol support. Once enabled, clients cannot directly connect to the broker anymore. They must connect through a load balancer that sends theproxy protocol header to the broker at connection time.This setting applies only to AMQP clients, other protocolslike MQTT or STOMP have their own setting to enable proxy protocol. See the plugins documentation for more information",
             "type": "boolean",
-              "default": false,
-              "range": [true, false],
-                "required": "no"
+            "default": false,
+            "range": [true, false],
+            "required": "no"
+        }, {
+            "key": "log.webViewer.enabled",
+            "label": "Switch of log webViewer",
+            "description": "Whether to enable log webViewer",
+            "type": "boolean",
+            "default": false,
+            "required": "no"
+        }, {
+            "key": "log.webViewer.username",
+            "label": "Username of log webViewer",
+            "description": "username of log webViewer",
+            "type": "string",
+            "pattern": "^([a-z0-9.-]+)?$",
+            "default": "admin",
+            "required": "no"
+        }, {
+            "key": "log.webViewer.password",
+            "label": "Password of log webViewer",
+            "description": "password of log webViewer",
+            "type": "password",
+            "pattern": "^\\w{0,24}$",
+            "default": "",
+            "required": "no"
         }]
     }]
 }

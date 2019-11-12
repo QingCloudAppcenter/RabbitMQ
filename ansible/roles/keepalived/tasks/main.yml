@@ -1,13 +1,4 @@
 ---
-- name: copy binaries
-  copy:
-    src: files/lib/
-    dest: /lib
-    owner: root
-    group: root
-    mode: preserve
-    directory_mode: u=rwx,g=rx,o=
-
 - name: Prepare dev env for keepalived
   apt:
     update_cache: yes
