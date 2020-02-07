@@ -3,11 +3,11 @@ ln -s -f /opt/app/conf/caddy/index.html /data/index.html
 flush /opt/app/conf/caddy/Caddyfile << CADDYFILE_EOF
 {{ getv "/host/ip" }}:80 {
   {{- with getv "/env/log.webViewer.password" "" }}
-  basicauth /data "{{ getv "/env/log.webViewer.username" "admin" }}"  "{{ . }}"
+  basicauth / "{{ getv "/env/log.webViewer.username" "admin" }}"  "{{ . }}"
   {{- end }}
   root /data
   gzip
-  browse 
+  browse /log
   tls off
 }
 CADDYFILE_EOF

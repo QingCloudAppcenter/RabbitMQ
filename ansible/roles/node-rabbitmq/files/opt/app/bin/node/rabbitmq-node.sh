@@ -22,6 +22,7 @@ start() {
   log " startMQ start"
   retry 5 2 0 _start
   #retry 2 1 0 initCluster
+  retry 5 2 0 addNode2Cluster
   log " startMQ end"
 }
 
@@ -46,7 +47,7 @@ scale_in() {
   clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
   #allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]]')
   #runningNodes=$(echo $clusterInfo | jq '.running_nodes')
-  local deleteNodes=$(echo $clusterInfo | jq -c '[(.nodes.disc[], .nodes.ram[])]-[(.running_nodes[])]')
+  local deleteNodes=$(echo $clusterInfo | jq -c '[(.nodes.disc[], .nodes.ram[]?)]-[(.running_nodes[])]')
   local dn=$(echo $deleteNodes | jq '.[]')
   for i in $dn
   do
@@ -98,4 +99,16 @@ measure() {
 
 initCluster() {
   addMonitorUser
+}
+
+addNode2Cluster() {
+  local addingNode=$(curl -s metadata/self/adding-hosts);
+  local allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]');
+  if [[ "$addingNode" =~ "$MY_ID" ]] && [[ ! "$allnodes" =~ "${DISC_NODE%%,*}" ]]; then
+    rabbitmqctl stop_app
+    rabbitmqctl join_cluster --${MY_ROLE} ${DISC_NODE%%,*}
+    rabbitmqctl start_app
+  else
+    log "${MY_ID} not the adding host."
+  fi
 }

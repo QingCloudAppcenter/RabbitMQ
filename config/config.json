@@ -60,9 +60,9 @@
                 "label": "Instance Class",
                 "description": "The instance type for the cluster to run, such as high performance, high performance plus",
                 "type": "integer",
-                "default": 0,
-                "range": [0, 1],
-                "resource_group": [0, 1],
+                "default": 101,
+                "range": [101, 202],
+                "resource_group": [101, 202],
                 "required": "yes"
             }, {
                 "key": "volume_size",
@@ -83,7 +83,7 @@
                 "max":100,
                 "required": "yes"
             }]
-        },{
+        }, {
             "key": "ram",
             "label": "Ram Node",
             "description": "Ram Node",
@@ -109,9 +109,9 @@
                 "label": "Instance Class",
                 "description": "The instance type for the cluster to run, such as high performance, high performance plus",
                 "type": "integer",
-                "default": 0,
-                "range": [0, 1],
-                "resource_group": [0, 1],
+                "default": 101,
+                "range": [101, 202],
+                "resource_group": [101, 202],
                 "required": "yes"
             }, {
                 "key": "volume_size",
@@ -132,7 +132,7 @@
                 "max":100,
                 "required": "yes"
             }]
-        },{
+        }, {
             "key": "client",
             "label": "client Node",
             "description": "client Node",
@@ -158,8 +158,8 @@
                 "label": "Instance Class",
                 "description": "The instance type for the cluster to run, such as high performance, high performance plus",
                 "type": "integer",
-                "default": 0,
-                "range": [0, 1],
+                "default": 101,
+                "range": [101, 202],
                 "required": "yes"
             }, {
                 "key": "count",
@@ -171,7 +171,7 @@
                 "max":1,
                 "required": "yes"
             }]
-        },{
+        }, {
             "key": "haproxy",
             "label": "Haproxy+Keepalived",
             "description": "Haproxy+Keepalived",
@@ -199,8 +199,8 @@
                 "label": "Instance Class",
                 "description": "The instance type for the cluster to run, such as high performance, high performance plus",
                 "type": "integer",
-                "default": 0,
-                "range": [0, 1],
+                "default": 101,
+                "range": [101, 202],
                 "required": "yes"
             }, {
                 "key": "count",
@@ -215,7 +215,7 @@
             }]
         }
     ]
-    },{
+    }, {
         "key": "env",
         "description": "RabbitMQ service properties",
         "type": "array",
@@ -292,7 +292,7 @@
         }, {
             "key": "frame_max",
             "label": "frame_max",
-            "description": "Maximum permissible size of a frame (in bytes) to negotiate with clients,etting to 0 means unlimited but will trigger a bug in some QPid clients. Setting a larger value may improve throughput; setting a smaller value may improve latency",
+            "description": "Maximum permissible size of a frame (in bytes) to negotiate with clients,setting to 0 means unlimited but will trigger a bug in some QPid clients. Setting a larger value may improve throughput; setting a smaller value may improve latency",
             "type": "integer",
             "default": 131072,
             "required": "no"

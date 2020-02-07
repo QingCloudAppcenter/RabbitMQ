@@ -9,6 +9,11 @@ assignees: ''
 
 # Changelog
 
+## Notice
+- Priority queue on disk data currently cannot be migrated in place between 3.6 and 3.7 (a later series).
+  > if upgrade in place priority queue will be empty after node restart, user blue-green upgrade https://www.rabbitmq.com/blue-green-upgrade.html 
+
+
 ## Features
 - [x] New version haproxy keepalived rabbitmq
 - [x] Log online viewer

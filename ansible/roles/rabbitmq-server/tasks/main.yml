@@ -1,7 +1,7 @@
 ---
 - name: set variables
   set_fact:
-    rabbitmq_version: 3.7.19
+    rabbitmq_version: 3.7.23
 
 - name: copy binaries
   copy:
@@ -19,7 +19,7 @@
 
 - name: apt for erlang
   apt: deb="/tmp/erlang-solutions_1.0_all.deb"
-  sudo: true
+  become: yes
 
 - name: update apt for erlang
   shell: echo 'deb https://dl.bintray.com/rabbitmq/debian  xenial  erlang-22.x' | sudo tee -a /etc/apt/sources.list.d/erlang-solutions.list
@@ -72,12 +72,12 @@
 #  sudo: true
 - name: download deb
   get_url:
-    url="https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.19/rabbitmq-server_3.7.19-1_all.deb"
-    dest="/tmp/rabbitmq-server_3.7.19-1_all.deb"
+    url="https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.23/rabbitmq-server_3.7.23-1_all.deb"
+    dest="/tmp/rabbitmq-server_3.7.23-1_all.deb"
 
 - name: apt for rabbitmq
-  apt: deb="/tmp/rabbitmq-server_3.7.19-1_all.deb"
-  sudo: true
+  apt: deb="/tmp/rabbitmq-server_3.7.23-1_all.deb"
+  become: yes
 
 
 #- name: install
@@ -92,7 +92,7 @@
 - name: download and unzip rabbitmq_delayed_message_exchange plugns
   get_url:
     url="https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.8.0/rabbitmq_delayed_message_exchange-3.8.0.ez"
-    dest="/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.19/plugins/rabbitmq_delayed_message_exchange-3.8.0.ez"
+    dest="/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.23/plugins/rabbitmq_delayed_message_exchange-3.8.0.ez"
 
 #unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
 
