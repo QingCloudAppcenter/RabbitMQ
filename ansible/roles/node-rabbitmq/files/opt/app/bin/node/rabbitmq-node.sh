@@ -21,7 +21,7 @@ addMonitorUser() {
 start() {
   log " startMQ start"
   retry 5 2 0 _start
-  #retry 2 1 0 initCluster
+  #retry 2 1 0 initNode
   retry 5 2 0 addNode2Cluster
   log " startMQ end"
 }
@@ -101,14 +101,14 @@ initCluster() {
   addMonitorUser
 }
 
-addNode2Cluster() {
-  local addingNode=$(curl -s metadata/self/adding-hosts);
+addNode2Cluster()  {
+  # write for the node which peer discover failed or the adding node
   local allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]');
-  if [[ "$addingNode" =~ "$MY_ID" ]] && [[ ! "$allnodes" =~ "${DISC_NODE%%,*}" ]]; then
+  if [[ ! "$allnodes" =~ "${DISC_NODE%%,*}" ]]; then  #disc node sid = 1 was not clustered
     rabbitmqctl stop_app
     rabbitmqctl join_cluster --${MY_ROLE} ${DISC_NODE%%,*}
     rabbitmqctl start_app
   else
-    log "${MY_ID} not the adding host."
+    log "${MY_ID} already clustered or not the adding node."
   fi
 }

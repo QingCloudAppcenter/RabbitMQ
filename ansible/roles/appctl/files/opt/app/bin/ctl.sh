@@ -13,8 +13,9 @@
 EC_CHECK_INACTIVE=200
 EC_CHECK_PORT_ERR=201
 EC_CHECK_PROTO_ERR=202
-EC_BACKUP_ERR=230
-
+EC_ENV_ERR=203
+EC_CHECK_HTTP_REQ_ERR=204
+EC_CHECK_HTTP_CODE_ERR=205
 
 command=$1
 args="${@:2}"
@@ -38,14 +39,16 @@ retry() {
     $cmd && return 0 || {
       retCode=$?
       if [ "$retCode" = "$stopCode" ]; then
-        log "'$cmd' returned with stop code $stopCode. Stopping ..." && return $retCode
+        log "'$cmd' returned with stop code $stopCode. Stopping ..."
+        return $retCode
       fi
     }
     sleep $interval
     tried=$((tried+1))
   done
 
-  log "'$cmd' still returned errors after $tried attempts. Stopping ..." && return $retCode
+  log "'$cmd' still returned errors after $tried attempts. Stopping ..."
+  return $retCode
 }
 
 rotate() {
@@ -73,11 +76,26 @@ applyRoleScripts() {
   if [ -f "$scriptFile" ]; then . $scriptFile; fi
 }
 
+checkEnv() {
+  test -n "$1"
+}
+
+checkMounts() {
+  test -n "${DATA_MOUNTS+x}" || {
+    log "ERROR: DATA_MOUNTS variable is required to be set."
+    return 1
+  }
+
+  local dataDir; for dataDir in $DATA_MOUNTS; do
+    grep -qs " $dataDir " /proc/mounts
+  done
+}
+
 getServices() {
   if [ "$1" = "-a" ]; then
     echo $SERVICES
   else
-    echo $SERVICES | xargs -n1 | awk -F/ '$2=="true"'
+    echo $SERVICES | xargs -n1 | awk -F/ '$2=="true"' | xargs
   fi
 }
 
@@ -91,13 +109,22 @@ checkActive() {
 }
 
 checkEndpoint() {
-  local host=$MY_IP proto=${1%:*} port=${1#*:}
-  case $proto in
-  tcp) nc -z -w5 $host $port ;;
-  udp) nc -z -u -q5 -w5 $host $port ;;
-  http) local code="$(curl -s -o /dev/null -w "%{http_code}" $host:$port)"; [[ "$code" =~ ^(200|201|302|401|403|404)$ ]];;
-  *) return $EC_CHECK_PROTO_ERR
-  esac
+  local proto=${1%:*} host=${2-$MY_IP} port=${1#*:}
+  if [ "$proto" = "tcp" ]; then
+    nc -z -w5 $host $port
+  elif [ "$proto" = "http" ]; then
+    local code
+    code="$(curl -s -m5 -o /dev/null -w "%{http_code}" $host:$port)" || {
+      log "ERROR: HTTP $code - failed to check http://$host:$port ($?)."
+      return $EC_CHECK_HTTP_REQ_ERR
+    }
+    [[ "$code" =~ ^(200|302|401|403|404)$ ]] || {
+      log "ERROR: unexpected HTTP code $code."
+      return $EC_CHECK_HTTP_CODE_ERR
+    }
+  else
+    return $EC_CHECK_PROTO_ERR
+  fi
 }
 
 isNodeInitialized() {
@@ -109,7 +136,7 @@ initSvc() {
   systemctl unmask -q ${1%%/*}
 }
 
-checkSvc() {
+_checkSvc() {
   checkActive ${1%%/*} || {
     log "Service '$1' is inactive."
     return $EC_CHECK_INACTIVE
@@ -132,26 +159,32 @@ stopSvc() {
 }
 
 restartSvc() {
-  stopSvc $1 && startSvc $1
+  stopSvc $1
+  startSvc $1
 }
 
 ### app management
 
+_preCheck() {
+  checkEnv "$MY_IP"
+}
+
 _initNode() {
+  checkMounts
   rm -rf /data/lost+found
-  install -d -o syslog -g root /data/appctl/logs
+  install -d -o syslog -g svc /data/appctl/logs
   local svc; for svc in $(getServices -a); do initSvc $svc; done
 }
 
 _revive() {
   local svc; for svc in $(getServices); do
-    checkSvc $svc || restartSvc $svc || log "ERROR: failed to restart '$svc' ($?)."
+    execute checkSvc $svc || restartSvc $svc || log "ERROR: failed to restart '$svc' ($?)."
   done
 }
 
 _check() {
   local svc; for svc in $(getServices); do
-    checkSvc $svc
+    execute checkSvc $svc
   done
 }
 
@@ -169,7 +202,8 @@ _stop() {
 }
 
 _restart() {
-  execute stop && execute start
+  execute stop
+  execute start
 }
 
 _reload() {
@@ -184,6 +218,8 @@ _reload() {
 applyEnvFiles
 applyRoleScripts
 
+[ "$APPCTL_ENV" == "dev" ] && set -x
 set -eo pipefail
 
+execute preCheck
 execute $command $args

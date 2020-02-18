@@ -35,7 +35,7 @@ listen RabbitMQ-Cluster
   #balance source
   #balance roundrobin
   #simple polling
-  balance {{getv "/env/haproxy_balance_policy"}}
+  balance {{getv "/env/haproxy.balance.policy"}}
   timeout client  3h
   timeout server  3h
   #rabbitmq cluster node config
@@ -54,7 +54,7 @@ listen RabbitMQ-Cluster-stomp
   #balance source
   #balance roundrobin
   #simple polling
-  balance {{getv "/env/haproxy_balance_policy"}}
+  balance {{getv "/env/haproxy.balance.policy"}}
   timeout client  3h
   timeout server  3h
   {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
@@ -71,7 +71,7 @@ listen RabbitMQ-Cluster-mqtt
   #balance leastconn
   #balance source
   #balance roundrobin
-  balance {{getv "/env/haproxy_balance_policy"}}
+  balance {{getv "/env/haproxy.balance.policy"}}
   timeout client  3h
   timeout server  3h
   {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
@@ -95,12 +95,12 @@ backend back_rabbitmq_management
 # haproxy web monitor infomation
 listen stats
 #bind :8100
-bind :{{getv "/env/haproxy_web_port"}}
+bind :{{getv "/env/haproxy.web.port"}}
 mode http
 stats enable
 stats hide-version
 stats refresh 10s
 stats uri /
-stats auth {{getv "/env/haproxy_username"}}:{{getv "/env/haproxy_password"}}
+stats auth {{getv "/env/haproxy.username"}}:{{getv "/env/haproxy.password"}}
 
 HAPROXY_CONF_EOF
