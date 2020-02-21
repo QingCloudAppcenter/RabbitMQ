@@ -20,9 +20,10 @@ addMonitorUser() {
 
 start() {
   log " startMQ start"
+  [  "$SID" != "1" ] && sleep 5 # left 5s for sid 1 disc node prepare tables
   retry 5 2 0 _start
   #retry 2 1 0 initNode
-  retry 5 2 0 addNode2Cluster
+  retry 3 5 0 addNode2Cluster
   log " startMQ end"
 }
 
@@ -53,6 +54,7 @@ scale_in() {
   do
     local node=$(echo $i | awk -F \" '{print $2}')
     rabbitmqctl forget_cluster_node $node
+    sed -i -e "s/'rabbit@${node}'//g" -e "s/\[\,/\[/g" -e "s/\,\]/\]/g" -e "s/\,\,/\,/g"  /data/mnesia/rabbit@${HOSTNAME}/cluster_nodes.config
   done
   rabbitmqctl start_app
 }
@@ -103,10 +105,11 @@ initCluster() {
 
 addNode2Cluster()  {
   # write for the node which peer discover failed or the adding node
+  local clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
   local allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]');
   if [[ ! "$allnodes" =~ "${DISC_NODE%%,*}" ]]; then  #disc node sid = 1 was not clustered
     rabbitmqctl stop_app
-    rabbitmqctl join_cluster --${MY_ROLE} ${DISC_NODE%%,*}
+    rabbitmqctl join_cluster --${MY_ROLE} rabbit@${DISC_NODE%%,*}
     rabbitmqctl start_app
   else
     log "${MY_ID} already clustered or not the adding node."

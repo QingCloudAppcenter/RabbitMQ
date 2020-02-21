@@ -27,7 +27,7 @@ log() {
   fi
   logger -S 5000 -t appctl --id=$$ -- "[cmd=$command args='$args'] $@"
 }
- 
+
 retry() {
   local tried=0
   local maxAttempts=$1
