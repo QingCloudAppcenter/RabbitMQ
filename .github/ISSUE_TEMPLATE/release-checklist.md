@@ -9,6 +9,7 @@ assignees: ''
 
 # Changelog
 
+
 ## Notice
 - Priority queue on disk data currently cannot be migrated in place between 3.6 and 3.7 (a later series).
   > if upgrade in place priority queue will be empty after node restart, user blue-green upgrade https://www.rabbitmq.com/blue-green-upgrade.html 
@@ -21,6 +22,7 @@ assignees: ''
 ## Bug fixes
 - [x] Reduce the risk of data loss
 
+
 ## Enhancements
 - [ ] Enhancements
 
@@ -28,7 +30,7 @@ assignees: ''
 - [ ] Tech debt
 
 # 通用
-- [ ] 关闭 SSH 服务
+- [x] 关闭 SSH 服务
 - [x] 清除 .bash_history（包括 ubuntu 和 root 用户）
 - [x] 安装 arping 防止同网段虚机和 IP 地址频繁重建引起的问题（apt install iputils-arping）
 - [x] TCP keepalive timeout（基础网络）
@@ -41,9 +43,11 @@ assignees: ''
 - [x] 通过浏览器查看服务日志
 - [x] 日志轮转
 
+
 # 集群功能测试
 
 ## 创建
+
 - [x] 创建单个节点的集群
 - [x] 创建多个节点的集群
 - [x] 创建常用硬件配置的集群
@@ -87,3 +91,4 @@ assignees: ''
 > https://www.rabbitmq.com/memory.html
 > mirror queue guide
 > https://www.rabbitmq.com/ha.html  https://www.jianshu.com/p/f917067bcee3
+
