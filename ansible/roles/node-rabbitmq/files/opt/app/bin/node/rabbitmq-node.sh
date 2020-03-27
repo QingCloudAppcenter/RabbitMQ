@@ -1,26 +1,9 @@
 # Error codes
-EC_MEASURE_ERR=300
-
-
-
-addMonitorUser() {
-  log " addMonitorUser start"
-  local userInfo
-  userInfo=$(rabbitmqctl list_users --formatter=json | jq ".[].user")
-  log " $userInfo"
-  if [[ "$userInfo" =~ "monitor" ]]; then
-    log " User monitor already exist."
-  else
-    rabbitmqctl add_user monitor monitor4rabbitmq
-    rabbitmqctl set_user_tags monitor monitoring
-    log " success add user monitor to node."
-  fi
-  log " addMonitorUser end"
-}
+EC_SCALE_OUT_ERR=240
 
 start() {
   log " startMQ start"
-  [[ "${HOSTNAME}" != "${DISC_NODE:2:10}" ]] && sleep ${SID} # left 5s for 1 disc node prepare tables
+  [[ "${HOSTNAME}" != "${DISC_NODES:2:10}" ]] && sleep ${SID} # left 5s for 1 disc node prepare tables
   retry 5 2 0 _start
   #retry 2 1 0 initNode
   retry 3 5 0 addNode2Cluster
@@ -60,58 +43,30 @@ scale_in() {
 }
 
 scale_out() {
-  log " scale_out start"
-  rabbitmqctl -t 3 node_health_check >/dev/null  2>&1
-  if [ $? -eq 0 ]; then
-    exit 0
-  else
-    rabbitmqctl -t 3 status  >/dev/null  2>&1
-    if [ $? -eq 0 ]; then
-      rabbitmqctl start_app
+  for i in $(curl -s metadata/self/adding-hosts | grep instance_id | awk '{print $2}'); do
+    local clusterInfo=$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')
+    if [[ "$(rabbitmqctl -t 3 node_health_check -n rabbit@${i})" =~ "passed" ]] && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
+      log "${i} was clustered successful in scale-out";
     else
-      init
-      systemctl restart rabbitmq-server
+      log "${i} was clustering failed in scale-out";
+      exit 240
     fi
-  fi
-  log " scale_out end"
+  done
 }
 
 measure() {
-  data=$(curl --connect-timeout 2 -m 2 -i -u monitor:monitor4rabbitmq "http://localhost:15672/api/nodes/rabbit@$HOSTNAME" -s |tail -1  |jq -r '{mem_alarm: .mem_alarm, disk_free_alarm: .disk_free_alarm,fd_used:.fd_used,sockets_used:.sockets_used,proc_used:.proc_used,run_queue:.run_queue,mem_used:.mem_used}')
-  if [[ "$data" =~ "Login failed" ]];
-  then
-      log "USER monitor Login failed"
-      appctl addMonitorUser
-      exit 300
-  fi
-  if [ "$data" = "{\"error\":\"Object Not Found\",\"reason\":\"Not Found\"}" ];
-  then
-    log "func MQ_monitor Url not found"
-    exit 301
-  fi
-  fd_used=`echo ${data} | jq .'fd_used'`
-  sockets_used=`echo ${data} | jq .'sockets_used'`
-  proc_used=`echo ${data} | jq .'proc_used'`
-  run_queue=`echo ${data} | jq .'run_queue'`
-  mem_used=`echo ${data} | jq .'mem_used'`
-  mem_used=`gawk -v x=${mem_used} -v y=1048576 'BEGIN{printf "%.0f\n",x/y}'`
-  echo "{\"fd_used\":$fd_used,\"sockets_used\":$sockets_used,\"proc_used\":$proc_used,\"run_queue\":$run_queue,\"mem_used\":$mem_used}"
-
-}
-
-initCluster() {
-  addMonitorUser
+  rabbitmqctl status --formatter=json | jq '{"fd_used": (.file_descriptors.total_used), "sockets_used" : (.file_descriptors.sockets_used), "proc_used": (.processes.used), "run_queue": (.run_queue), "mem_used": (.memory.total.rss / 1048576)}'
 }
 
 addNode2Cluster()  {
   # write for the node which peer discover failed or the adding node
   local clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
   local allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]');
-  if [[ ! "$allNodes" =~ "${DISC_NODE:2:10}" ]]; then  #disc node ${DISC_NODE##*-} was not clustered
+  if [[ ! "$allNodes" =~ "${DISC_NODES:2:10}" ]]; then  #disc node ${DISC_NODES##*-} was not clustered
     rabbitmqctl stop_app
-    rabbitmqctl join_cluster --${MY_ROLE} rabbit@${DISC_NODE:2:10}
+    rabbitmqctl join_cluster --${MY_ROLE} rabbit@${DISC_NODES:2:10}
     rabbitmqctl start_app
   else
-    log "${DISC_NODE:2:10} already clustered or ${MY_ID} not the adding node."
+    log "${DISC_NODES:2:10} already clustered or ${MY_ID} not the adding node."
   fi
 }

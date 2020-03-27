@@ -9,4 +9,5 @@
     directory_mode: u=rwx,g=rx,o=
 
 - name: install confd files
-  include_tasks: ../../utils/tasks/process-confd-files.yml
+  include_role:
+    name: confd-files-1.0.2
