@@ -21,7 +21,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-rcngqb7n"
+            "image": "img-v2l22xbx"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -33,11 +33,6 @@
             "filesystem": "ext4"
         },
         "services": {
-            "init": {
-                "post_start_service": true,
-                "nodes_to_execute_on": 1,
-                "cmd": "appctl initCluster"
-            },
             "start": {
                 "order": 1,
                 "cmd": "appctl start"
@@ -107,7 +102,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-rcngqb7n"
+            "image": "img-v2l22xbx"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -119,10 +114,6 @@
             "filesystem": "ext4"
         },
         "services": {
-            "init": {
-                "order": 2,
-                "cmd": "appctl initNode"
-            },
             "start": {
                 "order": 2,
                 "cmd": "appctl start"
@@ -192,7 +183,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-rcngqb7n"
+            "image": "img-v2l22xbx"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -200,9 +191,6 @@
         "memory": {{cluster.client.memory}},
         "user_access": true,
         "services": {
-            "init": {
-                "cmd": "appctl initNode"
-            },
             "start": {
                 "cmd": "appctl start"
             },
@@ -216,7 +204,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-rcngqb7n"
+            "image": "img-v2l22xbx"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -278,6 +266,10 @@
     "endpoints": {
         "client": {
             "port": 5672,
+            "protocol": "tcp"
+        },
+        "status": {
+            "port": 8100,
             "protocol": "tcp"
         },
         "reserved_ips": {

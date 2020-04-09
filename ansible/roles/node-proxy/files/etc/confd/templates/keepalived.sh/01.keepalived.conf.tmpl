@@ -12,18 +12,18 @@ vrrp_script check_haproxy {
 vrrp_instance HAProxy_HA {
     state BACKUP
     interface eth0
-    virtual_router_id {{index $replicaIPs 3}}
-    priority {{getv "/host/sid"}}
+    virtual_router_id {{ index $replicaIPs 3 }}
+    priority {{ getv "/host/sid" }}
     advert_int 2
     nopreempt
-    unicast_src_ip {{getv "/host/ip"}}
+    unicast_src_ip {{ getv "/host/ip" }}
     authentication {
         auth_type PASS
         auth_pass pwd
     }
 
     virtual_ipaddress { #set VIP
-       {{getv "/cluster/endpoints/reserved_ips/vip/value"}}/24
+       {{ getv "/cluster/endpoints/reserved_ips/vip/value" }}/24
    }
 
     track_script {

@@ -13,7 +13,7 @@
     state: directory
   with_items:
     - opt/keepalived
-    - opt/keepalived/keepalived-2.0.18
+    - opt/keepalived/2.0.18
     - etc/keepalived
 
 - name: Download reusable keepalived binaries locally
@@ -25,22 +25,22 @@
 - name: Extract binary
   unarchive:
     src: "/opt/keepalived/keepalived-2.0.18.tar.gz"
-    dest: "/opt/keepalived/keepalived-2.0.18"
-    creates: "/opt/keepalived/keepalived-2.0.18/configure"
+    dest: "/opt/keepalived/2.0.18"
+    creates: "/opt/keepalived/2.0.18/configure"
     extra_opts: [ --strip-components=1 ]
     remote_src: yes
 
 - name: install keepalived
   shell:
     cmd: |
-      cd /opt/keepalived/keepalived-2.0.18
+      cd /opt/keepalived/2.0.18
       ./configure
       make
       sudo make install
 
 - name: create keepalived current link
   file:
-    src: /opt/keepalived/keepalived-2.0.18
+    src: /opt/keepalived/2.0.18
     dest: /opt/keepalived/current
     state: link
 

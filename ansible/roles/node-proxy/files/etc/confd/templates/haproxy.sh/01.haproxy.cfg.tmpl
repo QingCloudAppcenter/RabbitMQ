@@ -35,14 +35,14 @@ listen RabbitMQ-Cluster
   #balance source
   #balance roundrobin
   #simple polling
-  balance {{getv "/env/haproxy.balance.policy"}}
+  balance {{ getv "/env/haproxy.balance.policy" }}
   timeout client  3h
   timeout server  3h
   #rabbitmq cluster node config
-  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
-  server rabbit_{{$dir}} {{getv $ip}}:5672 check inter 5000 rise 2 fall 2  {{end}}
-  {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
-  server rabbit_{{$dir}} {{getv $ip}}:5672 check inter 5000 rise 2 fall 2  {{end}}
+  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
+  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
 
 #front-end IP for stomp
 listen RabbitMQ-Cluster-stomp
@@ -54,13 +54,13 @@ listen RabbitMQ-Cluster-stomp
   #balance source
   #balance roundrobin
   #simple polling
-  balance {{getv "/env/haproxy.balance.policy"}}
+  balance {{ getv "/env/haproxy.balance.policy" }}
   timeout client  3h
   timeout server  3h
-  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
-   server rabbit_{{$dir}} {{getv $ip}}:61613 check inter 5000 rise 2 fall 2  {{end}}
-  {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
-   server rabbit_{{$dir}} {{getv $ip}}:61613 check inter 5000 rise 2 fall 2  {{end}}
+  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+   server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
 
 #front-end IP for mqtt
 listen RabbitMQ-Cluster-mqtt
@@ -71,13 +71,13 @@ listen RabbitMQ-Cluster-mqtt
   #balance leastconn
   #balance source
   #balance roundrobin
-  balance {{getv "/env/haproxy.balance.policy"}}
+  balance {{ getv "/env/haproxy.balance.policy" }}
   timeout client  3h
   timeout server  3h
-  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
-   server rabbit_{{$dir}} {{getv $ip}}:1883 check inter 5000 rise 2 fall 2  {{end}}
-  {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
-   server rabbit_{{$dir}} {{getv $ip}}:1883 check inter 5000 rise 2 fall 2  {{end}}
+  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
 
 #rabbitmq-management
 # optional, for proxying management site
@@ -87,20 +87,20 @@ frontend front_rabbitmq_management
 
 backend back_rabbitmq_management
   balance source
-  {{range $dir := lsdir "/hosts/disc"}}{{$ip := printf "/hosts/disc/%s/ip" $dir}}
-   server rabbit_{{$dir}} {{getv $ip}}:15672 check {{end}}
-   {{range $dir := lsdir "/hosts/ram"}}{{$ip := printf "/hosts/ram/%s/ip" $dir}}
-   server rabbit_{{$dir}} {{getv $ip}}:15672 check {{end}}
+  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{g etv $ip }}:15672 check {{ end }}
+  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
 
 # haproxy web monitor infomation
 listen stats
 #bind :8100
-bind :{{getv "/env/haproxy.web.port"}}
+bind :{{ getv "/env/haproxy.web.port" }}
 mode http
 stats enable
 stats hide-version
 stats refresh 10s
 stats uri /
-stats auth {{getv "/env/haproxy.username"}}:{{getv "/env/haproxy.password"}}
+stats auth {{ getv "/env/haproxy.username" }}:{{ getv "/env/haproxy.password" }}
 
 HAPROXY_CONF_EOF
