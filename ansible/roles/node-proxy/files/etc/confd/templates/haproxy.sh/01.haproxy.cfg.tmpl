@@ -88,7 +88,7 @@ frontend front_rabbitmq_management
 backend back_rabbitmq_management
   balance source
   {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{g etv $ip }}:15672 check {{ end }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
   {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
   server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
 

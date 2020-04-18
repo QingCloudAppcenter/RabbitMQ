@@ -2,7 +2,8 @@
 - name: common setup
   hosts: all
   strategy: free
-
+  vars:
+    target_env: "{{ lookup('env', 'target') }}"
   tasks:
   - include_role:
       name: "{{ service_name }}"
