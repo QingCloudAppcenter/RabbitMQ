@@ -12,10 +12,29 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
-- name: download deb
-  get_url:
-    url="https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb"
-    dest="/tmp/erlang-solutions_1.0_all.deb"
+- name: install rabbitmq deb
+  include_role:
+    name: install-1.0.5
+  vars:
+    opts:
+      pkg_name: "{{ item.name }}"
+      pkg_version: "{{ item.version }}"
+      pkg_type: deb
+      pkg_url: "{{ item.url }}"
+      extracts: false
+      dest_path: "/tmp/{{ item.dest }}"
+      creates: 
+      bin_path:
+  with_items:
+    - url: "https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb"
+      name: "erlang-solutions"
+      version: "1.0"
+      dest: "erlang-solutions_1.0_all.deb"
+    - url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
+      name: "rabbitmq"
+      version: "3.7.23"
+      dest: "rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
+
 
 - name: apt for erlang
   apt: deb="/tmp/erlang-solutions_1.0_all.deb"
@@ -56,19 +75,6 @@
     name: ['apt-transport-https', 'jq']
     update_cache: yes
 
-- name: install rabbitmq deb
-  include_role:
-    name: install-1.0.5
-  vars:
-    opts:
-      pkg_name: rabbitmq
-      pkg_version: "{{ rabbitmq_version }}"
-      pkg_type: deb
-      pkg_url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-      extracts: false
-      dest_path: "/tmp/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-      creates: 
-      bin_path:
 
 # https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb
 
@@ -76,11 +82,19 @@
   apt: deb="/tmp/rabbitmq-server_3.7.23-1_all.deb"
   become: yes
 
-
-- name: download and unzip rabbitmq_delayed_message_exchange plugns
-  get_url:
-    url="https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.8.0/rabbitmq_delayed_message_exchange-3.8.0.ez"
-    dest="/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.23/plugins/rabbitmq_delayed_message_exchange-3.8.0.ez"
+- name: download plugins for rabbitmq
+  include_role:
+    name: install-1.0.5
+  vars:
+    opts:
+      pkg_name: "rabbitmq-delayed_message_exchange"
+      pkg_version: "3.8.0"
+      pkg_type: ez
+      pkg_url: "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.8.0/rabbitmq_delayed_message_exchange-3.8.0.ez"
+      extracts: false
+      dest_path: "/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.23/plugins/rabbitmq_delayed_message_exchange-3.8.0.ez"
+      creates: 
+      bin_path:
 
 #unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
 

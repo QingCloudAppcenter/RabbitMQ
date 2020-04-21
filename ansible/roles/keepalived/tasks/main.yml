@@ -7,28 +7,24 @@
 
 - name: Prepare directories for keepalived
   file:
-    path: /{{ item }}
+    path: /etc/keepalived
     owner: root
     group: root
     state: directory
-  with_items:
-    - opt/keepalived
-    - opt/keepalived/2.0.18
-    - etc/keepalived
 
-- name: Download reusable keepalived binaries locally
-  get_url:
-    url: "https://www.keepalived.org/software/keepalived-2.0.18.tar.gz"
-    dest: "/opt/keepalived/keepalived-2.0.18.tar.gz"
-#  delegate_to: localhost
-
-- name: Extract binary
-  unarchive:
-    src: "/opt/keepalived/keepalived-2.0.18.tar.gz"
-    dest: "/opt/keepalived/2.0.18"
-    creates: "/opt/keepalived/2.0.18/configure"
-    extra_opts: [ --strip-components=1 ]
-    remote_src: yes
+- name: install keepalived
+  include_role:
+    name: install-1.0.5
+  vars:
+    opts:
+      pkg_name: keepalived
+      pkg_version: "{{ item }}"
+      pkg_type: tgz
+      pkg_url: "https://www.keepalived.org/software/keepalived-{{ item }}.tar.gz"
+      extracts: yes
+      creates: "configure"
+      bin_path:
+  with_items: "2.0.18"
 
 - name: install keepalived
   shell:
@@ -37,12 +33,6 @@
       ./configure
       make
       sudo make install
-
-- name: create keepalived current link
-  file:
-    src: /opt/keepalived/2.0.18
-    dest: /opt/keepalived/current
-    state: link
 
 - name: create keepalived service link
   file:
@@ -56,4 +46,3 @@
     enabled: no
     masked: yes
     state: stopped
-
