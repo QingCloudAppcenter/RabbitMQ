@@ -39,10 +39,10 @@ listen RabbitMQ-Cluster
   timeout client  3h
   timeout server  3h
   #rabbitmq cluster node config
-  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
-  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end -}}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{- end }}
 
 #front-end IP for stomp
 listen RabbitMQ-Cluster-stomp
@@ -57,10 +57,10 @@ listen RabbitMQ-Cluster-stomp
   balance {{ getv "/env/haproxy.balance.policy" }}
   timeout client  3h
   timeout server  3h
-  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
-  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
-   server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end -}}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+   server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{- end }}
 
 #front-end IP for mqtt
 listen RabbitMQ-Cluster-mqtt
@@ -74,10 +74,10 @@ listen RabbitMQ-Cluster-mqtt
   balance {{ getv "/env/haproxy.balance.policy" }}
   timeout client  3h
   timeout server  3h
-  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
-  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end -}}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{- end }}
 
 #rabbitmq-management
 # optional, for proxying management site
@@ -87,10 +87,10 @@ frontend front_rabbitmq_management
 
 backend back_rabbitmq_management
   balance source
-  {{ range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
-  {{ range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end -}}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{- end }}
 
 # haproxy web monitor infomation
 listen stats
