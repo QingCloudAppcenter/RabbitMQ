@@ -252,6 +252,7 @@
             "type": "password",
             "changeable":true,
             "default": "haproxy",
+            "pattern": "^([a-zA-Z0-9_!#%^&*()./;]{6,}|)$",
             "required": "no"
         }, {
             "key": "num.tcp.acceptors",
