@@ -1,0 +1,8 @@
+
+flush /opt/app/bin/envs/instance.info << INSTANCE_INFO_EOF
+{{- range $allRole := lsdir "/hosts" }}
+{{ . }}{{ range  getvs (printf "/hosts/%s/*/instance_id" $allRole) }}/{{ . }}{{- end }}
+{{- end }}
+
+
+INSTANCE_INFO_EOF

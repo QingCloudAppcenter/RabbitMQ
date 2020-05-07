@@ -23,7 +23,7 @@ vrrp_instance HAProxy_HA {
     }
 
     virtual_ipaddress { #set VIP
-       {{ getv "/cluster/endpoints/reserved_ips/vip/value" }}/24
+        {{ getv "/cluster/endpoints/reserved_ips/vip/value" }}/24
    }
 
     track_script {

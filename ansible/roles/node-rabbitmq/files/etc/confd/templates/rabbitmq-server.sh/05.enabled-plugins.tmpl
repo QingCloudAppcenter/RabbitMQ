@@ -1,4 +1,4 @@
-flush > /etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
+flush /etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
 [
 {{- if eq (getv "/host/role") "disc" }}
   rabbitmq_delayed_message_exchange,

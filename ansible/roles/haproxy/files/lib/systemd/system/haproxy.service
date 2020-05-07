@@ -38,4 +38,4 @@ Type=notify
 # SystemCallFilter=~@cpu-emulation @keyring @module @obsolete @raw-io
 
 [Install]
-WantedBy=multi-user.targe
+WantedBy=multi-user.target
