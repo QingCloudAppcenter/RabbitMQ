@@ -37,36 +37,38 @@ stop() {
   _stop
 }
 
-isClusterChanged() {
+isFileChanged() {
   # 1: true  0: false
-  if [[ -f "/opt/app/bin/envs/instance.info.1" ]]; then
-    cmp -s /opt/app/bin/envs/instance.info /opt/app/bin/envs/instance.info.1
+  if [[ -f "${1}.1" ]]; then
+    cmp -s ${1} ${1}.1
   else
     return 0
   fi
 }
 
-reload() {
-  isNodeInitialized || return 0
+checkFileChanged() {
+  # 1: 存在且相同  0: 不存在/不同
+  ! ([ -f "$1.1" ] && cmp -s $1 $1.1)
+}
 
+reload() {
+  if ! isNodeInitialized; then return 0; fi
   case ${1} in
     rabbitmq-server)
-      if isClusterChanged; then
+      if isFileChanged "/opt/app/bin/envs/instance.env"; then
         log "first start or cluster didn't changed"
-        _reload rabbitmq-server
+        [[ "$(comm --nocheck-order -23 /etc/rabbitmq/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf.1 | grep -v  ^cluster_formation | wc -l)" -gt "0" ]] && _reload rabbitmq-server
       else
         log "add node ${ADDINGHOST:-null}, del node ${DELETINGHOST:-null}"
       fi
       ;;
-    caddy)
-      _reload caddy ;;
     *) 
       _reload $@ ;;
   esac
 }
 
 scale_in() {
-  if isClusterChanged && [[ -n "${DELETINGHOST}" ]]; then
+  if [[ "$(isFileChanged /opt/app/bin/envs/instance.env)" -gt "0" ]] && [[ -n "${DELETINGHOST}" ]]; then
     for i in ${DELETINGHOST}; do
       rabbitmqctl forget_cluster_node ${i}
     done
@@ -74,7 +76,7 @@ scale_in() {
 }
 
 scale_out() {
-  if isClusterChanged && [[ -n "${ADDINGHOST}" ]]; then
+  if [[ "$(isFileChanged /opt/app/bin/envs/instance.env)" -gt "0" ]] && [[ -n "${ADDINGHOST}" ]]; then
     for i in ${ADDINGHOST}; do
       local clusterInfo=$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')
       if [[ "$(rabbitmqctl -t 3 node_health_check -n rabbit@${i})" =~ "passed" ]] && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
