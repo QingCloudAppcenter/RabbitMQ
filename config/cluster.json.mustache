@@ -21,7 +21,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-mr81mq8l"
+            "image": "img-2ytydrej"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -45,14 +45,18 @@
                 "order": 1,
                 "cmd": "appctl restart"
             },
+            "scale_in": {
+                "nodes_to_execute_on": 1,
+                "cmd": "appctl scale_in",
+                "timeout": 90
+            },
             "destroy": {
                 "order": 2,
                 "cmd": "appctl stop"
             },
-            "scale_in": {
-                "nodes_to_execute_on": 1,
-                "cmd": "appctl scale_in",
-                "timeout": 86400
+            "scale_out": {
+                "cmd": "appctl scale_out",
+                "timeout": 90
             }
         },
         "advanced_actions": ["scale_horizontal"],
@@ -102,7 +106,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-mr81mq8l"
+            "image": "img-2ytydrej"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -130,10 +134,9 @@
                 "order": 1,
                 "cmd": "appctl stop"
             },
-            "scale_in": {
-                "nodes_to_execute_on": 1,
-                "cmd": "appctl scale_in",
-                "timeout": 86400
+            "scale_out": {
+                "cmd": "appctl scale_out",
+                "timeout": 90
             }
         },
         "advanced_actions": ["scale_horizontal"],
@@ -183,7 +186,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-mr81mq8l"
+            "image": "img-2ytydrej"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -204,7 +207,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-mr81mq8l"
+            "image": "img-2ytydrej"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},

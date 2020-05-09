@@ -29,14 +29,6 @@ initNode() {
   log " initRabbitmq end"
 }
 
-stop() {
-  if [[ "${DELETINGHOST:-null}" =~ "${HOSTNAME}" ]]; then 
-    rabbitmqctl stop_app;
-    rabbitmqctl reset;
-  fi
-  _stop
-}
-
 isFileChanged() {
   # 1: true  0: false
   if [[ -f "${1}.1" ]]; then
@@ -68,15 +60,20 @@ reload() {
 }
 
 scale_in() {
-  if [[ "$(isFileChanged /opt/app/bin/envs/instance.env)" -gt "0" ]] && [[ -n "${DELETINGHOST}" ]]; then
-    for i in ${DELETINGHOST}; do
-      rabbitmqctl forget_cluster_node ${i}
-    done
-  fi
+  log "scale in include ${DELETINGHOST:-null}"
+  local clusterInfo=$(rabbitmqctl cluster_status --formatter=json)
+  local allNodes=$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]');
+  for i in ${DELETINGHOST}; do
+    if [[ "$allNodes" =~ "${i}" ]]; then
+      rabbitmqctl forget_cluster_node rabbit@${i}
+      log "scale_in forget node $i from cluster"
+    fi
+  done
+
 }
 
 scale_out() {
-  if [[ "$(isFileChanged /opt/app/bin/envs/instance.env)" -gt "0" ]] && [[ -n "${ADDINGHOST}" ]]; then
+  if [[ -n "${ADDINGHOST}" ]]; then
     for i in ${ADDINGHOST}; do
       local clusterInfo=$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')
       if [[ "$(rabbitmqctl -t 3 node_health_check -n rabbit@${i})" =~ "passed" ]] && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
