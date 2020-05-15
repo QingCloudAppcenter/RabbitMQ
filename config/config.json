@@ -224,30 +224,30 @@
         "description": "RabbitMQ service properties",
         "type": "array",
         "properties": [{
-            "key": "haproxy.balance.policy",
-            "label": "haproxy.balance.policy",
+            "key": "haproxy_balance_policy",
+            "label": "haproxy_balance_policy",
             "description": "haproxy balance policy",
             "type": "string",
             "default": "roundrobin",
             "required": "no",
             "range": ["roundrobin", "leastconn", "static-rr", "source", "uri", "url_param"]
         }, {
-            "key": "haproxy.web.port",
-            "label": "haproxy.web.port",
+            "key": "haproxy_web_port",
+            "label": "haproxy_web_port",
             "description": "haproxy web port",
             "type": "integer",
             "default": 8100,
             "required": "no"
         }, {
-            "key": "haproxy.username",
-            "label": "haproxy.username",
+            "key": "haproxy_username",
+            "label": "haproxy_username",
             "description": "haproxy web login usernam",
             "type": "string",
             "default": "haproxy",
             "required": "no"
         }, {
-            "key": "haproxy.password",
-            "label": "haproxy.password",
+            "key": "haproxy_password",
+            "label": "haproxy_password",
             "description": "haproxy web login passwd",
             "type": "password",
             "changeable":true,
@@ -255,8 +255,8 @@
             "pattern": "^([a-zA-Z0-9_!#%^&*()./;]{6,}|)$",
             "required": "no"
         }, {
-            "key": "num.tcp.acceptors",
-            "label": "num.tcp.acceptors",
+            "key": "num_tcp_acceptors",
+            "label": "num_tcp_acceptors",
             "description": "Number of Erlang processes that will accept connections for the TCP listeners",
             "type": "integer",
             "default": 10,
@@ -264,46 +264,46 @@
             "max":200,
             "required": "no"
         }, {
-            "key": "handshake.timeout",
-            "label": "handshake.timeout",
+            "key": "handshake_timeout",
+            "label": "handshake_timeout",
             "description": "Maximum time for AMQP 0-8/0-9/0-9-1 handshake (after socket connection and SSL handshake), in milliseconds",
             "type": "integer",
             "default": 10000,
             "min":5000,
             "required": "no"
         }, {
-            "key": "vm.memory.high.watermark",
-            "label": "vm.memory.high.watermark",
+            "key": "vm_memory_high_watermark",
+            "label": "vm_memory_high_watermark",
             "description": "Memory threshold at which the flow control is triggered",
             "type": "number",
             "default": 0.4,
             "range": [0.3,0.4,0.5,0.6,0.7],
             "required": "no"
         }, {
-            "key": "vm.memory.high.watermark.paging.ratio",
-            "label": "vm.memory.high.watermark.paging.ratio",
+            "key": "vm_memory_high_watermark_paging_ratio",
+            "label": "vm_memory_high_watermark_paging_ratio",
             "description": "Fraction of the high watermark limit at which queues start to page messages out to disc to free up memory",
             "type": "number",
             "default": 0.5,
             "range": [0.3,0.4,0.5,0.6,0.7],
             "required": "no"
         }, {
-            "key": "disk.free.limit",
-            "label": "disk.free.limit",
+            "key": "disk_free_limit",
+            "label": "disk_free_limit",
             "description": "Disk free space (in bytes) limit of the partition on which RabbitMQ is storing data",
             "type": "integer",
             "default": 50000000,
             "required": "no"
         }, {
-            "key": "frame.max",
-            "label": "frame.max",
+            "key": "frame_max",
+            "label": "frame_max",
             "description": "Maximum permissible size of a frame (in bytes) to negotiate with clients,setting to 0 means unlimited but will trigger a bug in some QPid clients. Setting a larger value may improve throughput; setting a smaller value may improve latency",
             "type": "integer",
             "default": 131072,
             "required": "no"
         }, {
-            "key": "channel.max",
-            "label": "channel.max",
+            "key": "channel_max",
+            "label": "channel_max",
             "description": "Maximum permissible number of channels to negotiate with clients. Setting to 0 means unlimited. Using more channels increases memory footprint of the broker.",
             "type": "integer",
             "default": 0,
@@ -316,91 +316,91 @@
             "default": 60,
             "required": "no"
         }, {
-            "key": "collect.statistics",
-            "label": "collect.statistics",
+            "key": "collect_statistics",
+            "label": "collect_statistics",
             "description": "Statistics collection mode. Primarily relevant for the management plugin",
             "type": "string",
             "range": ["none","coarse","fine"],
             "default": "none",
             "required": "no"
         }, {
-            "key": "collect.statistics.interval",
-            "label": "collect.statistics.interval",
+            "key": "collect_statistics_interval",
+            "label": "collect_statistics_interval",
             "description": "Statistics collection interval in milliseconds. Primarily relevant for the management plugin",
             "type": "integer",
             "default": 5000,
             "required": "no"
         }, {
-            "key": "cluster.partition.handling",
-            "label": "cluster.partition.handling",
+            "key": "cluster_partition_handling",
+            "label": "cluster_partition_handling",
             "description": "How to handle network partitions",
             "type": "string",
             "range": ["ignore","pause_minority","autoheal"],
             "default": "ignore",
             "required": "no"
         }, {
-            "key": "hipe.compile",
-            "label": "hipe.compile",
+            "key": "hipe_compile",
+            "label": "hipe_compile",
             "description": "Set to true to precompile parts of RabbitMQ with HiPE, a just-in-time compiler for Erlang. This will increase server throughput at the cost of increased startup time",
             "type": "boolean",
             "default": false,
             "range": [true, false],
             "required": "no"
         }, {
-            "key": "cluster.keepalive.interval",
-            "label": "cluster.keepalive.interval",
+            "key": "cluster_keepalive_interval",
+            "label": "cluster_keepalive_interval",
             "description": "How frequently nodes should send keepalive messages to other nodes (in milliseconds)",
             "type": "integer",
             "default": 10000,
             "required": "no"
         }, {
-            "key": "background.gc.target.interval",
-            "label": "background.gc.target.interval",
+            "key": "background_gc_target_interval",
+            "label": "background_gc_target_interval",
             "description": "The actual interval will vary depending on how long it takes to execute the operation",
             "type": "integer",
             "min":30000,
             "default": 60000,
             "required": "no"
         }, {
-            "key": "background.gc.enabled",
-            "label": "background.gc.enabled",
+            "key": "background_gc_enabled",
+            "label": "background_gc_enabled",
             "description": "Disabling background GC may reduce latency for client operations, keeping it enabled may reduce median RAM usage",
             "type": "boolean",
             "default": false,
             "range": [true, false],
             "required": "no"
         }, {
-            "key": "reverse.dns.lookups",
-            "label": "reverse.dns.lookups",
+            "key": "reverse_dns_lookups",
+            "label": "reverse_dns_lookups",
             "description": "Set to true to have RabbitMQ perform a reverse DNS lookup on client connections, and present that information through rabbitmqctl and the management plugin",
             "type": "boolean",
             "default": false,
             "range": [true, false],
             "required": "no"
         }, {
-            "key": "tracing.user",
-            "label": "tracing.user",
+            "key": "tracing_user",
+            "label": "tracing_user",
             "description": "The name of a user as which to create the tracing queues and bindings",
             "type": "string",
             "default": "guest",
             "required": "no"
         }, {
-            "key": "proxy.protocol",
-            "label": "proxy.protocol",
+            "key": "proxy_protocol",
+            "label": "proxy_protocol",
             "description": "Whether or not to enable proxy protocol support. Once enabled, clients cannot directly connect to the broker anymore. They must connect through a load balancer that sends theproxy protocol header to the broker at connection time.This setting applies only to AMQP clients, other protocolslike MQTT or STOMP have their own setting to enable proxy protocol. See the plugins documentation for more information",
             "type": "boolean",
             "default": false,
             "range": [true, false],
             "required": "no"
         }, {
-            "key": "log.webViewer.enabled",
+            "key": "log_webViewer_enabled",
             "label": "Switch of log webViewer",
             "description": "Whether to enable log webViewer",
             "type": "boolean",
             "default": false,
             "required": "no"
         }, {
-            "key": "log.webViewer.username",
+            "key": "log_webViewer_username",
             "label": "Username of log webViewer",
             "description": "username of log webViewer",
             "type": "string",
@@ -408,7 +408,7 @@
             "default": "admin",
             "required": "no"
         }, {
-            "key": "log.webViewer.password",
+            "key": "log_webViewer_password",
             "label": "Password of log webViewer",
             "description": "password of log webViewer",
             "type": "password",

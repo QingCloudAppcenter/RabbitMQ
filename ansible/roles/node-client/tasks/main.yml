@@ -4,6 +4,6 @@
     src: files/opt/app/
     dest: /opt/app/
     owner: root
-    group: root
+    group: svc
     mode: preserve
     directory_mode: u=rwx,g=rx,o=

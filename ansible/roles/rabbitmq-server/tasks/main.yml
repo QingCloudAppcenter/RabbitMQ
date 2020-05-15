@@ -8,7 +8,7 @@
     src: files/lib/
     dest: /lib
     owner: root
-    group: root
+    group: svc
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 

@@ -21,7 +21,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-2oixyad0"
+            "image": "img-2gtvzi28"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -106,7 +106,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-2oixyad0"
+            "image": "img-2gtvzi28"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -186,7 +186,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-2oixyad0"
+            "image": "img-2gtvzi28"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -207,7 +207,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-2oixyad0"
+            "image": "img-2gtvzi28"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -240,31 +240,31 @@
         }
     }],
     "env": {
-        "haproxy.balance.policy": {{env.haproxy.balance.policy}},
-        "haproxy.web.port": {{env.haproxy.web.port}},
-        "haproxy.username": {{env.haproxy.username}},
-        "haproxy.password": {{env.haproxy.password}},
-        "num.tcp.acceptors": {{env.num.tcp.acceptors}},
-        "handshake.timeout": {{env.handshake.timeout}},
-        "reverse.dns.lookups": {{env.reverse.dns.lookups}},
-        "vm.memory.high.watermark": {{env.vm.memory.high.watermark}},
-        "vm.memory.high.watermark.paging.ratio": {{env.vm.memory.high.watermark.paging.ratio}},
-        "disk.free.limit": {{env.disk.free.limit}},
-        "frame.max": {{env.frame.max}},
-        "channel.max": {{env.channel.max}},
+        "haproxy_balance_policy": {{env.haproxy_balance_policy}},
+        "haproxy_web_port": {{env.haproxy_web_port}},
+        "haproxy_username": {{env.haproxy_username}},
+        "haproxy_password": {{env.haproxy_password}},
+        "num_tcp_acceptors": {{env.num_tcp_acceptors}},
+        "handshake_timeout": {{env.handshake_timeout}},
+        "reverse_dns_lookups": {{env.reverse_dns_lookups}},
+        "vm_memory_high_watermark": {{env.vm_memory_high_watermark}},
+        "vm_memory_high_watermark_paging_ratio": {{env.vm_memory_high_watermark_paging_ratio}},
+        "disk_free_limit": {{env.disk_free_limit}},
+        "frame_max": {{env.frame_max}},
+        "channel_max": {{env.channel_max}},
         "heartbeat": {{env.heartbeat}},
-        "collect.statistics": {{env.collect.statistics}},
-        "collect_statistics.interval": {{env.collect.statistics.interval}},
-        "cluster.partition.handling": {{env.cluster.partition.handling}},
-        "hipe.compile": {{env.hipe.compile}},
-        "cluster.keepalive.interval": {{env.cluster.keepalive.interval}},
-        "background.gc.enabled": {{env.background.gc.enabled}},
-        "background.gc.target.interval": {{env.background.gc.target.interval}},
-        "proxy.protocol": {{env.proxy.protocol}},
-        "tracing.user": {{env.tracing.user}},
-        "log.webViewer.enabled": {{env.log.webViewer.enabled}},
-        "log.webViewer.username": {{env.log.webViewer.username}},
-        "log.webViewer.password": {{env.log.webViewer.password}}
+        "collect_statistics": {{env.collect_statistics}},
+        "collect_statistics_interval": {{env.collect_statistics_interval}},
+        "cluster_partition_handling": {{env.cluster_partition_handling}},
+        "hipe_compile": {{env.hipe_compile}},
+        "cluster_keepalive_interval": {{env.cluster_keepalive_interval}},
+        "background_gc_enabled": {{env.background_gc_enabled}},
+        "background_gc_target_interval": {{env.background_gc_target_interval}},
+        "proxy_protocol": {{env.proxy_protocol}},
+        "tracing_user": {{env.tracing_user}},
+        "log_webViewer_enabled": {{env.log_webViewer_enabled}},
+        "log_webViewer_username": {{env.log_webViewer_username}},
+        "log_webViewer_password": {{env.log_webViewer_password}}
     },
     "endpoints": {
         "client": {

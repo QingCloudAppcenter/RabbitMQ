@@ -52,7 +52,7 @@
     "Number of Erlang processes that will accept connections for the TCP listeners": "接受TCP侦听器连接的Erlang进程数",
     "Maximum time for AMQP 0-8/0-9/0-9-1 handshake (after socket connection and SSL handshake), in milliseconds": "AMQP 0-8/0-9/0-9-1 handshake (在 socket 连接和SSL 握手之后）的最大时间, 单位为毫秒",
     "Memory threshold at which the flow control is triggered": "流程控制触发的内存阀值",
-    "Fraction of the high watermark limit at which queues start to page messages out to disc to free up memory": "高水位限制的分数，当达到阀值时，队列中消息消息会转移到磁盘上以释放内存",
+    "Fraction of the high watermark limit at which queues start to page messages out to disc to free up memory": "高水位限制的分数，当达到阀值时，队列中消息会转移到磁盘上以释放内存",
     "Disk free space (in bytes) limit of the partition on which RabbitMQ is storing data": "RabbitMQ存储数据分区的可用磁盘空间限制．当可用空间值低于阀值时，流程控制将被触发.默认情况下，可用磁盘空间必须超过50MB",
     "Maximum permissible size of a frame (in bytes) to negotiate with clients,setting to 0 means unlimited but will trigger a bug in some QPid clients. Setting a larger value may improve throughput; setting a smaller value may improve latency": "与客户端协商的允许最大frame大小. 设置为０表示无限制，但在某些QPid客户端会引发bug. 设置较大的值可以提高吞吐量;设置一个较小的值可能会提高延迟",
     "Maximum permissible number of channels to negotiate with clients. Setting to 0 means unlimited. Using more channels increases memory footprint of the broker.": "与客户端协商的允许最大chanel大小. 设置为０表示无限制．该数值越大，则broker使用的内存就越高",
