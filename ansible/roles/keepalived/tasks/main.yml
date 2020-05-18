@@ -1,9 +1,14 @@
 ---
+- name: set var
+  set_fact:
+    keepalived_version: 2.0.18
+
 - name: Prepare dev env for keepalived
   apt:
     update_cache: yes
-    name: ['tree', 'curl', 'gcc', 'libssl-dev', 'libnl-3-dev', 'libnl-genl-3-dev', 'libsnmp-dev']
+    name: ['tree', 'curl', 'gcc', 'libssl-dev', 'libnl-3-dev', 'libnl-genl-3-dev', 'libsnmp-dev', 'make']
     state: present
+  delegate_to: localhost
 
 - name: Prepare directories for keepalived
   file:
@@ -12,7 +17,7 @@
     group: root
     state: directory
 
-- name: install keepalived
+- name: download keepalived
   include_role:
     name: install-1.0.5
   vars:
@@ -24,19 +29,37 @@
       extracts: yes
       creates: "configure"
       bin_path:
-  with_items: "2.0.18"
+  with_items: "{{ keepalived_version }}"
 
-- name: install keepalived
-  shell:
-    cmd: |
-      cd /opt/keepalived/2.0.18
-      ./configure
-      make
-      sudo make install
+- name: build keepalived
+  vars:
+    build_path: "/root/.ansible/cache/keepalived/keepalived-{{ keepalived_version }}/build-dir"
+  shell: |
+    tar -zxvf keepalived-{{ keepalived_version }}.tgz
+    cd keepalived-{{ keepalived_version }}/
+    ./configure --prefix={{ build_path }}
+    make
+    sudo make install
+  args:
+    chdir: "/root/.ansible/cache/keepalived"
+    creates: "{{ build_path }}/bin/keepalived"
+  delegate_to: localhost
+
+- name: install keepalived bin
+  copy:
+    src: "{{ item }}"
+    dest: /opt/keepalived/{{ keepalived_version }}
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+  with_items:
+    - "/root/.ansible/cache/keepalived/keepalived-{{ keepalived_version }}/build-dir/"
+    - "files/lib/"
 
 - name: create keepalived service link
   file:
-    src: /opt/keepalived/current/keepalived/keepalived.service
+    src: /opt/keepalived/current/systemd/system/keepalived.service
     dest: /lib/systemd/system/keepalived.service
     state: link
 
