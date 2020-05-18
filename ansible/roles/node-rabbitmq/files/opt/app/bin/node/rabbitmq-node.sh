@@ -5,7 +5,7 @@ start() {
   log " startMQ start"
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | cut -d "/" -f2)";
   if [[ "${HOSTNAME}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-     while [[ ! $(rabbitmqctl --node rabbit@${firstDiscNode} -s  node_health_check) =~ "passed" ]]; do 
+    while [[ ! $(rabbitmqctl --node rabbit@${firstDiscNode} -s  node_health_check) =~ "passed" ]]; do 
       sleep 2; #the first node not ready now
     done
   fi
