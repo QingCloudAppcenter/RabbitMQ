@@ -3,13 +3,12 @@ EC_SCALE_OUT_ERR=240
 
 start() {
   log " startMQ start"
-  local firstDiscNode="";
-  firstDiscNode="$(echo ${DISC_NODES} | cut -d "/" -f2)";
-  [[ "${HOSTNAME}" != "${firstDiscNode}" ]] && { # wait for first disc node prepare tables
+  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | cut -d "/" -f2)";
+  if [[ "${HOSTNAME}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
      while [[ ! $(rabbitmqctl --node rabbit@${firstDiscNode} -s  node_health_check) =~ "passed" ]]; do 
       sleep 2; #the first node not ready now
     done
-  } 
+  fi
   _start
   #retry 2 1 0 initNode
   addNodeToCluster
@@ -64,10 +63,8 @@ reload() {
 
 scale_in() {
   log "scale in include ${DELETING_HOSTS:-null}"
-  local clusterInfo="";
-  local allNodes="";
-  clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
-  allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+  local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
+  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
   for i in ${DELETING_HOSTS}; do
     if [[ "$allNodes" =~ "${i}" ]]; then
       rabbitmqctl forget_cluster_node rabbit@${i};
@@ -80,8 +77,7 @@ scale_in() {
 scale_out() {
   if [[ -n "${ADDING_HOSTS}" ]]; then
     for i in ${ADDING_HOSTS}; do
-      local clusterInfo="";
-      clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
       if [[ "$(rabbitmqctl -t 3 node_health_check -n rabbit@${i})" =~ "passed" ]] && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
         log "${i} was clustered successful in scale-out";
       else
@@ -98,12 +94,9 @@ measure() {
 
 addNodeToCluster()  {
   # write for the node which peer discover failed or the adding node
-  local firstDiscNode="";
-  local clusterInfo="";
-  local allNodes="";
-  firstDiscNode="$(echo ${DISC_NODES} | cut -d "/" -f2)";
-  clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
-  allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | cut -d "/" -f2)";
+  local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
+  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
   if [[ ! "$allNodes" =~ "${firstDiscNode}" ]]; then  #disc node ${DISC_NODES##*-} was not clustered
     rabbitmqctl stop_app
     rabbitmqctl join_cluster --${MY_ROLE} rabbit@${firstDiscNode}
