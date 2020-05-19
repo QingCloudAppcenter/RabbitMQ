@@ -7,7 +7,7 @@
     "VxNet": "私有网络",
     "Test": "测试环境",
     "Prod": "生产环境",
-    "Test: 2 disc nodes with 1 HAProxy node; Prod: 2 disc nodes with 2 HAProxy nodes": "测试环境：1核1G磁盘节点 x 2，1核1G客户端节点 x 1，1核1G负载均衡节点 x 1；生产环境：2核4G超高性能型磁盘节点 x 2，1核1G客户端节点 x 1，2核2G负载均衡节点 x 2",
+    "Test: 3 disc nodes with 1 HAProxy node; Prod: 3 disc nodes with 2 HAProxy nodes": "测试环境：1核1G磁盘节点 x 3 ，1核1G客户端节点 x 1，1核1G负载均衡节点 x 1；生产环境：2核4G超高性能型磁盘节点 x 3，1核1G客户端节点 x 1，2核2G负载均衡节点 x 2",
     "Memory of each node": "每个节点的内存",
     "The volume size for each instance": "每个实例的磁盘大小",
     "Choose a vxnet to join": "选择要加入的私有网络",

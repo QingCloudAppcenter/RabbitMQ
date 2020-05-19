@@ -4,8 +4,10 @@ global
   log 127.0.0.1 local0 info
   maxconn 65535
   chroot /usr/local/sbin
-  uid 65534
-  gid 65534
+  #uid 65534
+  #gid 65534
+  user nobody
+  group nobody
   daemon
   quiet
   nbproc 20

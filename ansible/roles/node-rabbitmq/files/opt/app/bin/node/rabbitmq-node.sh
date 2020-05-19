@@ -1,17 +1,29 @@
 # Error codes
 EC_SCALE_OUT_ERR=240
 
+
+nodeHealthCheck() {
+  local nodes; nodes="${@:1}";
+  for node in ${nodes}; do
+    if [[ "$(rabbitmqctl -s -n rabbit@${node} node_health_check  -t 3)" =~ "passed" ]]; then
+      log "$(date) ${node} was running";
+      return 0;
+    else
+      log "$(date) ${node} not running";
+      return 69; # default node_health_check error code
+    fi
+  done
+}
+
+
 start() {
   log " startMQ start"
-  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | cut -d "/" -f2)";
+  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   if [[ "${HOSTNAME}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-    while [[ ! $(rabbitmqctl --node rabbit@${firstDiscNode} -s  node_health_check) =~ "passed" ]]; do 
-      sleep 2; #the first node not ready now
-    done
+    retry 20 3 0 nodeHealthCheck "${firstDiscNode}"  #the first node not ready now
   fi
   _start
   #retry 2 1 0 initNode
-  addNodeToCluster
   log " startMQ end"
 }
 
@@ -30,7 +42,8 @@ initNode() {
   log " initRabbitmq end"
 }
 
-isFileChanged() {
+
+checkFileChanged() {
   # 1: true  0: false
   if [[ -f "${1}.1" ]]; then
     cmp -s ${1} ${1}.1
@@ -39,16 +52,11 @@ isFileChanged() {
   fi
 }
 
-checkFileChanged() {
-  # 1: 存在且相同  0: 不存在/不同
-  ! ([ -f "$1.1" ] && cmp -s $1 $1.1)
-}
-
 reload() {
   if ! isNodeInitialized; then return 0; fi
   case ${1} in
     rabbitmq-server)
-      if isFileChanged "/opt/app/bin/envs/instance.env"; then
+      if checkFileChanged "/opt/app/bin/envs/instance.env"; then
         log "first start or cluster didn't changed";
         local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
         [[ "$(comm --nocheck-order -23 ${rabbitmqConfFile} ${rabbitmqConfFile}.1 | grep -v  ^cluster_formation | wc -l)" -gt "0" ]] && _reload rabbitmq-server
@@ -61,11 +69,11 @@ reload() {
   esac
 }
 
-scale_in() {
+scaleIn() {
   log "scale in include ${DELETING_HOSTS:-null}"
   local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
   local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
-  for i in ${DELETING_HOSTS}; do
+  local i; for i in ${DELETING_HOSTS}; do
     if [[ "$allNodes" =~ "${i}" ]]; then
       rabbitmqctl forget_cluster_node rabbit@${i};
       log "scale_in forget node $i from cluster";
@@ -74,9 +82,9 @@ scale_in() {
 
 }
 
-scale_out() {
+scaleOut() {
   if [[ -n "${ADDING_HOSTS}" ]]; then
-    for i in ${ADDING_HOSTS}; do
+    local i; for i in ${ADDING_HOSTS}; do
       local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
       if [[ "$(rabbitmqctl -t 3 node_health_check -n rabbit@${i})" =~ "passed" ]] && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
         log "${i} was clustered successful in scale-out";
@@ -94,7 +102,7 @@ measure() {
 
 addNodeToCluster()  {
   # write for the node which peer discover failed or the adding node
-  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | cut -d "/" -f2)";
+  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
   local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
   if [[ ! "$allNodes" =~ "${firstDiscNode}" ]]; then  #disc node ${DISC_NODES##*-} was not clustered

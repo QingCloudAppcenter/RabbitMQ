@@ -28,7 +28,7 @@
         }, {
             "key": "resource_group",
             "label": "Resource Configuration",
-            "description": "Test: 2 disc nodes with 1 HAProxy node; Prod: 2 disc nodes with 2 HAProxy nodes",
+            "description": "Test: 3 disc nodes with 1 HAProxy node; Prod: 3 disc nodes with 2 HAProxy nodes",
             "type": "string",
             "default": "Prod",
             "range": ["Test", "Prod"]
@@ -80,9 +80,9 @@
                 "description": "Disc Node Count",
                 "type": "integer",
                 "auto_scale_step": 1,
-                "default": 2,
-                "min":1,
-                "max":100,
+                "default": 3,
+                "min": 1,
+                "max": 100,
                 "required": "yes"
             }]
         }, {
@@ -132,8 +132,8 @@
                 "type": "integer",
                 "auto_scale_step": 1,
                 "default": 0,
-                "min":0,
-                "max":100,
+                "min": 0,
+                "max": 100,
                 "required": "yes"
             }]
         }, {
@@ -171,8 +171,8 @@
                 "description": "Client Node Count",
                 "type": "integer",
                 "default": 1,
-                "min":0,
-                "max":1,
+                "min": 0,
+                "max": 1,
                 "required": "yes"
             }]
         }, {
@@ -260,8 +260,8 @@
             "description": "Number of Erlang processes that will accept connections for the TCP listeners",
             "type": "integer",
             "default": 10,
-            "min":10,
-            "max":200,
+            "min": 10,
+            "max": 200,
             "required": "no"
         }, {
             "key": "handshake_timeout",
@@ -269,7 +269,7 @@
             "description": "Maximum time for AMQP 0-8/0-9/0-9-1 handshake (after socket connection and SSL handshake), in milliseconds",
             "type": "integer",
             "default": 10000,
-            "min":5000,
+            "min": 5000,
             "required": "no"
         }, {
             "key": "vm_memory_high_watermark",
@@ -358,7 +358,7 @@
             "label": "background_gc_target_interval",
             "description": "The actual interval will vary depending on how long it takes to execute the operation",
             "type": "integer",
-            "min":30000,
+            "min": 30000,
             "default": 60000,
             "required": "no"
         }, {
