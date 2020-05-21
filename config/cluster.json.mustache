@@ -21,7 +21,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-dm1hnqk2"
+            "image": "img-sk9pu3ll"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -48,6 +48,7 @@
             },
             "scale_in": {
                 "nodes_to_execute_on": 1,
+                "pre_check": "appctl preCheckForScaleIn",
                 "cmd": "appctl scaleIn",
                 "timeout": 90
             },
@@ -107,7 +108,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-dm1hnqk2"
+            "image": "img-sk9pu3ll"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -188,7 +189,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-dm1hnqk2"
+            "image": "img-sk9pu3ll"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -209,7 +210,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-dm1hnqk2"
+            "image": "img-sk9pu3ll"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},

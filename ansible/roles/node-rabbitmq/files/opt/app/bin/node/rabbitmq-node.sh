@@ -1,72 +1,58 @@
 # Error codes
 EC_SCALE_OUT_ERR=240
+EC_UNHEALTHY=241
 
-
-nodeHealthCheck() {
-  local nodes; nodes="${@:1}";
-  for node in ${nodes}; do
-    if [[ "$(rabbitmqctl -s -n rabbit@${node} node_health_check  -t 3)" =~ "passed" ]]; then
-      log "$(date) ${node} was running";
-      return 0;
-    else
-      log "$(date) ${node} not running";
-      return 69; # default node_health_check error code
-    fi
+checkNodeHealthy() {
+  local node; for node in $@; do
+    rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || return $EC_UNHEALTHY
   done
 }
 
 
 start() {
-  log " startMQ start"
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   if [[ "${HOSTNAME}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-    retry 20 3 0 nodeHealthCheck "${firstDiscNode}"  #the first node not ready now
+    retry 20 3 0 checkNodeHealthy "${firstDiscNode}"  #the first node not ready now
   fi
   _start
   #retry 2 1 0 initNode
-  log " startMQ end"
 }
 
 
 setConfFile() {
-  log " setConfFile start"
   mkdir -p /data/{log,mnesia,config,schema}
   chown -R rabbitmq:rabbitmq /data/{log,mnesia,config,schema}
-  log " setConfFile end"
 }
 
 initNode() {
-  log " initRabbitmq start"
   _initNode
   setConfFile
-  log " initRabbitmq end"
 }
 
 
 checkFileChanged() {
-  # 1: true  0: false
-  if [[ -f "${1}.1" ]]; then
-    cmp -s ${1} ${1}.1
-  else
-    return 0
-  fi
+  #   0: changed,   1: $1 not exsit or not changed
+  ! ( [[ ! -f "${1}.1" ]] || cmp -s "${1}" "${1}.1")
 }
 
 reload() {
   if ! isNodeInitialized; then return 0; fi
   case ${1} in
     rabbitmq-server)
-      if checkFileChanged "/opt/app/bin/envs/instance.env"; then
-        log "first start or cluster didn't changed";
-        local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
-        [[ "$(comm --nocheck-order -23 ${rabbitmqConfFile} ${rabbitmqConfFile}.1 | grep -v  ^cluster_formation | wc -l)" -gt "0" ]] && _reload rabbitmq-server
-      else
-        log "add node ${ADDING_HOSTS:-null}, del node ${DELETING_HOSTS:-null}";
+      local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
+      if [[ -f ${rabbitmqConfFile}.1 ]]; then  # only figure out the changed parameter
+        [[ "$(comm --nocheck-order -23 ${rabbitmqConfFile} ${rabbitmqConfFile}.1 | grep -v  ^cluster_formation | wc -l)" -gt "0" ]] && _reload rabbitmq-server 
       fi
       ;;
     *) 
       _reload $@ ;;
   esac
+}
+
+preCheckForScaleIn() {
+  local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
+  local unRunningNode; unRunningNode="$(echo $clusterInfo | jq -c '[(.nodes.disc[], .nodes.ram[]?)]-[(.running_nodes[])]')";
+  if [[ "${unRunningNode}" =~ "rabbit" ]]; then return $EC_UNHEALTHY; fi # there was unhealthy node
 }
 
 scaleIn() {
