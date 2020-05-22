@@ -11,7 +11,7 @@ checkNodesHealthy() {
 start() {
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   if [[ "${HOSTNAME}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-    retry 20 3 0 checkNodesHealthy "${firstDiscNode}"  #the first node not ready now
+    retry 20 3 0 checkNodesHealthy "${firstDiscNode}"
   fi
   _start
 }
@@ -31,7 +31,8 @@ reload() {
   case ${1} in
     rabbitmq-server)
       local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
-      if [[ -f ${rabbitmqConfFile}.1 ]] && [[ "$(comm --nocheck-order -23 ${rabbitmqConfFile} ${rabbitmqConfFile}.1 | grep -v  ^cluster_formation)" ]]; then  # only figure out the changed parameter
+      if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
+        # only figure out the changed parameter
         _reload rabbitmq-server;
       fi
       ;;
