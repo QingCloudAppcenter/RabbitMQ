@@ -2,22 +2,19 @@
 EC_SCALE_OUT_ERR=240
 EC_UNHEALTHY=241
 
-checkNodeHealthy() {
+checkNodesHealthy() {
   local node; for node in $@; do
     rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || return $EC_UNHEALTHY
   done
 }
 
-
 start() {
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   if [[ "${HOSTNAME}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-    retry 20 3 0 checkNodeHealthy "${firstDiscNode}"  #the first node not ready now
+    retry 20 3 0 checkNodesHealthy "${firstDiscNode}"  #the first node not ready now
   fi
   _start
-  #retry 2 1 0 initNode
 }
-
 
 setConfFile() {
   mkdir -p /data/{log,mnesia,config,schema}
@@ -29,30 +26,24 @@ initNode() {
   setConfFile
 }
 
-
-checkFileChanged() {
-  #   0: changed,   1: $1 not exsit or not changed
-  ! ( [[ ! -f "${1}.1" ]] || cmp -s "${1}" "${1}.1")
-}
-
 reload() {
   if ! isNodeInitialized; then return 0; fi
   case ${1} in
     rabbitmq-server)
       local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
-      if [[ -f ${rabbitmqConfFile}.1 ]]; then  # only figure out the changed parameter
-        [[ "$(comm --nocheck-order -23 ${rabbitmqConfFile} ${rabbitmqConfFile}.1 | grep -v  ^cluster_formation | wc -l)" -gt "0" ]] && _reload rabbitmq-server 
+      if [[ -f ${rabbitmqConfFile}.1 ]] && [[ "$(comm --nocheck-order -23 ${rabbitmqConfFile} ${rabbitmqConfFile}.1 | grep -v  ^cluster_formation)" ]]; then  # only figure out the changed parameter
+        _reload rabbitmq-server;
       fi
       ;;
-    *) 
+    *)
       _reload $@ ;;
   esac
 }
 
 preCheckForScaleIn() {
-  local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
-  local unRunningNode; unRunningNode="$(echo $clusterInfo | jq -c '[(.nodes.disc[], .nodes.ram[]?)]-[(.running_nodes[])]')";
-  if [[ "${unRunningNode}" =~ "rabbit" ]]; then return $EC_UNHEALTHY; fi # there was unhealthy node
+  local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
+  local allNodes; allNodes="$(grep ^cluster_formation.class ${rabbitmqConfFile} | awk -F@ '{print $2}')";
+  checkNodesHealthy "${allNodes}" # there was unhealthy node
 }
 
 scaleIn() {
@@ -65,7 +56,6 @@ scaleIn() {
       log "scale_in forget node $i from cluster";
     fi
   done
-
 }
 
 scaleOut() {
