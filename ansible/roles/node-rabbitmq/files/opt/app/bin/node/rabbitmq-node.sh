@@ -41,14 +41,13 @@ reload() {
 }
 
 preCheckForScaleIn() {
-  local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
-  local allNodes; allNodes="$(grep ^cluster_formation.class ${rabbitmqConfFile} | awk -F@ '{print $2}')";
+  local allNodes; allNodes="$(echo "${DISC_NODES}" "${RAM_NODES}"  | xargs -n1 | awk -F/ '{print $2}')";
   checkNodesHealthy "${allNodes}" # there was unhealthy node
 }
 
 scaleIn() {
   log "scale in include ${DELETING_HOSTS:-null}"
-  local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
+  local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
   local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
   local i; for i in ${DELETING_HOSTS}; do
     if [[ "$allNodes" =~ "${i}" ]]; then
@@ -73,13 +72,13 @@ scaleOut() {
 }
 
 measure() {
-  rabbitmqctl status --formatter=json | jq '{"fd_used": (.file_descriptors.total_used), "sockets_used": (.file_descriptors.sockets_used), "proc_used": (.processes.used), "run_queue": (.run_queue), "mem_used": (.memory.total.rss / 1048576)}'
+  rabbitmqctl status -t 3 --formatter=json | jq '{"fd_used": (.file_descriptors.total_used), "sockets_used": (.file_descriptors.sockets_used), "proc_used": (.processes.used), "run_queue": (.run_queue), "mem_used": (.memory.total.rss / 1048576)}'
 }
 
 addNodeToCluster()  {
   # write for the node which peer discover failed or the adding node
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  local clusterInfo; clusterInfo="$(rabbitmqctl cluster_status --formatter=json)";
+  local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
   local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
   if [[ ! "$allNodes" =~ "${firstDiscNode}" ]]; then  #disc node ${DISC_NODES##*-} was not clustered
     rabbitmqctl stop_app
