@@ -62,7 +62,7 @@ scaleOut() {
   if [[ -n "${ADDING_HOSTS}" ]]; then
     local i; for i in ${ADDING_HOSTS}; do
       local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
-      if [[ "$(rabbitmqctl -t 3 node_health_check -n rabbit@${i})" =~ "passed" ]] && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
+      if checkNodesHealthy "${i}" && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
         log "${i} was clustered successful in scale-out";
       else
         log "${i} was clustering failed in scale-out";
