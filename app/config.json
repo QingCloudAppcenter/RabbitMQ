@@ -336,7 +336,7 @@
             "description": "How to handle network partitions",
             "type": "string",
             "range": ["ignore","pause_minority","autoheal"],
-            "default": "ignore",
+            "default": "pause_minority",
             "required": "no"
         }, {
             "key": "hipe_compile",

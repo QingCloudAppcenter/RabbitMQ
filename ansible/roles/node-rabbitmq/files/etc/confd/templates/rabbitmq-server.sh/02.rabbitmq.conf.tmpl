@@ -17,7 +17,7 @@ cluster_formation.node_type = {{ getv "/host/role" }}
 
 
 cluster_keepalive_interval = {{ getv "/env/cluster_keepalive_interval" "10000" }}
-cluster_partition_handling = {{ getv "/env/cluster_partition_handling" "ignore" }}
+cluster_partition_handling = {{ getv "/env/cluster_partition_handling" "pause_minority" }}
 collect_statistics = {{ getv "/env/collect_statistics" "none" }}
 collect_statistics_interval = {{ getv "/env/collect_statistics_interval" "5000" }}
 # disk_free_limit.relative = {{ getv "/env/disk_free_limit_relative" "2.0" }}
