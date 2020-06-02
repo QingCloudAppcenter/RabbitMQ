@@ -1,8 +1,4 @@
 ---
-- name: set var
-  set_fact:
-    keepalived_version: 2.0.18
-
 - name: Prepare dev env for keepalived
   apt:
     update_cache: yes

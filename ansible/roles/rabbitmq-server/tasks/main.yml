@@ -1,8 +1,4 @@
 ---
-- name: set variables
-  set_fact:
-    rabbitmq_version: 3.7.23
-
 - name: copy binaries
   copy:
     src: files/lib/
@@ -26,18 +22,18 @@
       creates: 
       bin_path:
   with_items:
-    - url: "https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb"
+    - url: "https://packages.erlang-solutions.com/erlang-solutions_{{ erlang_solution_version }}_all.deb"
       name: "erlang-solutions"
-      version: "1.0"
-      dest: "erlang-solutions_1.0_all.deb"
+      version: "{{ erlang_solution_version }}"
+      dest: "erlang-solutions_{{ erlang_solution_version }}_all.deb"
     - url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
       name: "rabbitmq"
-      version: "3.7.23"
+      version: "{{ rabbitmq_version }}"
       dest: "rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
 
 
 - name: apt for erlang
-  apt: deb="/tmp/erlang-solutions_1.0_all.deb"
+  apt: deb="/tmp/erlang-solutions_{{ erlang_solution_version }}_all.deb"
   become: yes
 
 - name: update apt for erlang
@@ -79,7 +75,7 @@
 # https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb
 
 - name: apt for rabbitmq
-  apt: deb="/tmp/rabbitmq-server_3.7.23-1_all.deb"
+  apt: deb="/tmp/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
   become: yes
 
 - name: download plugins for rabbitmq
