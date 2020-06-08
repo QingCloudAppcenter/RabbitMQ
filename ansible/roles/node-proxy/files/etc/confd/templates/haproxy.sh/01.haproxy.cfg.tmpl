@@ -28,7 +28,7 @@ defaults
   srvtimeout 120s
 
 #front-end IP for consumers and producters
-listen RabbitMQ-Cluster
+listen RabbitMQ_Cluster
   bind :5672
   #配置TCP模式
   mode tcp
@@ -47,15 +47,10 @@ listen RabbitMQ-Cluster
   server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
 
 #front-end IP for stomp
-listen RabbitMQ-Cluster-stomp
+listen RabbitMQ_Cluster_stomp
   bind :61613
   #TCP mode
   mode tcp
-  #balance rdp-cookie
-  #balance leastconn
-  #balance source
-  #balance roundrobin
-  #simple polling
   balance {{ getv "/env/haproxy_balance_policy" }}
   timeout client  3h
   timeout server  3h
@@ -65,14 +60,10 @@ listen RabbitMQ-Cluster-stomp
   server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
 
 #front-end IP for mqtt
-listen RabbitMQ-Cluster-mqtt
+listen RabbitMQ_Cluster_mqtt
   bind :1883
   #TCP mode
   mode tcp
-  #balance rdp-cookie
-  #balance leastconn
-  #balance source
-  #balance roundrobin
   balance {{ getv "/env/haproxy_balance_policy" }}
   timeout client  3h
   timeout server  3h
@@ -83,11 +74,11 @@ listen RabbitMQ-Cluster-mqtt
 
 #rabbitmq-management
 # optional, for proxying management site
-frontend front_rabbitmq_management
+frontend front_Rabbitmq_Management
   bind :15672
-  default_backend back_rabbitmq_management
+  default_backend backend_Rabbitmq_Management
 
-backend back_rabbitmq_management
+backend backend_Rabbitmq_Management
   balance source
   {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
   server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
