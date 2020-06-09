@@ -28,7 +28,7 @@ defaults
   srvtimeout 120s
 
 #front-end IP for consumers and producters
-listen RabbitMQ_Cluster
+listen rabbitmq_cluster
   bind :5672
   #配置TCP模式
   mode tcp
@@ -47,7 +47,7 @@ listen RabbitMQ_Cluster
   server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
 
 #front-end IP for stomp
-listen RabbitMQ_Cluster_stomp
+listen rabbitmq_cluster_stomp
   bind :61613
   #TCP mode
   mode tcp
@@ -60,7 +60,7 @@ listen RabbitMQ_Cluster_stomp
   server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
 
 #front-end IP for mqtt
-listen RabbitMQ_Cluster_mqtt
+listen rabbitmq_cluster_mqtt
   bind :1883
   #TCP mode
   mode tcp
@@ -74,11 +74,11 @@ listen RabbitMQ_Cluster_mqtt
 
 #rabbitmq-management
 # optional, for proxying management site
-frontend front_Rabbitmq_Management
+frontend front_rabbitmq_management
   bind :15672
-  default_backend backend_Rabbitmq_Management
+  default_backend backend_rabbitmq_management
 
-backend backend_Rabbitmq_Management
+backend backend_rabbitmq_management
   balance source
   {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
   server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
