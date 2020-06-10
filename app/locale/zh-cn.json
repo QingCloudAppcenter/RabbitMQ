@@ -69,8 +69,8 @@
     "Whether or not to enable proxy protocol support. Once enabled, clients cannot directly connect to the broker anymore. They must connect through a load balancer that sends theproxy protocol header to the broker at connection time.This setting applies only to AMQP clients, other protocolslike MQTT or STOMP have their own setting to enable proxy protocol. See the plugins documentation for more information": "是否启用代理协议支持。一旦启用，客户端就不能直接连接到代理了。他们必须通过负载平衡器连接，此设置仅适用于AMQP客户端，其他协议类型的MQTT或STOMP有自己的设置来启用代理协议。有关更多信息，请参阅插件文档",
     "err_code240": "扩容失败，请检查集群状态",
     "err_code241": "节点状态不正常，请检查集群状态",
-    "Whether to enable log webViewer": "日志在线获取器开关，true=开启，默认关闭",
-    "username of log webViewer": "日志在线获取器登陆用户名，默认admin",
-    "password of log webViewer": "日志在线获取器登陆密码，默认为空",
+    "Whether to enable log web page": "日志在线获取器开关，true=开启，默认关闭",
+    "username of log web page": "日志在线获取器登陆用户名，默认admin",
+    "password of log web page": "日志在线获取器登陆密码，默认为空",
     "notice_when_upgrade": "由于3.6.x与3.7.x有不兼容部分，请先检查集群中是否含有优先队列(priority queue)。如果含有该类型队列，请使用 https://www.rabbitmq.com/blue-green-upgrade.html 中介绍的方式操作"
 }

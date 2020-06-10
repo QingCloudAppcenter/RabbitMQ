@@ -21,7 +21,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-g52onv53"
+            "image": "img-flyycbi8"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -108,7 +108,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-g52onv53"
+            "image": "img-flyycbi8"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -189,7 +189,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1a",
-            "image": "img-g52onv53"
+            "image": "img-flyycbi8"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -210,7 +210,7 @@
         "container": {
             "type": "lxc",
             "zone": "sh1a",
-            "image": "img-g52onv53"
+            "image": "img-flyycbi8"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -265,9 +265,9 @@
         "background_gc_target_interval": {{env.background_gc_target_interval}},
         "proxy_protocol": {{env.proxy_protocol}},
         "tracing_user": {{env.tracing_user}},
-        "log_webViewer_enabled": {{env.log_webViewer_enabled}},
-        "log_webViewer_username": {{env.log_webViewer_username}},
-        "log_webViewer_password": {{env.log_webViewer_password}}
+        "log_web_enabled": {{env.log_web_enabled}},
+        "log_web_username": {{env.log_web_username}},
+        "log_web_password": {{env.log_web_password}}
     },
     "endpoints": {
         "client": {
