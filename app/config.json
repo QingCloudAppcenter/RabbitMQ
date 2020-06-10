@@ -393,24 +393,24 @@
             "range": [true, false],
             "required": "no"
         }, {
-            "key": "log_web_enabled",
-            "label": "Switch of log web page",
-            "description": "Whether to enable log web page",
+            "key": "web_console_enabled",
+            "label": "Switch of log web console",
+            "description": "Whether to enable log web console",
             "type": "boolean",
             "default": false,
             "required": "no"
         }, {
-            "key": "log_web_username",
-            "label": "Username of log web page",
-            "description": "username of log web page",
+            "key": "web_console_username",
+            "label": "Username of log web console",
+            "description": "username of log web console",
             "type": "string",
             "pattern": "^([a-z0-9.-]+)?$",
             "default": "admin",
             "required": "no"
         }, {
-            "key": "log_web_password",
-            "label": "Password of log web page",
-            "description": "password of log web page",
+            "key": "web_console_password",
+            "label": "Password of log web console",
+            "description": "password of log web console",
             "type": "password",
             "pattern": "^\\w{0,24}$",
             "default": "",
