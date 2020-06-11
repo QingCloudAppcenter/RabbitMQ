@@ -31,7 +31,6 @@
       version: "{{ rabbitmq_version }}"
       dest: "rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
 
-
 - name: apt for erlang
   apt: deb="/tmp/erlang-solutions_{{ erlang_solution_version }}_all.deb"
   become: yes
@@ -71,9 +70,7 @@
     name: ['apt-transport-https', 'jq']
     update_cache: yes
 
-
 # https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.0-1_all.deb
-
 - name: apt for rabbitmq
   apt: deb="/tmp/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
   become: yes
@@ -91,7 +88,6 @@
       dest_path: "/usr/lib/rabbitmq/lib/rabbitmq_server-3.7.23/plugins/rabbitmq_delayed_message_exchange-3.8.0.ez"
       creates: 
       bin_path:
-
 #unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
 
 - name: disable auto startup on boot

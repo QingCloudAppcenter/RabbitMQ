@@ -28,7 +28,7 @@ initNode() {
 
 reload() {
   if ! isNodeInitialized; then return 0; fi
-  case ${1} in
+  case "${1}" in
     rabbitmq-server)
       local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
       if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
@@ -44,28 +44,33 @@ reload() {
 preCheckForScaleIn() {
   local allNodes; allNodes="$(echo "${DISC_NODES}" "${RAM_NODES}"  | xargs -n1 | awk -F/ '{print $2}')";
   checkNodesHealthy "${allNodes}" # there was unhealthy node
+  local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
+  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+  local delNode; for delNode in ${DELETING_HOSTS}; do
+    if [[ "$allNodes" =~ "${delNode}" ]]; then
+      log "node ${delNode} clustered with ${HOSTNAME}";
+    else
+      return $EC_UNHEALTHY
+    fi
+  done
 }
 
 scaleIn() {
   log "scale in include ${DELETING_HOSTS:-null}"
-  local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
-  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
-  local i; for i in ${DELETING_HOSTS}; do
-    if [[ "$allNodes" =~ "${i}" ]]; then
-      rabbitmqctl forget_cluster_node rabbit@${i};
-      log "scale_in forget node $i from cluster";
-    fi
+  local delNode; for delNode in ${DELETING_HOSTS}; do
+    rabbitmqctl forget_cluster_node rabbit@${delNode};
+    log "scale_in forget node ${delNode} from cluster";
   done
 }
 
 scaleOut() {
   if [[ -n "${ADDING_HOSTS}" ]]; then
-    local i; for i in ${ADDING_HOSTS}; do
-      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${i} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
-      if checkNodesHealthy "${i}" && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
-        log "${i} was clustered successful in scale-out";
+    local joinNode; for joinNode in ${ADDING_HOSTS}; do
+      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+      if checkNodesHealthy "${joinNode}" && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
+        log "${joinNode} was clustered successful in scale-out";
       else
-        log "${i} was clustering failed in scale-out";
+        log "${joinNode} was clustering failed in scale-out";
         return ${EC_SCALE_OUT_ERR}
       fi
     done
