@@ -1,0 +1,16 @@
+flush /etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
+[
+{{- if eq (getv "/host/role") "disc" }}
+  rabbitmq_delayed_message_exchange,
+{{- end }}
+  rabbitmq_management,
+  rabbitmq_mqtt,
+  rabbitmq_shovel,
+  rabbitmq_shovel_management,
+  rabbitmq_federation,
+  rabbitmq_federation_management,
+  rabbitmq_stomp,
+  rabbitmq_web_mqtt,
+  rabbitmq_web_stomp
+].
+ENABLED_PLUGINS_EOF

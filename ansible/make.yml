@@ -1,0 +1,25 @@
+---
+- name: common setup
+  hosts: all
+  strategy: free
+  vars:
+    target_env: "{{ lookup('env', 'target') }}"
+  tasks:
+  - include_role:
+      name: "{{ service_name }}"
+    loop:
+    - disable-apt-jobs-1.0.0
+    - disable-motd-1.0.0
+    - app-agent-1.0.1
+    - appctl-1.0.9
+    - arping-1.0.0
+    - rabbitmq-server
+    - haproxy
+    - keepalived
+    - node-all
+    - node-client
+    - node-proxy
+    - node-rabbitmq
+    - caddy-1.0.6
+    loop_control:
+      loop_var: service_name

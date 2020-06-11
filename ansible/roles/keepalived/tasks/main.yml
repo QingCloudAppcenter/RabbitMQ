@@ -1,0 +1,67 @@
+---
+- name: Prepare dev env for keepalived
+  apt:
+    update_cache: yes
+    name: ['tree', 'curl', 'gcc', 'libssl-dev', 'libnl-3-dev', 'libnl-genl-3-dev', 'libsnmp-dev', 'make']
+    state: present
+  delegate_to: localhost
+
+- name: Prepare directories for keepalived
+  file:
+    path: /etc/keepalived
+    owner: root
+    group: root
+    state: directory
+
+- name: download keepalived
+  include_role:
+    name: install-1.0.5
+  vars:
+    opts:
+      pkg_name: keepalived
+      pkg_version: "{{ item }}"
+      pkg_type: tgz
+      pkg_url: "https://www.keepalived.org/software/keepalived-{{ item }}.tar.gz"
+      extracts: yes
+      creates: "configure"
+      bin_path:
+  with_items: "{{ keepalived_version }}"
+
+- name: build keepalived
+  vars:
+    build_path: "/root/.ansible/cache/keepalived/keepalived-{{ keepalived_version }}/build-dir"
+  shell: |
+    tar -zxvf keepalived-{{ keepalived_version }}.tgz
+    cd keepalived-{{ keepalived_version }}/
+    ./configure --prefix={{ build_path }}
+    make
+    sudo make install
+  args:
+    chdir: "/root/.ansible/cache/keepalived"
+    creates: "{{ build_path }}/bin/keepalived"
+  delegate_to: localhost
+
+- name: install keepalived bin
+  copy:
+    src: "{{ item }}"
+    dest: /opt/keepalived/{{ keepalived_version }}
+    owner: root
+    group: root
+    mode: preserve
+    directory_mode: u=rwx,g=rx,o=
+  with_items:
+    - "/root/.ansible/cache/keepalived/keepalived-{{ keepalived_version }}/build-dir/"
+    - "files/lib/"
+
+- name: create keepalived service link
+  file:
+    src: /opt/keepalived/current/systemd/system/keepalived.service
+    dest: /lib/systemd/system/keepalived.service
+    state: link
+
+- name: mask services
+  systemd:
+    name: keepalived
+    enabled: no
+    masked: yes
+    state: stopped

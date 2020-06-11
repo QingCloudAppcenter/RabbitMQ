@@ -1,0 +1,34 @@
+flush /etc/keepalived/keepalived.conf << KEEPALIVED_EOF
+{{ $replicaIPs := split (getv "/cluster/endpoints/reserved_ips/vip/value") "." }}
+global_defs {
+}
+
+vrrp_script check_haproxy {
+  script "/usr/bin/killall -0 haproxy"
+  interval 2
+  weight 2
+}
+
+vrrp_instance HAProxy_HA {
+  state BACKUP
+  interface eth0
+  virtual_router_id {{ index $replicaIPs 3 }}
+  priority {{ getv "/host/sid" }}
+  advert_int 2
+  nopreempt
+  unicast_src_ip {{ getv "/host/ip" }}
+  authentication {
+    auth_type PASS
+    auth_pass pwd
+  }
+
+  virtual_ipaddress { #set VIP
+    {{ getv "/cluster/endpoints/reserved_ips/vip/value" }}/24
+  }
+
+  track_script {
+    check_haproxy
+  }
+}
+
+KEEPALIVED_EOF

@@ -1,1 +1,0 @@
-59 4 * * *   /usr/sbin/logrotate -f /opt/rabbitmq-log-rotate -s /data/log/logrotate.stat
