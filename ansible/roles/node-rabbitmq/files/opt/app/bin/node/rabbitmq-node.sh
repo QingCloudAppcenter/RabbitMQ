@@ -18,7 +18,6 @@ checkOnlyLastNodeRunning() {
   esac
 }
 
-
 stop() {
   #https://www.rabbitmq.com/clustering.html#restarting
   #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
