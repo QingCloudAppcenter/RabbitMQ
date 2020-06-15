@@ -8,9 +8,31 @@ checkNodesHealthy() {
   done
 }
 
+checkOnlyLastNodeRunning() {
+  # DO NOT USE this epecial func untill u known what will happen
+  local runningNodes; runningNodes="$(rabbitmqctl -t 3 cluster_status --formatter=json | jq -j .running_nodes[])";
+  case "${#runningNodes}" in
+  17) [[ "${runningNodes}" =~ "$@" ]] || return 1 ;;
+   0) return 0 ;;
+   *) return 1 ;;
+  esac
+}
+
+
+stop() {
+  #https://www.rabbitmq.com/clustering.html#restarting
+  #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
+  #sometimes the last node to stop must be the first node to be started after the upgrade.
+  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
+  if [[ "${MY_INSTANCE_ID}" =~ "${firstDiscNode}" ]]; then
+      retry 20 3 0 checkOnlyLastNodeRunning "${MY_INSTANCE_ID}" #notice checkNodesRunning return
+  fi
+  _stop
+}
+
 start() {
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  if [[ "${HOSTNAME}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
+  if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
     retry 20 3 0 checkNodesHealthy "${firstDiscNode}"
   fi
   _start
@@ -48,7 +70,7 @@ preCheckForScaleIn() {
   local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
   local delNode; for delNode in ${DELETING_HOSTS}; do
     if [[ "$allNodes" =~ "${delNode}" ]]; then
-      log "node ${delNode} clustered with ${HOSTNAME}";
+      log "node ${delNode} clustered with ${MY_INSTANCE_ID}";
     else
       return $EC_UNHEALTHY
     fi
@@ -67,7 +89,7 @@ scaleOut() {
   if [[ -n "${ADDING_HOSTS}" ]]; then
     local joinNode; for joinNode in ${ADDING_HOSTS}; do
       local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
-      if checkNodesHealthy "${joinNode}" && [[ "${clusterInfo}" =~ "${HOSTNAME}" ]]; then
+      if checkNodesHealthy "${joinNode}" && [[ "${clusterInfo}" =~ "${MY_INSTANCE_ID}" ]]; then
         log "${joinNode} was clustered successful in scale-out";
       else
         log "${joinNode} was clustering failed in scale-out";
@@ -91,6 +113,6 @@ addNodeToCluster()  {
     rabbitmqctl join_cluster --${MY_ROLE} rabbit@${firstDiscNode}
     rabbitmqctl start_app
   else
-    log "${firstDiscNode} already clustered or ${MY_ID} not the adding node."
+    log "${firstDiscNode} already clustered or ${MY_INSTANCE_ID} not the adding node."
   fi
 }
