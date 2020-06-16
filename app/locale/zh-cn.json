@@ -69,6 +69,7 @@
     "Whether or not to enable proxy protocol support. Once enabled, clients cannot directly connect to the broker anymore. They must connect through a load balancer that sends theproxy protocol header to the broker at connection time.This setting applies only to AMQP clients, other protocolslike MQTT or STOMP have their own setting to enable proxy protocol. See the plugins documentation for more information": "是否启用代理协议支持。一旦启用，客户端就不能直接连接到代理了。他们必须通过负载平衡器连接，此设置仅适用于AMQP客户端，其他协议类型的MQTT或STOMP有自己的设置来启用代理协议。有关更多信息，请参阅插件文档",
     "err_code240": "扩容失败，请检查集群状态",
     "err_code241": "节点状态不正常，请检查集群状态",
+    "err_code242": "删除过多内存节点和磁盘节点，pause_minority 模式下每次仅允许删除小于总数的 1/2 个节点",
     "Whether to enable log web console": "文件管理控制台开关，true=开启，默认关闭",
     "username of log web console": "文件管理控制台登陆用户名，默认admin",
     "password of log web console": "文件管理控制台登陆密码，默认为空",
