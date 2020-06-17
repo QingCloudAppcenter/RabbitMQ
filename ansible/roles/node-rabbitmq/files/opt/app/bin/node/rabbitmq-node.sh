@@ -67,7 +67,6 @@ reload() {
 }
 
 preCheckForScaleIn() {
-  . /opt/app/bin/envs/instance.env
   local allNodes; allNodes="$(echo "${DISC_NODES}" "${RAM_NODES}"  | xargs -n1 | awk -F/ '{print $2}')";
   checkNodesHealthy "${allNodes}" # there was unhealthy node
   if [[ -n "${DELETING_HOSTS[disc]}" ]] || [[ -n "${DELETING_HOSTS[ram]}" ]]; then
@@ -90,7 +89,6 @@ preCheckForScaleIn() {
 }
 
 scaleIn() {
-  . /opt/app/bin/envs/instance.env
   log "scale in include ${DELETING_HOSTS[@]:-null}"
   if [[ -n "${DELETING_HOSTS[disc]}" ]] || [[ -n "${DELETING_HOSTS[ram]}" ]]; then
     local delNodes; delNodes="${DELETING_HOSTS[disc]} ${DELETING_HOSTS[ram]}"
@@ -102,7 +100,6 @@ scaleIn() {
 }
 
 scaleOut() {
-  . /opt/app/bin/envs/instance.env
   if [[ -n "${ADDING_HOSTS[disc]}" ]] || [[ -n "${ADDING_HOSTS[ram]}" ]]; then
     local joinNodes; joinNodes="${ADDING_HOSTS[disc]} ${ADDING_HOSTS[ram]}"
     local joinNode; for joinNode in ${joinNodes}; do
