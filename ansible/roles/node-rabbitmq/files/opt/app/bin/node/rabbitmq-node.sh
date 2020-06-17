@@ -13,21 +13,17 @@ checkOnlyNodeRunning() {
   # DO NOT USE this epecial func untill u known what will happen
   local runningNodes;
   runningNodes="$(rabbitmqctl -t 3 cluster_status --formatter=json | jq -j .running_nodes[])";
-  if [[ "${CLUSTER_PARTITION_HANDLING}" == "ignore" ]] || [[ "${CLUSTER_PARTITION_HANDLING}" == "autoheal" ]]; then
-    [[ "${runningNodes}" == "rabbit@$@" ]] || return 1
-  elif [[ "${CLUSTER_PARTITION_HANDLING}" == "pause_minority" ]]; then
-    [[ -z "${runningNodes}" ]] || return 1
-  else
-    return 1
-  fi
+  [[ "${runningNodes}" == "rabbit@$@" ]] || [[ -z "${runningNodes}" ]] || return 1
 }
 
 stop() {
   #https://www.rabbitmq.com/clustering.html#restarting
   #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
   #sometimes the last node to stop must be the first node to be started after the upgrade.
+  local i; for i in ${LEAVING_MQ_NODES}; do DISC_NODES="${DISC_NODES//${i}/}"; done
+  #In case /hosts /deleting-hosts update are not synchronized
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then
+  if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then 
     retry 20 3 0 checkOnlyNodeRunning "${firstDiscNode}" #notice return
   fi
   _stop
@@ -69,16 +65,15 @@ reload() {
 preCheckForScaleIn() {
   local allNodes; allNodes="$(echo "${DISC_NODES}" "${RAM_NODES}"  | xargs -n1 | awk -F/ '{print $2}')";
   checkNodesHealthy "${allNodes}" # there was unhealthy node
-  if [[ -n "${DELETING_HOSTS[disc]}" ]] || [[ -n "${DELETING_HOSTS[ram]}" ]]; then
+  if [[ -n "${LEAVING_MQ_NODES}" ]]; then
     local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
     local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
-    local delNodes; delNodes="${DELETING_HOSTS[disc]} ${DELETING_HOSTS[ram]}"
     if [[ "${CLUSTER_PARTITION_HANDLING}" == "pause_minority" ]]; then
-      local delNodesCount; delNodesCount=$(echo "${delNodes}" | wc -w);
+      local delNodesCount; delNodesCount=$(echo "${LEAVING_MQ_NODES}" | wc -w);
       local clusterNodesCount; clusterNodesCount=$(echo "${DISC_NODES} ${RAM_NODES}" | awk '{print NF}')
       (( ${clusterNodesCount} > 2 * ${delNodesCount} )) || return $EC_SCALE_IN_ERR # delete too much mq node
     fi
-    local delNode; for delNode in ${delNodes}; do
+    local delNode; for delNode in ${LEAVING_MQ_NODES}; do
       if [[ "$allNodes" =~ "${delNode}" ]]; then
         log "node ${delNode} clustered with ${MY_INSTANCE_ID}";
       else
@@ -89,10 +84,9 @@ preCheckForScaleIn() {
 }
 
 scaleIn() {
-  log "scale in include ${DELETING_HOSTS[@]:-null}"
-  if [[ -n "${DELETING_HOSTS[disc]}" ]] || [[ -n "${DELETING_HOSTS[ram]}" ]]; then
-    local delNodes; delNodes="${DELETING_HOSTS[disc]} ${DELETING_HOSTS[ram]}"
-    local delNode; for delNode in ${delNodes}; do
+  log "scale in include ${LEAVING_MQ_NODES:-null}"
+  if [[ -n "${LEAVING_MQ_NODES}" ]]; then
+    local delNode; for delNode in ${LEAVING_MQ_NODES}; do
       rabbitmqctl forget_cluster_node rabbit@${delNode};
       log "scale_in forget node ${delNode} from cluster";
     done
@@ -100,9 +94,8 @@ scaleIn() {
 }
 
 scaleOut() {
-  if [[ -n "${ADDING_HOSTS[disc]}" ]] || [[ -n "${ADDING_HOSTS[ram]}" ]]; then
-    local joinNodes; joinNodes="${ADDING_HOSTS[disc]} ${ADDING_HOSTS[ram]}"
-    local joinNode; for joinNode in ${joinNodes}; do
+  if [[ -n "${JOINING_MQ_NODES}" ]]; then
+    local joinNode; for joinNode in ${JOINING_MQ_NODES}; do
       local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
       if checkNodesHealthy "${joinNode}" && [[ "${clusterInfo}" =~ "${MY_INSTANCE_ID}" ]]; then
         log "${joinNode} was clustered successful in scale-out";
