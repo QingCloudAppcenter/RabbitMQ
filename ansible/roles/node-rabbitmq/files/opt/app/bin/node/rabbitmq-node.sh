@@ -10,9 +10,10 @@ checkNodesHealthy() {
 }
 
 checkOnlyNodeRunning() {
-  # DO NOT USE this epecial func untill u known what will happen
+  # DO NOT USE this special func untill u known what will happen
   local runningNodes;
   runningNodes="$(rabbitmqctl -t 3 cluster_status --formatter=json | jq -j .running_nodes[])";
+  log "WARN: detected ${runningNodes:-null} in checkOnlyNodeRunning."
   [[ "${runningNodes}" == "rabbit@$@" ]] || [[ -z "${runningNodes}" ]] || return 1
 }
 
@@ -67,14 +68,14 @@ preCheckForScaleIn() {
   checkNodesHealthy "${allNodes}" # there was unhealthy node
   if [[ -n "${LEAVING_MQ_NODES}" ]]; then
     local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
-    local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+    local allRunningNodes; allRunningNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
     if [[ "${CLUSTER_PARTITION_HANDLING}" == "pause_minority" ]]; then
       local delNodesCount; delNodesCount=$(echo "${LEAVING_MQ_NODES}" | wc -w);
       local clusterNodesCount; clusterNodesCount=$(echo "${DISC_NODES} ${RAM_NODES}" | awk '{print NF}')
       (( ${clusterNodesCount} > 2 * ${delNodesCount} )) || return $EC_SCALE_IN_ERR # delete too much mq node
     fi
     local delNode; for delNode in ${LEAVING_MQ_NODES}; do
-      if [[ "$allNodes" =~ "${delNode}" ]]; then
+      if [[ "${allRunningNodes}" =~ "${delNode}" ]]; then
         log "node ${delNode} clustered with ${MY_INSTANCE_ID}";
       else
         return $EC_UNHEALTHY
