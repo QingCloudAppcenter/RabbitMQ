@@ -33,8 +33,6 @@ stop() {
 }
 
 start() {
-  local nodeStopOrderFile; nodeStopOrderFile="/data/mnesia/rabbit@${MY_INSTANCE_ID}/nodes_running_at_shutdown"
-  [[ ! -f "${nodeStopOrderFile}" ]] || rm "${nodeStopOrderFile}"
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
     retry 20 3 0 checkNodesHealthy "${firstDiscNode}"
@@ -134,7 +132,12 @@ upgrade() {
   preCheckForUpgrade
   local nodeStopOrderFile
   nodeStopOrderFile="/data/mnesia/rabbit@${MY_INSTANCE_ID}/nodes_running_at_shutdown"
-  [[ ! -f "${nodeStopOrderFile}" ]] || rm "${nodeStopOrderFile}"
+  local stopedDiscNodes lastStopedDiscNode; stopedDiscNodes="$(cat ${nodeStopOrderFile})";
+  lastStopedDiscNode="${stopedDiscNodes%%,*}";
+  lastStopedDiscNode=${lastStopedDiscNode:9:${#MY_INSTANCE_ID}}
+  if [[ "$((${#stopedDiscNodes} - 12))" -gt "${#MY_INSTANCE_ID}" ]]; then
+    retry 20 3 0 checkNodesHealthy "${lastStopedDiscNode}"
+  fi
   _start || return ${EC_UPGRADE_ERR}
   # upgrade failed, check volume, rm /data/mnesia/rabbit@${HOSTNAME}/schema_upgrade_lock and retry _start.
 }
