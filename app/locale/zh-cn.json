@@ -74,5 +74,5 @@
     "Whether to enable log web console": "文件管理控制台开关，true=开启，默认关闭",
     "username of log web console": "文件管理控制台登陆用户名，默认admin",
     "password of log web console": "文件管理控制台登陆密码，默认为空",
-    "notice_when_upgrade": "1，由于3.6.x与3.7.x有不兼容部分，请先检查集群中是否含有优先队列(priority queue)。如果含有该类型队列，请使用 https://www.rabbitmq.com/blue-green-upgrade.html 中介绍的方式操作。 2，若集群中缓存有大量消息数据，升级将极为耗时（最低配置单核1G内存下 10G 消息数据将花费大概 30 分钟）。3，每个节点磁盘使用率不得超过 30%，剩余空间不足或导致升级失败。"
+    "notice_when_upgrade": "1. 如果集群使用了优先队列 (priority queue)，请根据 [文档](https://docs.qingcloud.com/product/middware/rabbitmq/index] 进行操作，否则会导致此类队列里的数据**全部丢失**；\n 2. 若集群中缓存有大量消息数据，升级将极为耗时，单核 1G 内存的节点 10G 数据需要 30 分钟，数据越多速度越慢，建议业务低谷时队列基本为空时操作；\n 3. 每个节点磁盘使用率不得超过 30%，剩余空间不足会导致升级失败。"
 }
