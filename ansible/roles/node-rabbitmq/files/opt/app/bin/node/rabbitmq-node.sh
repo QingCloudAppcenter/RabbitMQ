@@ -2,6 +2,8 @@
 EC_SCALE_OUT_ERR=240
 EC_UNHEALTHY=241
 EC_SCALE_IN_ERR=242
+EC_INSUFFICIENT_VOLUME=243
+EC_UPGRADE_ERR=244
 
 checkNodesHealthy() {
   local node; for node in $@; do
@@ -124,4 +126,24 @@ addNodeToCluster()  {
   else
     log "${firstDiscNode} already clustered or ${MY_INSTANCE_ID} not the adding node."
   fi
+}
+
+upgrade() {
+  preCheckForUpgrade
+  local nodeStopOrderFile
+  nodeStopOrderFile="/data/mnesia/rabbit@${MY_INSTANCE_ID}/nodes_running_at_shutdown"
+  local stopedDiscNodes lastStopedDiscNode; stopedDiscNodes="$(cat ${nodeStopOrderFile})";
+  lastStopedDiscNode="${stopedDiscNodes%%,*}";
+  lastStopedDiscNode=${lastStopedDiscNode:9:${#MY_INSTANCE_ID}}
+  if [[ "$((${#stopedDiscNodes} - 12))" -gt "${#MY_INSTANCE_ID}" ]]; then
+    retry 20 3 0 checkNodesHealthy "${lastStopedDiscNode}"
+  fi
+  _start || return ${EC_UPGRADE_ERR}
+  # upgrade failed, check volume, rm /data/mnesia/rabbit@${HOSTNAME}/schema_upgrade_lock and retry _start.
+}
+
+preCheckForUpgrade() {
+  local hostVolumeUsed
+  hostVolumeUsed="$(df -h /data | awk 'NR == 2 {print $5}')"; #" * <= 30%"
+  [[ "${hostVolumeUsed%%%}" -lt "30" ]] || return ${EC_INSUFFICIENT_VOLUME}
 }

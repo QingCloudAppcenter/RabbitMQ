@@ -31,7 +31,7 @@
     "Proc Used": "Broker 子进程数",
     "Run Queue": "正在等待的 Erlang 进程数",
     "Mem Used": "RabbitMQ 内存占用 (MB)",
-    "Haproxy+Keepalived": "Haproxy+Keepalived",
+    "Haproxy+Keepalived": "负载均衡器",
     "roundrobin": "轮询",
     "leastconn": "最小连接",
     "static-rr": "静态权重",
@@ -46,7 +46,7 @@
     "haproxy web login passwd": "haproxy 监控界面密码",
     "url_param": "url_param 哈希",
     "haproxy balance policy": "负载均衡策略(roundrobin:轮询, leastconn:最小连接, static-rr:静态权重, source:IP 哈希, uri:uri 哈希, url_param:url_param 哈希)",
-    "Haproxy HA Node Count": "Haproxy+Keepalived 高可用节点个数(0个节点：不需要负载均衡;1个节点：负载均衡;2个节点：Haproxy+Keepalived 高可用负载均衡)",
+    "Haproxy HA Node Count": "负载均衡器高可用节点个数(0个节点：不需要负载均衡;1个节点：负载均衡;2个节点：负载均衡器高可用负载均衡)",
     "Disc Node": "磁盘节点",
     "Ram Node": "内存节点",
     "Number of Erlang processes that will accept connections for the TCP listeners": "接受TCP侦听器连接的Erlang进程数",
@@ -70,8 +70,9 @@
     "err_code240": "扩容失败，请检查集群状态",
     "err_code241": "节点状态不正常，请检查集群状态",
     "err_code242": "删除过多内存节点和磁盘节点，pause_minority 模式下每次仅允许删除小于总数的 1/2 个节点",
+    "err_code243": "节点磁盘使用率超过 30%，剩余空间不足或导致升级失败，请先扩容",
     "Whether to enable log web console": "文件管理控制台开关，true=开启，默认关闭",
     "username of log web console": "文件管理控制台登陆用户名，默认admin",
     "password of log web console": "文件管理控制台登陆密码，默认为空",
-    "notice_when_upgrade": "由于3.6.x与3.7.x有不兼容部分，请先检查集群中是否含有优先队列(priority queue)。如果含有该类型队列，请使用 https://www.rabbitmq.com/blue-green-upgrade.html 中介绍的方式操作"
+    "notice_when_upgrade": "1. 如果集群使用了优先队列 (priority queue)，请根据 [文档](https://docs.qingcloud.com/product/middware/rabbitmq/index] 进行操作，否则会导致此类队列里的数据**全部丢失**；\n 2. 若集群中缓存有大量消息数据，升级将极为耗时，单核 1G 内存的节点 10G 数据需要 30 分钟，数据越多速度越慢，建议业务低谷时队列基本为空时操作；\n 3. 每个节点磁盘使用率不得超过 30%，剩余空间不足会导致升级失败。"
 }
