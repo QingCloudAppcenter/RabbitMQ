@@ -35,10 +35,10 @@ stop() {
 start() {
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-    retry 10 3 0 checkEndPoint "http:15672" "${firstDiscNode}"
-    retry 20 3 0 checkNodesHealthy "${firstDiscNode}"
+    retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
   fi
   _start
+  rabbitmqctl cluster_status >> /dev/null
 }
 
 setConfFile() {
