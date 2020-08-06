@@ -38,7 +38,6 @@ start() {
     retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
   fi
   _start
-  rabbitmqctl cluster_status >> /dev/null
 }
 
 setConfFile() {
