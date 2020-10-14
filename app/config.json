@@ -58,7 +58,7 @@
             }, {
                 "key": "instance_class",
                 "label": "Instance Class",
-                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "description": "",
                 "type": "integer",
                 "default": 101,
                 "range": [101, 202],
@@ -109,7 +109,7 @@
             }, {
                 "key": "instance_class",
                 "label": "Instance Class",
-                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "description": "",
                 "type": "integer",
                 "default": 101,
                 "range": [101, 202],
@@ -160,7 +160,7 @@
             }, {
                 "key": "instance_class",
                 "label": "Instance Class",
-                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "description": "",
                 "type": "integer",
                 "default": 101,
                 "range": [101, 202],
@@ -201,7 +201,7 @@
             }, {
                 "key": "instance_class",
                 "label": "Instance Class",
-                "description": "The instance type for the cluster to run, such as high performance, high performance plus",
+                "description": "",
                 "type": "integer",
                 "default": 101,
                 "range": [101, 202],

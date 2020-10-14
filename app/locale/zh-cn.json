@@ -23,7 +23,6 @@
     "Volume Size": "存储容量",
     "The volume size for each node": "每个节点的存储容量",
     "instance class": "实例类型",
-    "The instance type for the cluster to run, such as high performance, high performance plus": "节点实例类型，比如性能型与超高性能型。",
     "count" : "个",
     "Count" : "节点个数",
     "Sockets Used": "Sockets 句柄数",
