@@ -3,12 +3,16 @@
     "description": {{cluster.description}},
     "vxnet": {{cluster.vxnet}},
     "multi_zone_policy": "round_robin",
+    "upgrade_policy": [ "appv-j68kmc6i","appv-kgbswtxz" ],
+    "upgrading_policy": "sequential",
     "nodes": [{
         "role": "disc",
         "container": {
-            "type": "kvm",
-            "zone": "sh1a",
-            "image": "img-ekte66nv"
+            "type": "lxc",
+            "prefer_type": "lxc",
+            "sriov_nic": true,
+            "zone": "sh1",
+            "image": "img-z1pyzrxh"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -89,9 +93,11 @@
     }, {
         "role": "ram",
         "container": {
-            "type": "kvm",
-            "zone": "sh1a",
-            "image": "img-ekte66nv"
+            "type": "lxc",
+            "prefer_type": "lxc",
+            "sriov_nic": true,
+            "zone": "sh1",
+            "image": "img-z1pyzrxh"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -171,8 +177,8 @@
         "role": "client",
         "container": {
             "type": "kvm",
-            "zone": "sh1a",
-            "image": "img-ekte66nv"
+            "zone": "sh1",
+            "image": "img-z1pyzrxh"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -192,8 +198,10 @@
         "role": "haproxy",
         "container": {
             "type": "lxc",
-            "zone": "sh1a",
-            "image": "img-ekte66nv"
+            "prefer_type":"lxc",
+            "sriov_nic": true,
+            "zone": "sh1",
+            "image": "img-z1pyzrxh"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
