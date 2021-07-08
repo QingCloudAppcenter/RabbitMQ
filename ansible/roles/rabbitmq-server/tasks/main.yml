@@ -10,7 +10,7 @@
 
 - name: install rabbitmq deb
   include_role:
-    name: install-1.0.5
+    name: install
   vars:
     opts:
       pkg_name: "{{ item.name }}"
@@ -86,7 +86,7 @@
 
 - name: download plugins for rabbitmq
   include_role:
-    name: install-1.0.5
+    name: install
   vars:
     opts:
       pkg_name: "rabbitmq-delayed_message_exchange"

@@ -8,11 +8,11 @@
   - include_role:
       name: "{{ service_name }}"
     loop:
-    - disable-apt-jobs-1.0.0
-    - disable-motd-1.0.0
-    - app-agent-1.0.1
-    - appctl-1.0.9
-    - arping-1.0.0
+    - disable-apt-jobs
+    - disable-motd
+    - app-agent
+    - appctl
+    - arping
     - rabbitmq-server
     - haproxy
     - keepalived
@@ -20,6 +20,6 @@
     - node-client
     - node-proxy
     - node-rabbitmq
-    - caddy-1.0.6
+    - caddy
     loop_control:
       loop_var: service_name

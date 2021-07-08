@@ -31,3 +31,8 @@
     masked: yes
     state: stopped
 
+- name: creates directory
+  file:
+    path: /opt/app/conf/haproxy
+    state: directory
+

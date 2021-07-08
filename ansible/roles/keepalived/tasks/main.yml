@@ -15,7 +15,7 @@
 
 - name: download keepalived
   include_role:
-    name: install-1.0.5
+    name: install
   vars:
     opts:
       pkg_name: keepalived
