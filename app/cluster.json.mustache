@@ -12,7 +12,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-zpfb1hxm"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -97,7 +97,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-zpfb1hxm"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -178,7 +178,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-zpfb1hxm"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -201,7 +201,7 @@
             "prefer_type":"lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-zpfb1hxm"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -231,6 +231,10 @@
             "unhealthy_threshold": 2,
             "check_cmd": "appctl check",
             "action_cmd": "appctl revive"
+        }, "volume": {
+            "size": {{cluster.haproxy.volume_size}},
+            "mount_point": "/log",
+            "filesystem": "ext4"
         }
     }],
     "env": {
