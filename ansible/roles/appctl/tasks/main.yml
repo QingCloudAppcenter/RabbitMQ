@@ -26,6 +26,11 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
+- name: Change permissions
+  file:
+    path: /opt/app/bin/ctl.sh
+    mode: '0755'
+
 - name: create symbolic link
   file:
     src: /opt/app/bin/ctl.sh

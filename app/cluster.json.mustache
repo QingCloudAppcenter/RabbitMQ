@@ -12,7 +12,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-ve2up59b"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -97,7 +97,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-ve2up59b"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -178,7 +178,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-ve2up59b"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -201,12 +201,17 @@
             "prefer_type":"lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "image": "img-ve2up59b"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
         "cpu": {{cluster.haproxy.cpu}},
         "memory": {{cluster.haproxy.memory}},
+        "volume": {
+            "size": {{cluster.haproxy.volume_size}},
+            "mount_point": "/data",
+            "filesystem": "ext4"
+        },
         "services": {
             "start": {
                 "order": 3,

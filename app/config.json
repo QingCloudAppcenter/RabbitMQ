@@ -207,6 +207,16 @@
                 "range": [101, 202],
                 "required": "yes"
             }, {
+                "key": "volume_size",
+                "label": "Volume Size",
+                "description": "The volume size for each instance",
+                "type": "integer",
+                "auto_scale_step": 10,
+                "min": 10,
+                "max": 1000,
+                "default": 10,
+                "required": "yes"
+            },{
                 "key": "count",
                 "label": "Count",
                 "description": "Haproxy HA Node Count",
