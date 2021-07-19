@@ -3,7 +3,6 @@
     "description": {{cluster.description}},
     "vxnet": {{cluster.vxnet}},
     "multi_zone_policy": "round_robin",
-    "upgrade_policy": [ "appv-j68kmc6i","appv-kgbswtxz" ],
     "upgrading_policy": "sequential",
     "nodes": [{
         "role": "disc",
@@ -11,8 +10,8 @@
             "type": "lxc",
             "prefer_type": "lxc",
             "sriov_nic": true,
-            "zone": "sh1",
-            "image": "img-zpfb1hxm"
+            "zone": "pek3a",
+            "image": "img-mpst6mws"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -96,8 +95,8 @@
             "type": "lxc",
             "prefer_type": "lxc",
             "sriov_nic": true,
-            "zone": "sh1",
-            "image": "img-zpfb1hxm"
+            "zone": "pek3a",
+            "image": "img-mpst6mws"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -177,14 +176,15 @@
         "role": "client",
         "container": {
             "type": "kvm",
-            "zone": "sh1",
-            "image": "img-zpfb1hxm"
+            "zone": "pek3a",
+            "image": "img-mpst6mws"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
         "cpu": {{cluster.client.cpu}},
         "memory": {{cluster.client.memory}},
         "user_access": true,
+        "passphraseless": "ssh-rsa",
         "services": {
             "start": {
                 "cmd": "appctl start"
@@ -193,15 +193,15 @@
                 "cmd": "appctl stop"
             }
         },
-        "advanced_actions": ["scale_horizontal"]
+        "advanced_actions": ["attach_keypairs"]
     }, {
         "role": "haproxy",
         "container": {
             "type": "lxc",
             "prefer_type":"lxc",
             "sriov_nic": true,
-            "zone": "sh1",
-            "image": "img-zpfb1hxm"
+            "zone": "pek3a",
+            "image": "img-mpst6mws"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
