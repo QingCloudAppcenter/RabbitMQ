@@ -216,7 +216,11 @@
                 "max": 1000,
                 "default": 10,
                 "required": "yes"
+<<<<<<< HEAD
             }, {
+=======
+            },{
+>>>>>>> 2d4f182e7b8b49aed42a2f10c3a08fe324b51631
                 "key": "count",
                 "label": "Count",
                 "description": "Haproxy HA Node Count",

@@ -26,7 +26,11 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
+<<<<<<< HEAD
 - name: Change file permissions
+=======
+- name: Change permissions
+>>>>>>> 2d4f182e7b8b49aed42a2f10c3a08fe324b51631
   file:
     path: /opt/app/bin/ctl.sh
     mode: '0755'
