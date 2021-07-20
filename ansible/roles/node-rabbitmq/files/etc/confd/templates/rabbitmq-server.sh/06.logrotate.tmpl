@@ -1,0 +1,16 @@
+flush /etc/logrotate.d/rabbitmq-server << LOGROTATE_EOF
+${DATA_MOUNTS}/log/rabbitmq/*.log {
+    weekly
+    missingok
+    rotate 20
+    compress
+    notifempty
+}
+${DATA_MOUNTS}/log/rabbitmq/log/*.log {
+    weekly
+    missingok
+    rotate 20
+    compress
+    notifempty
+}
+LOGROTATE_EOF

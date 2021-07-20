@@ -33,6 +33,8 @@ flush() {
 applyEnvs() {
   local -r envFile=/opt/app/bin/envs/confd.env
   if [ -f "$envFile" ]; then . $envFile; fi
+  local -r nodeEnvFile=/opt/app/bin/envs/nodectl.env
+  if [ -f "$nodeEnvFile" ]; then . $nodeEnvFile; fi
 }
 
 applyEnvs

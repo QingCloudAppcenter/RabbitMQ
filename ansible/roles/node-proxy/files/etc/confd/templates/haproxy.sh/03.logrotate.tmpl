@@ -1,0 +1,14 @@
+
+flush /etc/logrotate.d/haproxy << LOGROTATE_EOF
+${DATA_MOUNTS}/log/haproxy/haproxy.log {
+    daily
+    rotate 20
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+        invoke-rc.d rsyslog rotate >/dev/null 2>&1 || true
+    endscript
+}
+LOGROTATE_EOF

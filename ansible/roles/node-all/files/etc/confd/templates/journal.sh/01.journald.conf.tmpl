@@ -1,0 +1,21 @@
+mkdir -p ${DATA_MOUNTS}/log/journald/
+chmod 777 ${DATA_MOUNTS}/log/journald/
+flush /etc/rsyslog.d/49-journald.conf << JOURNALD_CONFIG_EOF
+module(load="imjournal" PersistStateInterval="100") #load imjournal module
+module(load="mmjsonparse") #load mmjsonparse module for structured logs
+
+#template(name="CEETemplate" type="string" string="%TIMESTAMP% %HOSTNAME% %syslogtag% @cee: %$!all-json%\n" ) #template for messages
+
+#action(type="mmjsonparse")
+{{- if getvs "/host/role" | filter "(disc|ram)" }}
+#action(type="omfile" file="/data/log/journald/journald.log" template="CEETemplate")
+action(type="omfile" file="/data/log/journald/journald.log")
+{{- else if getvs "/host/role" | filter "haproxy" }}
+#action(type="omfile" file="/log/log/journald/journald.log" template="CEETemplate")
+action(type="omfile" file="/log/log/journald/journald.log")
+{{- else if getvs "/host/role" | filter "client" }}
+#action(type="omfile" file="${DATA_MOUNTS}/log/journald/journald.log" template="CEETemplate")
+action(type="omfile" file="${DATA_MOUNTS}/log/journald/journald.log")
+{{- end }}
+
+JOURNALD_CONFIG_EOF
