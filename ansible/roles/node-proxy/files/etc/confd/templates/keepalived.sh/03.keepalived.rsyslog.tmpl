@@ -1,3 +1,4 @@
+{{- if getvs "/host/role" | filter "haproxy" }}
 mkdir -p ${DATA_MOUNTS}/log/keepalivd/
 chmod 777 ${DATA_MOUNTS}/log/keepalivd/
 flush /etc/rsyslog.d/49-keepalived.conf << KEEPALIVED_LOG_EOF
@@ -6,3 +7,4 @@ if \$programname startswith 'Keepalived' then ${DATA_MOUNTS}/log/keepalivd/keepa
 &stop
 
 KEEPALIVED_LOG_EOF
+{{- end }}

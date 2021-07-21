@@ -1,4 +1,7 @@
+{{- if getvs "/host/role" | filter "(disc|ram)" }}
 mkdir -p ${DATA_MOUNTS}/log/rabbitmq
+{{- end }}
+
 {{- $myRole := getv "/host/role" }}
 
 flush  /etc/rabbitmq/rabbitmq.conf << RABBITMQ_CONF_EOF

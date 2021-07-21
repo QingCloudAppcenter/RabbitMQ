@@ -1,3 +1,4 @@
+{{- if getvs "/host/role" | filter "haproxy" }}
 mkdir -p ${DATA_MOUNTS}/log/haproxy/
 chmod 777 ${DATA_MOUNTS}/log/haproxy/
 
@@ -13,3 +14,4 @@ flush /etc/rsyslog.d/49-haproxy.conf << HAPROXY_LOG_CONF_EOF
   stop
 }
 HAPROXY_LOG_CONF_EOF
+{{- end }}
