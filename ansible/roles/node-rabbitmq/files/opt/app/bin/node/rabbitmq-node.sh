@@ -147,3 +147,17 @@ preCheckForUpgrade() {
   hostVolumeUsed="$(df -h /data | awk 'NR == 2 {print $5}')"; #" * <= 30%"
   [[ "${hostVolumeUsed%%%}" -lt "30" ]] || return ${EC_INSUFFICIENT_VOLUME}
 }
+
+checkSvc() {
+  checkActive ${1%%/*} || {
+    log "Service '$1' is inactive."
+    return $EC_CHECK_INACTIVE
+  }
+  local endpoints=$(echo $1 | awk -F/ '{print $3}')
+  local endpoint; for endpoint in ${endpoints//,/ }; do
+    checkEndpoint $endpoint || {
+      log "Endpoint '$endpoint' is unreachable."
+      return 0
+    }
+  done
+}
