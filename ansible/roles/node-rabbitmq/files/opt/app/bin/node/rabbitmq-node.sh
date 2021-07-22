@@ -7,7 +7,7 @@ EC_UPGRADE_ERR=244
 
 checkNodesHealthy() {
   local node; for node in $@; do
-    rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || return $EC_UNHEALTHY
+    rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || ( log "ERROR: rabbit@${node} failed the health check . " && return $EC_UNHEALTHY )
   done
 }
 
@@ -23,46 +23,57 @@ stop() {
   #https://www.rabbitmq.com/clustering.html#restarting
   #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
   #sometimes the last node to stop must be the first node to be started after the upgrade.
+  log "INFO: Application is asked to stop . "
   local i; for i in ${LEAVING_MQ_NODES}; do DISC_NODES="${DISC_NODES//${i}/}"; done
   #In case /hosts /deleting-hosts update are not synchronized
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then 
+  if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then
+    log "INFO: Wait until all other Disc nodes are stopped  . " 
     retry 20 3 0 checkOnlyNodeRunning "${firstDiscNode}" #notice return
+    log "INFO: The other Disc nodes have all stopped  . " 
   fi
-  _stop
+  _stop || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to stop  . " && return 1)
+  log "INFO: Application stopped successfully  . "
 }
 
 start() {
+  log "INFO: Application is asked to start . "
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
     retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
   fi
-  _start
+  _start || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to start  . " && return 1)
+  log "INFO: Application started successfully  . "
 }
 
 setConfFile() {
   mkdir -p /data/{log,mnesia,config,schema}
-  chown -R rabbitmq:rabbitmq /data/{log,mnesia,config,schema}
+  chown -R rabbitmq:rabbitmq /data/{log/rabbitmq,mnesia,config,schema}
 }
 
 initNode() {
-  _initNode
+  log "INFO: Application is about to initialize . "
+  _initNode || ( log "ERROR: Application failed to initialize . " && return $EC_UNHEALTHY )
   setConfFile
+  log "INFO: Application initialization completed  . "
 }
 
 reload() {
+  log "INFO: Application is asked to reload  . "
   if ! isNodeInitialized; then return 0; fi
   case "${1}" in
     rabbitmq-server)
       local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
       if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
         # only figure out the changed parameter
-        _reload rabbitmq-server;
+        _reload rabbitmq-server || (log "ERROR: The Rabbitmq-server failed to start . " && return 1);
       fi
       ;;
     *)
-      _reload $@ ;;
+      _reload $@ 
+      ;;
   esac
+  log "INFO: Application reloaded completely . "
 }
 
 preCheckForScaleIn() {
@@ -138,14 +149,14 @@ upgrade() {
   if [[ "$((${#stopedDiscNodes} - 12))" -gt "${#MY_INSTANCE_ID}" ]]; then
     retry 20 3 0 checkNodesHealthy "${lastStopedDiscNode}"
   fi
-  _start || return ${EC_UPGRADE_ERR}
+  _start || ( log "ERROR: Application failed to upgrade  . " && return ${EC_UPGRADE_ERR} )
   # upgrade failed, check volume, rm /data/mnesia/rabbit@${HOSTNAME}/schema_upgrade_lock and retry _start.
 }
 
 preCheckForUpgrade() {
   local hostVolumeUsed
   hostVolumeUsed="$(df -h /data | awk 'NR == 2 {print $5}')"; #" * <= 30%"
-  [[ "${hostVolumeUsed%%%}" -lt "30" ]] || return ${EC_INSUFFICIENT_VOLUME}
+  [[ "${hostVolumeUsed%%%}" -lt "30" ]] || ( log "ERROR: Insufficient disk space to support the upgrade  . " && return ${EC_INSUFFICIENT_VOLUME} )
 }
 
 checkSvc() {

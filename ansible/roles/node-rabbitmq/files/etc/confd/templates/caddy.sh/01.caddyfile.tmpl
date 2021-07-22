@@ -1,4 +1,4 @@
-{{- if getvs "/host/role" | filter "(disc|ram)" }}
+{{- if getvs "/host/role" | filter "(disc|ram|haproxy)" }}
 ln -s -f /opt/app/conf/caddy/index.html /data/index.html
 flush /opt/app/conf/caddy/caddyfile << CADDYFILE_EOF
 {{ getv "/host/ip" }}:80 {
@@ -10,14 +10,5 @@ flush /opt/app/conf/caddy/caddyfile << CADDYFILE_EOF
 CADDYFILE_EOF
 {{- end }}
 
-{{- if getvs "/host/role" | filter "haproxy" }}
-ln -s -f /opt/app/conf/caddy/index.html /log/html/logviewer.html
-flush /opt/app/conf/caddy/caddyfile << CADDYFILE_EOF
-{{ getv "/host/ip" }}:80 {
-  root /log
-  gzip
-  browse 
-  tls off
-}
-CADDYFILE_EOF
-{{- end }}
+
+

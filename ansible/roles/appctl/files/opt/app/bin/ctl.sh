@@ -163,13 +163,13 @@ initSvc() {
 
 _checkSvc() {
   checkActive ${1%%/*} || {
-    log "Service '$1' is inactive."
+    # log "Service '$1' is inactive."
     return $EC_CHECK_INACTIVE
   }
   local endpoints=$(echo $1 | awk -F/ '{print $3}')
   local endpoint; for endpoint in ${endpoints//,/ }; do
     checkEndpoint $endpoint || {
-      log "Endpoint '$endpoint' is unreachable."
+      # log "Endpoint '$endpoint' is unreachable."
       return $EC_CHECK_PORT_ERR
     }
   done
@@ -197,20 +197,22 @@ _preCheck() {
 _initNode() {
   checkMounts
   rm -rf /data/lost+found
-  install -d -o syslog -g svc /data/appctl/logs
+  install -d -o syslog -g svc /data/log/appctl/
   local svc; for svc in $(getServices -a); do initSvc $svc; done
 }
 
 _revive() {
+  log "INFO: Application is asked to revive . "
   local svc; for svc in $(getServices); do
     execute checkSvc $svc || restartSvc $svc || log "ERROR: failed to restart '$svc' ($?)."
   done
+  log "INFO: Application revived successfully  . "
 }
 
 _check() {
   local svc; for svc in $(getServices); do
-    execute checkSvc $svc
-  done
+    execute checkSvc $svc || (log "ERROR: $svc failed the health check . " && return 1)
+   done
 }
 
 _start() {
@@ -218,17 +220,22 @@ _start() {
     execute initNode
     systemctl restart rsyslog # output to log files under /data
   }
-  local svc; for svc in $(getServices); do startSvc $svc; done
+  local svc; for svc in $(getServices); do 
+    startSvc $svc || (log "ERROR: service $svc failed to start  . " && return 1)
+  done
 }
 
 _stop() {
-  log "Stopping all services ..."
-  local svc; for svc in $(getServices -a | xargs -n1 | tac); do stopSvc $svc; done
+  local svc; for svc in $(getServices -a | xargs -n1 | tac); do 
+    stopSvc $svc
+  done
 }
 
 _restart() {
+  log "INFO: Application is asked to restart . "
   execute stop
   execute start
+  log "INFO: Application restarted successfully  . "
 }
 
 _reload() {
@@ -236,7 +243,11 @@ _reload() {
   local svcs="${@:-$(getServices -a)}"
   local svc; for svc in $(echo $svcs | xargs -n1 | tac); do stopSvc $svc; done
   local svc; for svc in $svcs; do
-    if isSvcEnabled $svc; then startSvc $svc; fi
+    if isSvcEnabled $svc; then 
+    log "INFO: $svc is asked to reload by appctl . "
+    startSvc $svc
+    log "INFO: $svc reloaded successfully  . "
+    fi
   done
 }
 

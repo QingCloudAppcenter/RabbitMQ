@@ -8,22 +8,6 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
-- name: Touch a Dic
-  file:
-    path: /log
-    state: directory
-    owner: root
-    group: svc
-    mode: 0644
-
-- name: Touch a Dic
-  file:
-    path: /log/html
-    state: directory
-    owner: root
-    group: svc
-    mode: 0644
-
 - name: install confd files
   include_role:
     name: confd-files

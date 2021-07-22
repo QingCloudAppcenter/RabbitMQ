@@ -64,7 +64,7 @@ flush /opt/app/conf/caddy/index.html << HTML_EOF
     <title>Files</title>
   </head>
   <body>
-    <header>文件查看器</header>
+    <header>日志查看器</header>
     <main>
       {{- $discNodes :=  getvs "/hosts/disc/*/ip" }}
       {{- $ramNodes :=  getvs "/hosts/ram/*/ip" }}
@@ -95,9 +95,9 @@ flush /opt/app/conf/caddy/index.html << HTML_EOF
         {{- range $proxyNodes }}
         {{- if eq . (getv "/host/ip") }}
         <li><span>⊟</span>{{ . }}</li>
-        <li><span class="sub-1">⊞</span><a href="/">log</a></li>
+        <li><span class="sub-1">⊞</span><a href="./log/">log</a></li>
         {{- else }}
-        <li><span>⊞</span><a href="//{{ . }}/html/logviewer.html">{{ . }}</a></li>
+        <li><span>⊞</span><a href="//{{ . }}/">{{ . }}</a></li>
         {{- end }}
         {{- end }}
       </ul>

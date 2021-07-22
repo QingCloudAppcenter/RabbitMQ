@@ -11,7 +11,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-qtlcjq1d"
+            "image": "img-2wslwqbn"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -96,7 +96,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-qtlcjq1d"
+            "image": "img-2wslwqbn"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -177,7 +177,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1",
-            "image": "img-qtlcjq1d"
+            "image": "img-2wslwqbn"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -201,7 +201,7 @@
             "prefer_type":"lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-qtlcjq1d"
+            "image": "img-2wslwqbn"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -238,7 +238,7 @@
             "action_cmd": "appctl revive"
         }, "volume": {
             "size": {{cluster.haproxy.volume_size}},
-            "mount_point": "/log",
+            "mount_point": "/data",
             "filesystem": "ext4"
         }
     }],
@@ -265,9 +265,7 @@
         "background_gc_target_interval": {{env.background_gc_target_interval}},
         "proxy_protocol": {{env.proxy_protocol}},
         "tracing_user": {{env.tracing_user}},
-        "web_console_enabled": {{env.web_console_enabled}},
-        "web_console_username": {{env.web_console_username}},
-        "web_console_password": {{env.web_console_password}}
+        "web_console_enabled": {{env.web_console_enabled}}
     },
     "endpoints": {
         "client": {
