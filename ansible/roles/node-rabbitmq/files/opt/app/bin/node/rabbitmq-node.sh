@@ -81,7 +81,7 @@ preCheckForScaleIn() {
   checkNodesHealthy "${allNodes}" # there was unhealthy node
   if [[ -n "${LEAVING_MQ_NODES}" ]]; then
     local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
-    local allRunningNodes; allRunningNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+    local allRunningNodes; allRunningNodes="$(echo $clusterInfo | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
     if [[ "${CLUSTER_PARTITION_HANDLING}" == "pause_minority" ]]; then
       local delNodesCount; delNodesCount=$(echo "${LEAVING_MQ_NODES}" | wc -w);
       local clusterNodesCount; clusterNodesCount=$(echo "${DISC_NODES} ${RAM_NODES}" | awk '{print NF}')
@@ -110,7 +110,7 @@ scaleIn() {
 scaleOut() {
   if [[ -n "${JOINING_MQ_NODES}" ]]; then
     local joinNode; for joinNode in ${JOINING_MQ_NODES}; do
-      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
       if checkNodesHealthy "${joinNode}" && [[ "${clusterInfo}" =~ "${MY_INSTANCE_ID}" ]]; then
         log "${joinNode} was clustered successful in scale-out";
       else
@@ -129,7 +129,7 @@ addNodeToCluster()  {
   # write for the node which peer discover failed or the adding node
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
-  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
   if [[ ! "$allNodes" =~ "${firstDiscNode}" ]]; then  #disc node ${DISC_NODES##*-} was not clustered
     rabbitmqctl stop_app
     rabbitmqctl join_cluster --${MY_ROLE} rabbit@${firstDiscNode}
