@@ -4,6 +4,8 @@
     "RabbitMQ cluster propertie": "RabbitMQ 集群",
     "The name of the RabbitMQ service": "RabbitMQ 服务名称",
     "The description of the RabbitMQ service": "RabbitMQ 服务描述",
+    "rabbitmq_user": "Rabbitmq网页控制台管理员用户名(此项配置后不可修改，请谨慎操作）",
+    "rabbitmq_pass": "Rabbitmq网页控制台默认管理员用户密码",
     "VxNet": "私有网络",
     "Test": "测试环境",
     "Prod": "生产环境",

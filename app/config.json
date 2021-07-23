@@ -234,6 +234,20 @@
         "description": "RabbitMQ service properties",
         "type": "array",
         "properties": [{
+            "key": "rabbitmq_default_user",
+            "label": "rabbitmq_default_user",
+            "description": "rabbitmq_user",
+            "type": "string",
+            "default": "guest",
+            "required": "yes",
+            "changeable": false
+        }, {
+            "key": "rabbitmq_default_pass",
+            "label": "rabbitmq_default_pass",
+            "description": "rabbitmq_pass",
+            "type": "password",
+            "required": "yes"
+        }, {
             "key": "haproxy_balance_policy",
             "label": "haproxy_balance_policy",
             "description": "haproxy balance policy",
