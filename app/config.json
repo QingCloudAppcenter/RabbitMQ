@@ -316,7 +316,7 @@
             "label": "disk_free_limit",
             "description": "Disk free space (in bytes) limit of the partition on which RabbitMQ is storing data",
             "type": "integer",
-            "default": 50000000,
+            "default": 524288000,
             "required": "no"
         }, {
             "key": "frame_max",
