@@ -7,7 +7,7 @@ mkdir -p ${DATA_MOUNTS}/log/rabbitmq
 {{- $myRole := getv "/host/role" }}
 
 flush  /etc/rabbitmq/rabbitmq.conf << RABBITMQ_CONF_EOF
-background_gc_enabled = {{ getv "/env/background_gc_enabled" "false" }}
+background_gc_enabled = {{ getv "/env/background_gc_enabled" "true" }}
 background_gc_target_interval = {{ getv "/env/background_gc_target_interval" "60000" }}
 channel_max = {{ getv "/env/channel_max" "10" }}
 
@@ -42,7 +42,7 @@ tcp_listen_options.send_timeout = 15000
 tcp_listen_options.buffer = 196608
 tcp_listen_options.sndbuf = 196608
 tcp_listen_options.recbuf = 196608
-vm_memory_high_watermark.relative = {{ getv "/env/vm_memory_high_watermark" "0.4" }}
+vm_memory_high_watermark.relative = {{ getv "/env/vm_memory_high_watermark" "0.7" }}
 # vm_memory_high_watermark.absolute = {{ getv "/env/vvm_memory_high_watermark_absolute" "2G" }}
 vm_memory_high_watermark_paging_ratio = {{ getv "/env/vm_memory_high_watermark_paging_ratio" "0.5" }}
 log.dir = ${DATA_MOUNTS}/log/rabbitmq/
