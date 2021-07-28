@@ -23,9 +23,9 @@ defaults
   retries 3
   option redispatch
   maxconn 65535
-  contimeout 5s
-  clitimeout 120s
-  srvtimeout 120s
+  timeout connect 3s
+  timeout client 10s
+  timeout server 10s
 
 #front-end IP for consumers and producters
 listen rabbitmq_cluster
@@ -38,13 +38,11 @@ listen rabbitmq_cluster
   #balance roundrobin
   #simple polling
   balance {{ getv "/env/haproxy_balance_policy" }}
-  timeout client  3h
-  timeout server  3h
   #rabbitmq cluster node config
   {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 500 rise 2 fall 2 on-marked-down shutdown-sessions {{ end }}
   {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 5000 rise 2 fall 2  {{ end }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 500 rise 2 fall 2 on-marked-down shutdown-sessions {{ end }}
 
 #front-end IP for stomp
 listen rabbitmq_cluster_stomp
