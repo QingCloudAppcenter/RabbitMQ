@@ -2,6 +2,9 @@
     "name": {{cluster.name}},
     "description": {{cluster.description}},
     "vxnet": {{cluster.vxnet}},
+    "links": {
+    "etcd_service": {{cluster.etcd_service}}
+    },
     "multi_zone_policy": "round_robin",
     "upgrading_policy": "sequential",
     "nodes": [{
@@ -11,7 +14,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-2wslwqbn"
+            "image": "img-ozi8q9x9"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -26,7 +29,8 @@
             "start": {
                 "order": 1,
                 "cmd": "appctl start",
-                "timeout": 180
+                "nodes_to_execute_on": 255,
+                "timeout": 1000
             },
             "stop": {
                 "order": 2,
@@ -56,8 +60,7 @@
             "action_timeout_sec": 60,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl revive"
+            "check_cmd": "appctl check"
         },
         "monitor": {
             "enable": true,
@@ -96,7 +99,7 @@
             "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-2wslwqbn"
+            "image": "img-ozi8q9x9"
         },
         "instance_class": {{cluster.ram.instance_class}},
         "count": {{cluster.ram.count}},
@@ -109,9 +112,10 @@
         },
         "services": {
             "start": {
-                "order": 2,
+                "order": 1,
                 "cmd": "appctl start",
-                "timeout": 180
+                "nodes_to_execute_on": 255,
+                "timeout": 1000
             },
             "stop": {
                 "order": 1,
@@ -124,6 +128,11 @@
             "destroy": {
                 "order": 1,
                 "cmd": "appctl stop"
+            },"scale_in": {
+                "nodes_to_execute_on": 1,
+                "pre_check": "appctl preCheckForScaleIn",
+                "cmd": "appctl scaleIn",
+                "timeout": 90
             },
             "scale_out": {
                 "cmd": "appctl scaleOut",
@@ -139,8 +148,7 @@
             "action_timeout_sec": 30,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl revive"
+            "check_cmd": "appctl check"
         },
         "monitor": {
             "enable": true,
@@ -177,7 +185,7 @@
         "container": {
             "type": "kvm",
             "zone": "sh1",
-            "image": "img-2wslwqbn"
+            "image": "img-ozi8q9x9"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -201,7 +209,7 @@
             "prefer_type":"lxc",
             "sriov_nic": true,
             "zone": "sh1",
-            "image": "img-2wslwqbn"
+            "image": "img-ozi8q9x9"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -234,8 +242,7 @@
             "action_timeout_sec": 30,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl revive"
+            "check_cmd": "appctl check"
         }, "volume": {
             "size": {{cluster.haproxy.volume_size}},
             "mount_point": "/data",

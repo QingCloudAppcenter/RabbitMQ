@@ -26,6 +26,17 @@
             "default": "",
             "required": "yes"
         }, {
+            "key": "etcd_service",
+            "label": "etcd",
+            "description": "Choose a etcd to use",
+            "type": "service",
+            "tag": ["ETCD", "etcd"],
+            "limits": {
+                "app-fdyvu2wk": []
+            },
+            "default": "",
+            "required": "yes"
+        }, {
             "key": "resource_group",
             "label": "Resource Configuration",
             "description": "Test: 3 disc nodes with 1 HAProxy node; Prod: 3 disc nodes with 2 HAProxy nodes",

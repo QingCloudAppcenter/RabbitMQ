@@ -11,13 +11,22 @@ background_gc_enabled = {{ getv "/env/background_gc_enabled" "true" }}
 background_gc_target_interval = {{ getv "/env/background_gc_target_interval" "60000" }}
 channel_max = {{ getv "/env/channel_max" "10" }}
 
-cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
+cluster_formation.peer_discovery_backend = etcd
+{{- $clusterId := getv "/cluster/cluster_id" }}
+{{- $etcdHosts := getvs "/links/etcd_service/hosts/etcd_node/*/ip" }}
 {{- $discNodes := join ( getvs "/hosts/disc/*/instance_id") "," }}
 {{- $ramNodes := join ( getvs "/hosts/ram/*/instance_id") "," }}
 {{- $allNodes := split ( printf "%s%s%s" $discNodes ( and $ramNodes ",") $ramNodes) ","}}
-{{- range $i,$node := $allNodes }}
-cluster_formation.classic_config.nodes.{{ add $i 1 }} = rabbit@{{ $node }}
+{{- range $i,$endpoint := $etcdHosts }}
+cluster_formation.etcd.endpoints.{{ add $i 1 }} = {{ $endpoint }}:2379
 {{- end }}
+
+cluster_formation.etcd.key_prefix = /{{ $clusterId }}_prefix
+cluster_formation.etcd.cluster_name = {{ $clusterId }}
+cluster_formation.etcd.node_ttl = 30
+cluster_formation.etcd.lock_timeout = 300
+cluster_formation.node_cleanup.only_log_warning = true
+cluster_formation.node_cleanup.interval = 90
 cluster_formation.node_type = {{ getv "/host/role" }}
 
 cluster_keepalive_interval = {{ getv "/env/cluster_keepalive_interval" "10000" }}

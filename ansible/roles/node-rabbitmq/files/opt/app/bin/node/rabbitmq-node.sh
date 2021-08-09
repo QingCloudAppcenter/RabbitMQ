@@ -1,3 +1,4 @@
+# 使用etcd需要删除fristnode逻辑
 # Error codes
 EC_SCALE_OUT_ERR=240
 EC_UNHEALTHY=241
@@ -24,24 +25,13 @@ stop() {
   #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
   #sometimes the last node to stop must be the first node to be started after the upgrade.
   log "INFO: Application is asked to stop . "
-  local i; for i in ${LEAVING_MQ_NODES}; do DISC_NODES="${DISC_NODES//${i}/}"; done
   #In case /hosts /deleting-hosts update are not synchronized
-  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then
-    log "INFO: Wait until all other Disc nodes are stopped  . " 
-    retry 20 3 0 checkOnlyNodeRunning "${firstDiscNode}" #notice return
-    log "INFO: The other Disc nodes have all stopped  . " 
-  fi
   _stop || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to stop  . " && return 1)
   log "INFO: Application stopped successfully  . "
 }
 
 start() {
   log "INFO: Application is asked to start . "
-  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-    retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
-  fi
   _start || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to start  . " && return 1)
   log "INFO: Application started successfully  . "
 }
