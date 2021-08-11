@@ -25,7 +25,6 @@ stop() {
   #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
   #sometimes the last node to stop must be the first node to be started after the upgrade.
   log "INFO: Application is asked to stop . "
-  #In case /hosts /deleting-hosts update are not synchronized
   _stop || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to stop  . " && return 1)
   log "INFO: Application stopped successfully  . "
 }
