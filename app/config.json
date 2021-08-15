@@ -97,57 +97,6 @@
                 "required": "yes"
             }]
         }, {
-            "key": "ram",
-            "label": "Ram Node",
-            "description": "Ram Node",
-            "type": "array",
-            "properties": [{
-                "key": "cpu",
-                "label": "CPU",
-                "description": "CPUs of each node",
-                "type": "integer",
-                "default": 1,
-                "range": [1, 2, 4, 8, 16, 32],
-                "required": "yes"
-            }, {
-                "key": "memory",
-                "label": "Memory",
-                "description": "Memory of each node",
-                "type": "integer",
-                "default": 2048,
-                "range": [1024, 2048, 4096, 8192, 16384, 32768, 49152, 65536, 131072],
-                "required": "yes"
-            }, {
-                "key": "instance_class",
-                "label": "Instance Class",
-                "description": "",
-                "type": "integer",
-                "default": 101,
-                "range": [101, 202],
-                "resource_group": [101, 202],
-                "required": "yes"
-            }, {
-                "key": "volume_size",
-                "label": "Volume Size",
-                "description": "The volume size for each instance",
-                "type": "integer",
-                "auto_scale_step": 10,
-                "min": 10,
-                "max": 1000,
-                "default": 10,
-                "required": "yes"
-            }, {
-                "key": "count",
-                "label": "Count",
-                "description": "Ram Node Count",
-                "type": "integer",
-                "auto_scale_step": 1,
-                "default": 0,
-                "min": 0,
-                "max": 100,
-                "required": "yes"
-            }]
-        }, {
             "key": "client",
             "label": "client Node",
             "description": "client Node",
