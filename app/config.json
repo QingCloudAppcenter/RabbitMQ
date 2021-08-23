@@ -183,7 +183,6 @@
                 "min": 2,
                 "max": 100,
                 "default": 2,
-                "resource_group": [1, 2],
                 "required": "yes"
             }]
         }
