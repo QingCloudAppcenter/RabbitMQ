@@ -12,13 +12,9 @@
     - disable-motd
     - app-agent
     - appctl
-    - arping
-    - rabbitmq-server
-    - haproxy
-    - keepalived
     - node-all
     - node-client
-    - node-proxy
+    - node-proxy-keepalived
     - node-rabbitmq
     - caddy
     loop_control:
