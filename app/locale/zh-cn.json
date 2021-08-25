@@ -71,5 +71,6 @@
     "err_code242": "删除过多内存节点和磁盘节点，pause_minority 模式下每次仅允许删除小于总数的 1/2 个节点",
     "err_code243": "节点磁盘使用率超过 30%，剩余空间不足或导致升级失败，请先扩容",
     "Whether to enable log web console": "日志管理控制台开关，true=开启，默认开启",
-    "notice_when_upgrade": "1. 如果集群使用了优先队列 (priority queue)，请根据 [文档](https://docs.qingcloud.com/product/middware/rabbitmq/index] 进行操作，否则会导致此类队列里的数据**全部丢失**；\n 2. 若集群中缓存有大量消息数据，升级将极为耗时，单核 1G 内存的节点 10G 数据需要 30 分钟，数据越多速度越慢，建议业务低谷时队列基本为空时操作；\n 3. 每个节点磁盘使用率不得超过 30%，剩余空间不足会导致升级失败。"
+    "notice_when_upgrade": "1. 如果集群使用了优先队列 (priority queue)，请根据 [文档](https://docs.qingcloud.com/product/middware/rabbitmq/index] 进行操作，否则会导致此类队列里的数据**全部丢失**；\n 2. 若集群中缓存有大量消息数据，升级将极为耗时，单核 1G 内存的节点 10G 数据需要 30 分钟，数据越多速度越慢，建议业务低谷时队列基本为空时操作；\n 3. 每个节点磁盘使用率不得超过 30%，剩余空间不足会导致升级失败。",
+    "etcd": "etcd外部服务"
 }

@@ -32,7 +32,7 @@
             "type": "service",
             "tag": ["ETCD", "etcd"],
             "limits": {
-                "app-fdyvu2wk": []
+                "app-fdyvu2wk": ["appv-5taat5ql"]
             },
             "default": "",
             "required": "yes"
