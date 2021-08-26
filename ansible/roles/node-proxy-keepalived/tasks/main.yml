@@ -81,7 +81,7 @@
 
 - name: build keepalived
   vars:
-    build_path: "/root/.ansible/cache/keepalived/keepalived-{{ keepalived_version }}/build-dir"
+    build_path: "/root/.ansible/cache/node-proxy-keepalived/keepalived-{{ keepalived_version }}/build-dir"
   shell: |
     tar -zxvf keepalived-{{ keepalived_version }}.tgz
     cd keepalived-{{ keepalived_version }}/
@@ -89,7 +89,7 @@
     make
     sudo make install
   args:
-    chdir: "/root/.ansible/cache/keepalived"
+    chdir: "/root/.ansible/cache/node-proxy-keepalived"
     creates: "{{ build_path }}/bin/keepalived"
   delegate_to: localhost
 
@@ -102,7 +102,7 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
   with_items:
-    - "/root/.ansible/cache/keepalived/keepalived-{{ keepalived_version }}/build-dir/"
+    - "/root/.ansible/cache/node-proxy-keepalived/keepalived-{{ keepalived_version }}/build-dir/"
 
 - name: mask services
   systemd:
