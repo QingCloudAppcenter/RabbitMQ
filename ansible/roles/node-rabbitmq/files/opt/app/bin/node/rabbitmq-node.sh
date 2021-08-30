@@ -31,7 +31,8 @@ stop() {
 
 start() {
   log "INFO: Application is asked to start . "
-  _start || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to start  . " && return 1)
+  _start || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to start  . ")
+  retry 10 30 0 checkSvc "rabbitmq-server"
   log "INFO: Application started successfully  . "
 }
 
