@@ -67,23 +67,13 @@ flush /opt/app/conf/caddy/index.html << HTML_EOF
     <header>日志查看器</header>
     <main>
       {{- $discNodes :=  getvs "/hosts/disc/*/ip" }}
-      {{- $ramNodes :=  getvs "/hosts/ram/*/ip" }}
       {{- $proxyNodes :=  getvs "/hosts/haproxy/*/ip" }}
       <div class="meta">
-        <span>共 <b>{{ len $discNodes }}</b> 个 disc 节点, <b>{{ len $ramNodes }}</b> 个 ram 节点, <b>{{ len $proxyNodes }}</b> 个 haproxy 节点</span>
+        <span>共 <b>{{ len $discNodes }}</b> 个 disc 节点, <b>{{ len $proxyNodes }}</b> 个 haproxy 节点</span>
       </div>
       <ul class="listing">
         <li class="header">disc节点/目录</li>
         {{- range $discNodes }}
-        {{- if eq . (getv "/host/ip") }}
-        <li><span>⊟</span>{{ . }}</li>
-        <li><span class="sub-1">⊞</span><a href="./log/">log</a></li>
-        {{- else }}
-        <li><span>⊞</span><a href="//{{ . }}/">{{ . }}</a></li>
-        {{- end }}
-        {{- end }}
-        <li class="header">ram节点/目录</li>
-        {{- range  $ramNodes }}
         {{- if eq . (getv "/host/ip") }}
         <li><span>⊟</span>{{ . }}</li>
         <li><span class="sub-1">⊞</span><a href="./log/">log</a></li>
