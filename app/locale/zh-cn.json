@@ -46,7 +46,7 @@
     "haproxy web login passwd": "haproxy 监控界面密码",
     "url_param": "url_param 哈希",
     "haproxy balance policy": "负载均衡策略(roundrobin:轮询, leastconn:最小连接, static-rr:静态权重, source:IP 哈希, uri:uri 哈希, url_param:url_param 哈希)",
-    "Haproxy HA Node Count": "负载均衡器高可用节点个数(0个节点：不需要负载均衡;1个节点：负载均衡;2个节点：负载均衡器高可用负载均衡)",
+    "Haproxy HA Node Count": "负载均衡器高可用节点个数",
     "Disc Node": "磁盘节点",
     "Number of Erlang processes that will accept connections for the TCP listeners": "接受TCP侦听器连接的Erlang进程数",
     "Maximum time for AMQP 0-8/0-9/0-9-1 handshake (after socket connection and SSL handshake), in milliseconds": "AMQP 0-8/0-9/0-9-1 handshake (在 socket 连接和SSL 握手之后）的最大时间, 单位为毫秒",
