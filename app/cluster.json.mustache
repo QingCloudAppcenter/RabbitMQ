@@ -10,10 +10,11 @@
     "nodes": [{
         "role": "disc",
         "container": {
-            "type": "kvm",
+            "type": "lxc",
+            "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "pek3a",
-            "image": "img-1tzn2tbb"
+            "image": "img-i8b23ttz"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -96,7 +97,7 @@
         "container": {
             "type": "kvm",
             "zone": "pek3a",
-            "image": "img-1tzn2tbb"
+            "image": "img-i8b23ttz"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -116,10 +117,11 @@
     }, {
         "role": "haproxy",
         "container": {
-            "type": "kvm",
+            "type": "lxc",
+            "prefer_type": "lxc",
             "sriov_nic": true,
             "zone": "pek3a",
-            "image": "img-1tzn2tbb"
+            "image": "img-i8b23ttz"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -178,7 +180,6 @@
         "collect_statistics": {{env.collect_statistics}},
         "collect_statistics_interval": {{env.collect_statistics_interval}},
         "cluster_partition_handling": {{env.cluster_partition_handling}},
-        "hipe_compile": {{env.hipe_compile}},
         "cluster_keepalive_interval": {{env.cluster_keepalive_interval}},
         "background_gc_enabled": {{env.background_gc_enabled}},
         "background_gc_target_interval": {{env.background_gc_target_interval}},

@@ -59,7 +59,6 @@
     "Statistics collection mode. Primarily relevant for the management plugin": "统计收集模式。主要与管理插件相关",
     "Statistics collection interval in milliseconds. Primarily relevant for the management plugin": "统计收集时间间隔(毫秒为单位)． 主要针对于 management plugin",
     "How to handle network partitions": "如何处理网络分区",
-    "Set to true to precompile parts of RabbitMQ with HiPE, a just-in-time compiler for Erlang. This will increase server throughput at the cost of increased startup time": "将此选项设置为true,将会使用HiPE预编译部分RabbitMQ,Erlang的即时编译器.你可以看到花费几分钟延迟启动的成本，就可以带来20-50% 更好性能",
     "How frequently nodes should send keepalive messages to other nodes (in milliseconds)": "节点向其它节点发送存活消息和频率(毫秒). 注意，这与 net_ticktime是不同的; 丢失存活消息不会引起节点掉线",
     "The actual interval will vary depending on how long it takes to execute the operation": "GC 实际间隔将根据执行操作所需的时间而有所不同",
     "The name of a user as which to create the tracing queues and bindings": "用于创建追踪队列的用户",

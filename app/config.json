@@ -321,14 +321,6 @@
             "default": "pause_minority",
             "required": "no"
         }, {
-            "key": "hipe_compile",
-            "label": "hipe_compile",
-            "description": "Set to true to precompile parts of RabbitMQ with HiPE, a just-in-time compiler for Erlang. This will increase server throughput at the cost of increased startup time",
-            "type": "boolean",
-            "default": false,
-            "range": [true, false],
-            "required": "no"
-        }, {
             "key": "cluster_keepalive_interval",
             "label": "cluster_keepalive_interval",
             "description": "How frequently nodes should send keepalive messages to other nodes (in milliseconds)",
