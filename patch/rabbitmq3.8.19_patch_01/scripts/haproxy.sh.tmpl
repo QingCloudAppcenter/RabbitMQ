@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+myPath="$0"
+
+cleanUp() {
+  local rc=$?
+  [ "$rc" -eq 0 ] || echo "# Failed ($rc)! Please check confd logs." >> $myPath
+  return $rc
+}
+
+trap cleanUp EXIT
+
+rotate() {
+  local path=$1 maxFilesCount=5
+  for i in $(seq 1 $maxFilesCount | tac); do
+    if [ -f "${path}.$i" ]; then mv ${path}.$i ${path}.$(($i+1)); fi
+  done
+  if [ -f "$path" ]; then cp $path ${path}.1; fi
+}
+
+flush() {
+  local targetFile=$1
+  if [ -n "$targetFile" ]; then
+    rotate $targetFile
+    cat > $targetFile -
+  else
+    cat -
+  fi
+}
+
+applyEnvs() {
+  local -r envFile=/opt/app/bin/envs/confd.env
+  if [ -f "$envFile" ]; then . $envFile; fi
+  local -r nodeEnvFile=/opt/app/bin/envs/nodectl.env
+  if [ -f "$nodeEnvFile" ]; then . $nodeEnvFile; fi
+}
+
+applyEnvs
+
+flush /opt/app/conf/haproxy/haproxy.cfg << HAPROXY_CONF_EOF
+#logging options
+global
+  log 127.0.0.1 local0 info
+  maxconn 65535
+  chroot /usr/local/sbin
+  uid 65534
+  gid 65534
+  #user nobody
+  #group nobody
+  daemon
+  quiet
+  nbproc 20
+  pidfile /var/run/haproxy.pid
+
+defaults
+  log global
+  #Use the 4-tier proxy pattern "mode http" means 7-tier proxy pattern
+  mode tcp
+  #if you set mode to tcp,then you nust change tcplog into httplog
+  option tcplog
+  option dontlognull
+  retries 3
+  option redispatch
+  maxconn 65535
+  timeout connect 3s
+  timeout client 90s
+  timeout server 90s
+
+#front-end IP for consumers and producters
+listen rabbitmq_cluster
+  bind :5672
+  #配置TCP模式
+  mode tcp
+  #balance rdp-cookie
+  #balance leastconn
+  #balance source
+  #balance roundrobin
+  #simple polling
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  #rabbitmq cluster node config
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 500 rise 2 fall 2 on-marked-down shutdown-sessions {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 500 rise 2 fall 2 on-marked-down shutdown-sessions {{ end }}
+
+#front-end IP for stomp
+listen rabbitmq_cluster_stomp
+  bind :61613
+  #TCP mode
+  mode tcp
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  timeout client  3h
+  timeout server  3h
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+
+#front-end IP for mqtt
+listen rabbitmq_cluster_mqtt
+  bind :1883
+  #TCP mode
+  mode tcp
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  timeout client  3h
+  timeout server  3h
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+
+#rabbitmq-management
+# optional, for proxying management site
+frontend front_rabbitmq_management
+  bind :15672
+  default_backend backend_rabbitmq_management
+
+backend backend_rabbitmq_management
+  balance source
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
+
+# haproxy web monitor infomation
+listen stats
+#bind :8100
+bind :{{ getv "/env/haproxy_web_port" "8100" }}
+mode http
+stats enable
+stats hide-version
+stats refresh 10s
+stats uri /
+stats auth {{ getv "/env/haproxy_username" "haproxy" }}:{{ getv "/env/haproxy_password" "haproxy" }}
+
+HAPROXY_CONF_EOF
+{{- if getvs "/host/role" | filter "haproxy" }}
+mkdir -p ${DATA_MOUNTS}/log/haproxy/
+chmod 777 ${DATA_MOUNTS}/log/haproxy/
+
+flush /etc/rsyslog.d/49-haproxy.conf << HAPROXY_LOG_CONF_EOF
+
+# Create an additional socket in haproxy's chroot in order to allow logging via
+# /dev/log to chroot'ed HAProxy processes
+\$AddUnixListenSocket /var/lib/haproxy/dev/log
+
+# Send HAProxy messages to a dedicated logfile
+:programname, startswith, "haproxy" {
+  ${DATA_MOUNTS}/log/haproxy/haproxy.log
+  stop
+}
+HAPROXY_LOG_CONF_EOF
+{{- end }}
+
+
+flush /etc/logrotate.d/haproxy << LOGROTATE_EOF
+${DATA_MOUNTS}/log/haproxy/haproxy.log {
+    daily
+    rotate 20
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+        invoke-rc.d rsyslog rotate >/dev/null 2>&1 || true
+    endscript
+}
+LOGROTATE_EOF

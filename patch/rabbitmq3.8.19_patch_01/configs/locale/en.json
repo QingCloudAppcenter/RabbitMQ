@@ -1,0 +1,6 @@
+{
+    "Sockets Used": "Percentage of file descriptors used as sockets",
+    "Fd Used": "Percentage of file descriptors used as sockets",
+    "Proc Used": "Erlang running number",
+    "Run Queue": "Erlang waiting number"
+}
