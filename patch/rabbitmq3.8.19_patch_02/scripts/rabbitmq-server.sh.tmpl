@@ -1,3 +1,48 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+myPath="$0"
+
+cleanUp() {
+  local rc=$?
+  [ "$rc" -eq 0 ] || echo "# Failed ($rc)! Please check confd logs." >> $myPath
+  return $rc
+}
+
+trap cleanUp EXIT
+
+rotate() {
+  local path=$1 maxFilesCount=5
+  for i in $(seq 1 $maxFilesCount | tac); do
+    if [ -f "${path}.$i" ]; then mv ${path}.$i ${path}.$(($i+1)); fi
+  done
+  if [ -f "$path" ]; then cp $path ${path}.1; fi
+}
+
+flush() {
+  local targetFile=$1
+  if [ -n "$targetFile" ]; then
+    rotate $targetFile
+    cat > $targetFile -
+  else
+    cat -
+  fi
+}
+
+applyEnvs() {
+  local -r envFile=/opt/app/bin/envs/confd.env
+  if [ -f "$envFile" ]; then . $envFile; fi
+  local -r nodeEnvFile=/opt/app/bin/envs/nodectl.env
+  if [ -f "$nodeEnvFile" ]; then . $nodeEnvFile; fi
+}
+
+applyEnvs
+
+flush /var/lib/rabbitmq/.erlang.cookie << ERLNAG_COOKIE_EOF
+{{ getv "/cluster/cluster_id" }}
+ERLNAG_COOKIE_EOF
+
 {{- if getvs "/host/role" | filter "(disc|ram)" }}
 mkdir -p ${DATA_MOUNTS}/log/rabbitmq
 {{- end }}
@@ -56,3 +101,65 @@ default_user_tags.administrator = true
 log.file.level = debug
 RABBITMQ_CONF_EOF
 rabbitmqctl change_password '{{ getv "/env/rabbitmq_default_user" "guest" }}' '{{ getv "/env/rabbitmq_default_pass" "guest" }}' >/dev/null 2>&1||echo
+
+hostsFile=/etc/hosts
+
+sed "/^# >> RabbitMQ nodes./,/^# << RabbitMQ nodes./d" $hostsFile > $hostsFile.swap
+
+flush >> $hostsFile.swap << HOSTS_FILE
+# >> RabbitMQ nodes. WARNING: this is managed by script and please don't touch manually.
+{{- range $role := split "disc ram" " " }}
+{{- range $node := ls (printf "/hosts/%s" $role) }}
+{{ getv (printf "/hosts/%s/%s/ip" $role $node) }}	{{ getv (printf "/hosts/%s/%s/instance_id" $role $node) }}
+{{- end }}
+{{- end }}
+# << RabbitMQ nodes. WARNING: this is managed by script and please don't touch manually.
+HOSTS_FILE
+mv $hostsFile.swap $hostsFile
+
+
+flush /etc/rabbitmq/rabbitmq-env.conf << RABBIT_ENV_CONF_EOF
+
+RABBITMQ_NODE_IP_ADDRESS=0.0.0.0
+RABBITMQ_NODE_PORT=5672
+RABBITMQ_MNESIA_BASE=${DATA_MOUNTS}/mnesia
+RABBITMQ_LOG_BASE=${DATA_MOUNTS}/log/rabbitmq/
+RABBITMQ_CONFIG_FILE=/etc/rabbitmq/rabbitmq
+RABBITMQ_MNESIA_DIR=
+RABBITMQ_SCHEMA_DIR=${DATA_MOUNTS}/schema
+
+RABBIT_ENV_CONF_EOF
+flush /etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
+[
+{{- if eq (getv "/host/role") "disc" }}
+  rabbitmq_delayed_message_exchange,
+{{- end }}
+  rabbitmq_management,
+  rabbitmq_peer_discovery_etcd,
+  rabbitmq_mqtt,
+  rabbitmq_shovel,
+  rabbitmq_shovel_management,
+  rabbitmq_federation,
+  rabbitmq_federation_management,
+  rabbitmq_stomp,
+  rabbitmq_web_mqtt,
+  rabbitmq_web_stomp,
+  rabbitmq_peer_discovery_etcd
+].
+ENABLED_PLUGINS_EOF
+flush /etc/logrotate.d/rabbitmq-server << LOGROTATE_EOF
+${DATA_MOUNTS}/log/rabbitmq/*.log {
+    weekly
+    missingok
+    rotate 20
+    compress
+    notifempty
+}
+${DATA_MOUNTS}/log/rabbitmq/log/*.log {
+    weekly
+    missingok
+    rotate 20
+    compress
+    notifempty
+}
+LOGROTATE_EOF

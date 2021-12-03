@@ -32,7 +32,7 @@
             "type": "service",
             "tag": ["ETCD", "etcd"],
             "limits": {
-                "app-fdyvu2wk": ["appv-5taat5ql"]
+                "app-fdyvu2wk": ["appv-5taat5ql", "appv-jzhr30i8", "appv-h1n2681n"]
             },
             "default": "",
             "required": "yes"
@@ -224,7 +224,7 @@
         }, {
             "key": "haproxy_username",
             "label": "haproxy_username",
-            "description": "haproxy web login usernam",
+            "description": "haproxy web login username",
             "type": "string",
             "default": "haproxy",
             "required": "no"
