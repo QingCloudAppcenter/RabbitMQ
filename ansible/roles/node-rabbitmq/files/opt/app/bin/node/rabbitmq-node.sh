@@ -24,6 +24,17 @@ stop() {
   #https://www.rabbitmq.com/clustering.html#restarting
   #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
   #sometimes the last node to stop must be the first node to be started after the upgrade.
+  if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
+    local i; for i in ${LEAVING_MQ_NODES}; do DISC_NODES="${DISC_NODES//${i}/}"; done
+    #In case /hosts /deleting-hosts update are not synchronized
+    local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
+    if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then
+      log "INFO: Wait until all other Disc nodes are stopped  . "
+      retry 20 3 0 checkOnlyNodeRunning "${firstDiscNode}" #notice return
+      log "INFO: The other Disc nodes have all stopped  . "
+    fi
+  fi
+
   log "INFO: Application is asked to stop . "
   _stop || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to stop  . " && return 1)
   log "INFO: Application stopped successfully  . "
@@ -31,7 +42,17 @@ stop() {
 
 start() {
   log "INFO: Application is asked to start . "
+  if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
+    local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
+    if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
+      retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
+    fi
+  fi
+  /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
   _start || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to start  . ")
+  if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
+    addNodeToCluster
+  fi
   retry 10 30 0 checkSvc "rabbitmq-server"
   log "INFO: Application started successfully  . "
 }
@@ -54,6 +75,7 @@ reload() {
   case "${1}" in
     rabbitmq-server)
       local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
+      /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
       if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
         # only figure out the changed parameter
         _reload rabbitmq-server || (log "ERROR: The Rabbitmq-server failed to start . " && return 1);
@@ -124,6 +146,7 @@ addNodeToCluster()  {
     rabbitmqctl stop_app
     rabbitmqctl join_cluster --${MY_ROLE} rabbit@${firstDiscNode}
     rabbitmqctl start_app
+    log "join cluster success."
   else
     log "${firstDiscNode} already clustered or ${MY_INSTANCE_ID} not the adding node."
   fi

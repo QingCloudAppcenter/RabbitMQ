@@ -10,7 +10,7 @@ global
   #group nobody
   daemon
   quiet
-  nbproc 20
+  nbthread 20
   pidfile /var/run/haproxy.pid
 
 defaults
@@ -23,9 +23,9 @@ defaults
   retries 3
   option redispatch
   maxconn 65535
-  timeout connect 3s
-  timeout client 90s
-  timeout server 90s
+  timeout connect 5s
+  timeout client 120s
+  timeout server 120s
 
 #front-end IP for consumers and producters
 listen rabbitmq_cluster
@@ -40,9 +40,9 @@ listen rabbitmq_cluster
   balance {{ getv "/env/haproxy_balance_policy" }}
   #rabbitmq cluster node config
   {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 500 rise 2 fall 2 on-marked-down shutdown-sessions {{ end }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 2000 rise 3 fall 3 on-marked-down shutdown-sessions {{ end }}
   {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
-  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 500 rise 2 fall 2 on-marked-down shutdown-sessions {{ end }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 2000 rise 3 fall 3 on-marked-down shutdown-sessions {{ end }}
 
 #front-end IP for stomp
 listen rabbitmq_cluster_stomp

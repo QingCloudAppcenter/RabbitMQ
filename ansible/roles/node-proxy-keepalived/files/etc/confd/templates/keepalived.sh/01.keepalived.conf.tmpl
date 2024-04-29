@@ -9,6 +9,12 @@ vrrp_script check_haproxy {
   weight 2
 }
 
+vrrp_script check_haproxy_status {
+  script "nc -zv localhost 5672 > /dev/null"
+  interval 2
+  weight 2
+}
+
 vrrp_instance HAProxy_HA {
   state BACKUP
   interface eth0
@@ -28,6 +34,7 @@ vrrp_instance HAProxy_HA {
 
   track_script {
     check_haproxy
+    check_haproxy_status
   }
 }
 
