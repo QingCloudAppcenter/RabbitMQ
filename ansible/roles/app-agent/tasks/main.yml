@@ -1,7 +1,7 @@
 ---
 - name: set up variables
   set_fact:
-    app_agent_version: 1.0.6
+    app_agent_version: 1.0.7
 
 - name: prepare directories
   file:
@@ -18,7 +18,7 @@
   vars:
     dest_path: "{{ role_path }}/files/tmp/app-agent-{{ app_agent_version }}.tgz"
   get_url:
-    url: "https://github.com/QingCloudAppcenter/AppcenterAgent/releases/download/v{{ app_agent_version }}/app-agent-linux-amd64.tar.gz"
+    url: "https://github.com/QingCloudAppcenter/AppcenterAgent/releases/download/v{{ app_agent_version }}/app-agent-linux-arm64.tar.gz"
     dest: "{{ dest_path }}"
   when: dest_path is not exists
   run_once: True
