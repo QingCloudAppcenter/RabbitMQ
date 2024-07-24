@@ -35,7 +35,7 @@
       creates: 
       bin_path:
   with_items:
-    - url: " "
+    - url: "https://packages.erlang-solutions.com/erlang-solutions_{{ erlang_solution_version }}_all.deb"
       name: "erlang-solutions"
       version: "{{ erlang_solution_version }}"
       dest: "erlang-solutions_{{ erlang_solution_version }}_all.deb"

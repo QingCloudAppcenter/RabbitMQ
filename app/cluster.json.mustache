@@ -6,9 +6,6 @@
     	"etcd_service": {{cluster.etcd_service}}
     },
     "multi_zone_policy": "round_robin",
-    "upgrade_policy": [
-            "appv-5ydg2896"
-    ],
     "upgrading_policy": "sequential",
     "nodes": [{
         "role": "disc",
@@ -16,7 +13,7 @@
             "type": "kvm",
             "sriov_nic": true,
             "zone": "ap2a",
-            "image": "img-tpey7l8r"
+            "image": "img-ar6217jc"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -99,7 +96,7 @@
         "container": {
             "type": "kvm",
             "zone": "ap2a",
-            "image": "img-tpey7l8r"
+            "image": "img-ar6217jc"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -122,7 +119,7 @@
             "type": "kvm",
             "sriov_nic": true,
             "zone": "ap2a",
-            "image": "img-tpey7l8r"
+            "image": "img-ar6217jc"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
