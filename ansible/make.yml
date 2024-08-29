@@ -8,8 +8,6 @@
   - include_role:
       name: "{{ service_name }}"
     loop:
-    - disable-apt-jobs
-    - disable-motd
     - app-agent
     - appctl
     - node-all

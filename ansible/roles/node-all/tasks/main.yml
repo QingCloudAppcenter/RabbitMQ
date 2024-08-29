@@ -4,10 +4,12 @@
     name: confd-files
 
 - name: install arping
-  apt:
-    name: [ 'iputils-arping' ]
+  yum:
+    name: [ 'iputils' ]
     state: present
     update_cache: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
 - name: Set net.ipv4.tcp_keepalive_time to 30
   lineinfile:

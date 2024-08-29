@@ -34,6 +34,7 @@
 - name: install app agent
   raw: |
     cd /tmp/app-agent
+    cp -r distros/ubuntu distros/kylin
     ./install.sh
   args:
     creates: /opt/qingcloud/app-agent/bin/confd

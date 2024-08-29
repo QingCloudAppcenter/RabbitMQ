@@ -22,7 +22,7 @@
     local_path: "{{ local_cache_path }}/{{ parent_role_name }}/{{ opts.local_path + '/' if opts.local_path is defined else '' }}{{ pkg_name }}{{ '-' + pkg_version if pkg_version else '' }}{{ '.' + pkg_type if pkg_type else '' }}"
 
 - name: install tools
-  apt:
+  yum:
     name: ['unzip']
     state: present
     update_cache: no
@@ -81,7 +81,7 @@
   when:
   - extracts
 
-- name: transfer package - {{ pkg_name }}0
+- name: transfer package - {{ pkg_name }}
   copy:
     src: "{{ local_path }}"
     dest: "{{ dest_path }}"

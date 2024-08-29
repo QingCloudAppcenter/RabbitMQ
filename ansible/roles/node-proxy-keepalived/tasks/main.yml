@@ -13,21 +13,21 @@
     name: confd-files
 
 # haproxy
-- name: install haproxy plugins
-  apt:
-    name: ['hatop','arping','software-properties-common']
-    update_cache: yes
-    state: present
-
-- name: add-apt-repository
-  apt_repository:
-    repo: "ppa:vbernat/haproxy-{{ haproxy_version }}"
+#- name: install haproxy plugins
+#  yum:
+#    name: ['hatop']
+#    update_cache: yes
+#    state: present
+#  vars:
+#    ansible_python_interpreter: /usr/bin/python3
 
 - name: install haproxy
-  apt:
-    name: "haproxy={{ haproxy_version }}.*"
+  yum:
+    name: "haproxy"
     update_cache: yes
     state: present
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
 - name: copy binaries
   copy:
@@ -52,11 +52,13 @@
 
 # keepalived
 - name: Prepare dev env for keepalived
-  apt:
+  yum:
     update_cache: yes
-    name: ['tree', 'curl', 'gcc', 'libssl-dev', 'libnl-3-dev', 'libnl-genl-3-dev', 'libsnmp-dev', 'make']
+    name: ['tree', 'curl', 'gcc', 'make', 'openssl-devel', 'libnl3-devel', 'net-snmp-devel', 'iptables-devel',  'ipset-devel',  'libnfnetlink-devel',  'file-devel', 'glib2-devel',  'json-c-devel']
     state: present
   delegate_to: localhost
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
 
 - name: Prepare directories for keepalived
   file:
