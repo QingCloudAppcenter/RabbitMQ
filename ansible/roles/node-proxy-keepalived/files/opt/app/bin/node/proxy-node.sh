@@ -1,3 +1,5 @@
+source /etc/profile
+
 checkSvc() {
   checkActive ${1%%/*} || {
     log "Service '$1' is inactive."

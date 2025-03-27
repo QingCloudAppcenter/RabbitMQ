@@ -68,6 +68,7 @@ log.file.level = debug
 RABBITMQ_CONF_EOF
 rabbitmqctl change_password '{{ getv "/env/rabbitmq_default_user" "guest" }}' '{{ getv "/env/rabbitmq_default_pass" "guest" }}' >/dev/null 2>&1||echo
 
+mkdir -p ${DATA_MOUNTS}/conf/
 if [ ! -f "${DATA_MOUNTS}/conf/rabbitmq.conf" ]; then
     touch ${DATA_MOUNTS}/conf/rabbitmq.conf
 fi

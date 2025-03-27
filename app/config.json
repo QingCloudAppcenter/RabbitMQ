@@ -367,6 +367,14 @@
             "default": false,
             "range": [true, false],
             "required": "no"
+        },{
+            "key": "prometheus_plugins_enabled",
+            "label": "prometheus_plugins_enabled",
+            "description": "Enable Prometheus plugins",
+            "type": "boolean",
+            "default": false,
+            "range": [true, false],
+            "required": "no"
         }, {
             "key": "web_console_enabled",
             "label": "Switch of log web console",

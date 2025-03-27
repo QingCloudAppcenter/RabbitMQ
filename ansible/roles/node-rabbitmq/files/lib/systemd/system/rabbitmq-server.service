@@ -6,8 +6,8 @@ Wants=network.target epmd@0.0.0.0.socket
 
 [Service]
 Type=notify
-User=rabbitmq
-Group=rabbitmq
+User=root
+Group=root
 UMask=0027
 NotifyAccess=all
 TimeoutStartSec=3600
@@ -30,9 +30,10 @@ LimitNOFILE=1048576
 Restart=on-failure
 RestartSec=10
 WorkingDirectory=/data
-#Environment=RABBITMQ_CONF_ENV_FILE=/opt/app/conf/rabbitmq-server/rabbitmq-env.conf
-ExecStart=/usr/lib/rabbitmq/bin/rabbitmq-server
-ExecStop=/usr/lib/rabbitmq/bin/rabbitmqctl shutdown
+Environment=RABBITMQ_CONF_ENV_FILE=/etc/rabbitmq/rabbitmq-env.conf
+Environment=PATH=/usr/local/erlang/bin:/usr/local/wxWidgets/bin/:/usr/local/rabbitmq/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin
+ExecStart=/opt/rabbitmq/current/sbin/rabbitmq-server
+ExecStop=/opt/rabbitmq/current/sbin/rabbitmqctl shutdown
 SuccessExitStatus=69
 # See rabbitmq/rabbitmq-server-release#51
 

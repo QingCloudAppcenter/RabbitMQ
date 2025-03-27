@@ -1,4 +1,25 @@
 ---
+- name: set vars
+  set_fact:
+    os: kylin
+
+- name: rabbitmq group
+  group:
+    name: rabbitmq
+    state: present
+  when: os == 'kylin'
+
+- name: rabbitmq user
+  user:
+    name: rabbitmq
+    groups: rabbitmq
+    system: yes
+    state: present
+    create_home: no
+    shell: /usr/sbin/nologin
+  when: os == 'kylin'
+
+
 - name: copy conf files
   copy:
     src: files/opt/app/
@@ -21,32 +42,32 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
-- name: install rabbitmq deb
-  include_role:
-    name: install
-  vars:
-    opts:
-      pkg_name: "{{ item.name }}"
-      pkg_version: "{{ item.version }}"
-      pkg_type: deb
-      pkg_url: "{{ item.url }}"
-      extracts: false
-      dest_path: "/tmp/{{ item.dest }}"
-      creates: 
-      bin_path:
-  with_items:
-    - url: "https://packages.erlang-solutions.com/erlang-solutions_{{ erlang_solution_version }}_all.deb"
-      name: "erlang-solutions"
-      version: "{{ erlang_solution_version }}"
-      dest: "erlang-solutions_{{ erlang_solution_version }}_all.deb"
-    - url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-      name: "rabbitmq"
-      version: "{{ rabbitmq_version }}"
-      dest: "rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
+#- name: install rabbitmq deb
+#  include_role:
+#    name: install
+#  vars:
+#    opts:
+#      pkg_name: "{{ item.name }}"
+#      pkg_version: "{{ item.version }}"
+#      pkg_type: deb
+#      pkg_url: "{{ item.url }}"
+#      extracts: false
+#      dest_path: "/tmp/{{ item.dest }}"
+#      creates:
+#      bin_path:
+#  with_items:
+#    - url: "https://packages.erlang-solutions.com/erlang-solutions_{{ erlang_solution_version }}_all.deb"
+#      name: "erlang-solutions"
+#      version: "{{ erlang_solution_version }}"
+#      dest: "erlang-solutions_{{ erlang_solution_version }}_all.deb"
+#    - url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
+#      name: "rabbitmq"
+#      version: "{{ rabbitmq_version }}"
+#      dest: "rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
 
-- name: apt for erlang
-  apt: deb="/tmp/erlang-solutions_{{ erlang_solution_version }}_all.deb"
-  become: yes
+#- name: apt for erlang
+#  apt: deb="/tmp/erlang-solutions_{{ erlang_solution_version }}_all.deb"
+#  become: yes
 
 #- name: update apt for erlang
 #  shell: echo 'deb https://dl.bintray.com/rabbitmq/debian  xenial  erlang-22.x' | sudo tee -a /etc/apt/sources.list.d/erlang-solutions.list
@@ -56,46 +77,46 @@
 #    url: https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
 #    state: present
 
-- name: install add-apt-repository
-  apt:
-    name: "software-properties-common"
-    update_cache: yes
-    state: present
+#- name: install add-apt-repository
+#  apt:
+#    name: "software-properties-common"
+#    update_cache: yes
+#    state: present
+#
+#- name: add-apt-repository rabbitmq-erlang
+#  apt_repository:
+#    repo: "ppa:rabbitmq/rabbitmq-erlang"
 
-- name: add-apt-repository rabbitmq-erlang
-  apt_repository:
-    repo: "ppa:rabbitmq/rabbitmq-erlang"
+#- name: install erlang
+#  apt:
+#    name: erlang
+#    update_cache: yes
+#    state: present
 
-- name: install erlang
-  apt:
-    name: erlang
-    update_cache: yes
-    state: present
-
-- name: add apt_key for rabbitmq
-  shell: wget -O - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey" | sudo apt-key add -
+#- name: add apt_key for rabbitmq
+#  shell: wget -O - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey" | sudo apt-key add -
 
 #- name: add apt signing key, will not download if present
 #  apt_key:
 #    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
 #    state: present
 
-- name: add bintray repo for latest Rabbitmq
-  shell:
-    cmd: |
-      tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
-      deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu xenial main
-      EOF
+#- name: add bintray repo for latest Rabbitmq
+#  shell:
+#    cmd: |
+#      tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
+#      deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu xenial main
+#      EOF
 
 - name: install apt https
-  apt:
-    name: ['apt-transport-https', 'jq']
+  yum:
+    name: ['jq']
     update_cache: yes
 
 # https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.12.11-1_all.deb
-- name: apt for rabbitmq
-  apt: deb="/tmp/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-  become: yes
+#- name: apt for rabbitmq
+#  apt: deb="/tmp/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
+#  become: yes
 
 - name: download plugins for rabbitmq
   include_role:
@@ -127,4 +148,18 @@
     group: rabbitmq
     mode: '0600'
 
+- name: syslog group
+  group:
+    name: syslog
+    state: present
+  when: os == 'kylin'
 
+- name: syslog user
+  user:
+    name: syslog
+    groups: syslog
+    system: yes
+    state: present
+    create_home: no
+    shell: /usr/sbin/nologin
+  when: os == 'kylin'

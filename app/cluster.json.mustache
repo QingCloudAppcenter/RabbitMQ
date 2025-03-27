@@ -16,7 +16,7 @@
             "type": "kvm",
             "sriov_nic": true,
             "zone": "pekt3",
-            "image": "img-69w5iafx"
+            "image": "img-nqhm62sz"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -99,7 +99,7 @@
         "container": {
             "type": "kvm",
             "zone": "pekt3",
-            "image": "img-69w5iafx"
+            "image": "img-nqhm62sz"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -122,7 +122,7 @@
             "type": "kvm",
             "sriov_nic": true,
             "zone": "pekt3",
-            "image": "img-69w5iafx"
+            "image": "img-nqhm62sz"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -185,6 +185,7 @@
         "background_gc_enabled": {{env.background_gc_enabled}},
         "background_gc_target_interval": {{env.background_gc_target_interval}},
         "proxy_protocol": {{env.proxy_protocol}},
+        "prometheus_plugins_enabled": {{env.prometheus_plugins_enabled}},
         "tracing_user": {{env.tracing_user}},
         "web_console_enabled": {{env.web_console_enabled}}
     },

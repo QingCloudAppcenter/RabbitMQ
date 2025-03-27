@@ -6,16 +6,18 @@ EC_SCALE_IN_ERR=242
 EC_INSUFFICIENT_VOLUME=243
 EC_UPGRADE_ERR=244
 
+source /etc/profile
+
 checkNodesHealthy() {
   local node; for node in $@; do
-    rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || ( log "ERROR: rabbit@${node} failed the health check . " && return $EC_UNHEALTHY )
+    HOME=/root rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || ( log "ERROR: rabbit@${node} failed the health check . " && return $EC_UNHEALTHY )
   done
 }
 
 checkOnlyNodeRunning() {
   # DO NOT USE this special func untill u known what will happen
   local runningNodes;
-  runningNodes="$(rabbitmqctl -t 3 cluster_status --formatter=json | jq -j .running_nodes[])";
+  runningNodes="$(HOME=/root rabbitmqctl -t 3 cluster_status --formatter=json | jq -j .running_nodes[])";
   log "WARN: detected ${runningNodes:-null} in checkOnlyNodeRunning."
   [[ "${runningNodes}" == "rabbit@$@" ]] || [[ -z "${runningNodes}" ]] || return 1
 }
@@ -74,7 +76,7 @@ reload() {
   if ! isNodeInitialized; then return 0; fi
   case "${1}" in
     rabbitmq-server)
-      local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
+      local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf.origin";
       /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
       if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
         # only figure out the changed parameter
@@ -92,7 +94,7 @@ preCheckForScaleIn() {
   local allNodes; allNodes="$(echo "${DISC_NODES}" "${RAM_NODES}"  | xargs -n1 | awk -F/ '{print $2}')";
   checkNodesHealthy "${allNodes}" # there was unhealthy node
   if [[ -n "${LEAVING_MQ_NODES}" ]]; then
-    local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
+    local clusterInfo; clusterInfo="$(HOME=/root rabbitmqctl -t 3 cluster_status --formatter=json)";
     local allRunningNodes; allRunningNodes="$(echo $clusterInfo | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
     if [[ "${CLUSTER_PARTITION_HANDLING}" == "pause_minority" ]]; then
       local delNodesCount; delNodesCount=$(echo "${LEAVING_MQ_NODES}" | wc -w);
@@ -113,7 +115,7 @@ scaleIn() {
   log "scale in include ${LEAVING_MQ_NODES:-null}"
   if [[ -n "${LEAVING_MQ_NODES}" ]]; then
     local delNode; for delNode in ${LEAVING_MQ_NODES}; do
-      rabbitmqctl forget_cluster_node rabbit@${delNode};
+      HOME=/root rabbitmqctl forget_cluster_node rabbit@${delNode};
       log "scale_in forget node ${delNode} from cluster";
     done
   fi
@@ -122,7 +124,7 @@ scaleIn() {
 scaleOut() {
   if [[ -n "${JOINING_MQ_NODES}" ]]; then
     local joinNode; for joinNode in ${JOINING_MQ_NODES}; do
-      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
+      local clusterInfo; clusterInfo="$(HOME=/root rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
       if checkNodesHealthy "${joinNode}" && [[ "${clusterInfo}" =~ "${MY_INSTANCE_ID}" ]]; then
         log "${joinNode} was clustered successful in scale-out";
       else
@@ -134,18 +136,18 @@ scaleOut() {
 }
 
 measure() {
-  rabbitmqctl status -t 3 --formatter=json | jq '{"fd_used": (.file_descriptors.total_used), "sockets_used": (.file_descriptors.sockets_used), "proc_used": (.processes.used), "run_queue": (.run_queue), "mem_used": (.memory.total.rss / 1048576)}'
+  HOME=/root rabbitmqctl status -t 3 --formatter=json | jq '{"fd_used": (.file_descriptors.total_used), "sockets_used": (.file_descriptors.sockets_used), "proc_used": (.processes.used), "run_queue": (.run_queue), "mem_used": (.memory.total.rss / 1048576)}'
 }
 
 addNodeToCluster()  {
   # write for the node which peer discover failed or the adding node
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
+  local clusterInfo; clusterInfo="$(HOME=/root rabbitmqctl -t 3 cluster_status --formatter=json)";
   local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
   if [[ ! "$allNodes" =~ "${firstDiscNode}" ]]; then  #disc node ${DISC_NODES##*-} was not clustered
-    rabbitmqctl stop_app
-    rabbitmqctl join_cluster --${MY_ROLE} rabbit@${firstDiscNode}
-    rabbitmqctl start_app
+    HOME=/root rabbitmqctl stop_app
+    HOME=/root rabbitmqctl join_cluster --${MY_ROLE} rabbit@${firstDiscNode}
+    HOME=/root rabbitmqctl start_app
     log "join cluster success."
   else
     log "${firstDiscNode} already clustered or ${MY_INSTANCE_ID} not the adding node."

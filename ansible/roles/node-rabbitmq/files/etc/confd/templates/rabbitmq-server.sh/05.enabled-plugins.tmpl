@@ -1,7 +1,10 @@
-flush /etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
+flush /usr/local/rabbitmq/etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
 [
 {{- if eq (getv "/host/role") "disc" }}
   rabbitmq_delayed_message_exchange,
+{{- end }}
+{{- if eq (getv "/env/prometheus_plugins_enabled") "true" }}
+  rabbitmq_prometheus,
 {{- end }}
   rabbitmq_management,
   rabbitmq_mqtt,
