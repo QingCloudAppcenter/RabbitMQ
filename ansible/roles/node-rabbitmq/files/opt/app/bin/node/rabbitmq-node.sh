@@ -74,7 +74,7 @@ reload() {
   if ! isNodeInitialized; then return 0; fi
   case "${1}" in
     rabbitmq-server)
-      local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
+      local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf.origin";
       /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
       if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
         # only figure out the changed parameter
