@@ -10,11 +10,10 @@
     "nodes": [{
         "role": "disc",
         "container": {
-            "type": "lxc",
-            "prefer_type": "lxc",
+            "type": "kvm",
             "sriov_nic": true,
             "zone": "ap2a",
-            "image": "img-3z1o5uiu"
+            "image": "img-ar6217jc"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -97,7 +96,7 @@
         "container": {
             "type": "kvm",
             "zone": "ap2a",
-            "image": "img-3z1o5uiu"
+            "image": "img-ar6217jc"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -117,11 +116,10 @@
     }, {
         "role": "haproxy",
         "container": {
-            "type": "lxc",
-            "prefer_type": "lxc",
+            "type": "kvm",
             "sriov_nic": true,
             "zone": "ap2a",
-            "image": "img-3z1o5uiu"
+            "image": "img-ar6217jc"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},

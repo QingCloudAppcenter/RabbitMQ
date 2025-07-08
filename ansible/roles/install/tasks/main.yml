@@ -81,7 +81,7 @@
   when:
   - extracts
 
-- name: transfer package - {{ pkg_name }}
+- name: transfer package - {{ pkg_name }}0
   copy:
     src: "{{ local_path }}"
     dest: "{{ dest_path }}"

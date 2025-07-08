@@ -92,7 +92,7 @@
     name: ['apt-transport-https', 'jq']
     update_cache: yes
 
-# https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.8.17-1_all.deb
+# https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.12.11-1_all.deb
 - name: apt for rabbitmq
   apt: deb="/tmp/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
   become: yes
@@ -103,11 +103,11 @@
   vars:
     opts:
       pkg_name: "rabbitmq-delayed_message_exchange"
-      pkg_version: "3.8.17"
+      pkg_version: "3.12.0"
       pkg_type: ez
-      pkg_url: "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/3.8.17/rabbitmq_delayed_message_exchange-3.8.17.8f537ac.ez"
+      pkg_url: "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.12.0/rabbitmq_delayed_message_exchange-3.12.0.ez"
       extracts: false
-      dest_path: "/usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/rabbitmq_delayed_message_exchange-3.8.17.ez"
+      dest_path: "/usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/rabbitmq_delayed_message_exchange-3.12.0.ez"
       creates: 
       bin_path:
 #unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
