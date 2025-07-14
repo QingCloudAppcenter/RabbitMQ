@@ -3,12 +3,6 @@
   include_role:
     name: confd-files
 
-- name: install arping
-  apt:
-    name: [ 'iputils-arping' ]
-    state: present
-    update_cache: yes
-
 - name: Set net.ipv4.tcp_keepalive_time to 30
   lineinfile:
     path: /etc/sysctl.conf
