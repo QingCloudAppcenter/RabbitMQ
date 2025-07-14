@@ -21,96 +21,100 @@
     mode: preserve
     directory_mode: u=rwx,g=rx,o=
 
-- name: install rabbitmq deb
-  include_role:
-    name: install
+# install erlang
+- name: set vars for erlang
+  set_fact:
+    erlang_version: "{{ erlang_version | d('26.2.5.9') }}"
+    os: "{{ os | d(default_os) }}"
+    arch: "{{ arch | d(default_arch) }}"
+    osv: "{{ osv | d(default_osv) }}"
+
+# will set var downloaded
+- include_role:
+    name: downloader
   vars:
     opts:
-      pkg_name: "{{ item.name }}"
-      pkg_version: "{{ item.version }}"
-      pkg_type: deb
-      pkg_url: "{{ item.url }}"
-      extracts: false
-      dest_path: "/tmp/{{ item.dest }}"
-      creates: 
-      bin_path:
-  with_items:
-    - url: "https://packages.erlang-solutions.com/erlang-solutions_{{ erlang_solution_version }}_all.deb"
-      name: "erlang-solutions"
-      version: "{{ erlang_solution_version }}"
-      dest: "erlang-solutions_{{ erlang_solution_version }}_all.deb"
-    - url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-      name: "rabbitmq"
-      version: "{{ rabbitmq_version }}"
-      dest: "rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
+      pkg_name: erlang
+      pkg_version: "{{ erlang_version }}"
+      pkg_feature: "{{ os }}-{{ osv }}-{{ arch }}"
+      pkg_fileType: ".tgz"
+      pkg_url: "https://github.com/djangoyi-yunify/erlang-compiler/releases/download/erlang-{{ erlang_version }}_{{ os }}-{{ osv }}/erlang-{{ erlang_version }}-{{ arch }}.tgz"
 
-- name: apt for erlang
-  apt: deb="/tmp/erlang-solutions_{{ erlang_solution_version }}_all.deb"
-  become: yes
+- name: decompress file
+  unarchive:
+    src: "{{ downloaded }}"
+    dest: "/"
+    creates: "/usr/local/bin/erl"
+    extra_opts:
+    - --strip-components=1
 
-#- name: update apt for erlang
-#  shell: echo 'deb https://dl.bintray.com/rabbitmq/debian  xenial  erlang-22.x' | sudo tee -a /etc/apt/sources.list.d/erlang-solutions.list
+# install rabbitmq
+- name: set vars for rabbitmq
+  set_fact:
+    rabbitmq_version: "{{ rabbitmq_version | d('3.13.7') }}"
+    os: "{{ os | d(default_os) }}"
+    arch: "{{ arch | d(default_arch) }}"
+    osv: "{{ osv | d(default_osv) }}"
+    installPath: "/opt/rabbitmq"
 
-#- name: add apt-key
-#  apt_key:
-#    url: https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
-#    state: present
-
-- name: install add-apt-repository
-  apt:
-    name: "software-properties-common"
-    update_cache: yes
-    state: present
-
-- name: add-apt-repository rabbitmq-erlang
-  apt_repository:
-    repo: "ppa:rabbitmq/rabbitmq-erlang"
-
-- name: install erlang
-  apt:
-    name: erlang
-    update_cache: yes
-    state: present
-
-- name: add apt_key for rabbitmq
-  shell: wget -O - "https://packagecloud.io/rabbitmq/rabbitmq-server/gpgkey" | sudo apt-key add -
-
-#- name: add apt signing key, will not download if present
-#  apt_key:
-#    url: https://github.com/rabbitmq/signing-keys/releases/download/2.0/rabbitmq-release-signing-key.asc
-#    state: present
-
-- name: add bintray repo for latest Rabbitmq
-  shell:
-    cmd: |
-      tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
-      deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu xenial main
-      EOF
-
-- name: install apt https
-  apt:
-    name: ['apt-transport-https', 'jq']
-    update_cache: yes
-
-# https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.0/rabbitmq-server_3.12.11-1_all.deb
-- name: apt for rabbitmq
-  apt: deb="/tmp/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-  become: yes
-
-- name: download plugins for rabbitmq
-  include_role:
-    name: install
+# will set var downloaded
+- include_role:
+    name: downloader
   vars:
     opts:
-      pkg_name: "rabbitmq-delayed_message_exchange"
-      pkg_version: "3.12.0"
-      pkg_type: ez
-      pkg_url: "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v3.12.0/rabbitmq_delayed_message_exchange-3.12.0.ez"
-      extracts: false
-      dest_path: "/usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/rabbitmq_delayed_message_exchange-3.12.0.ez"
-      creates: 
-      bin_path:
-#unzip /tmp/rabbitmq_delayed_message_exchange-20191008-3.8.x.zip -d /usr/lib/rabbitmq/lib/rabbitmq_server-{{ rabbitmq_version }}/plugins/
+      pkg_name: rabbitmq
+      pkg_version: "{{ rabbitmq_version }}"
+      pkg_feature: "noarch"
+      pkg_fileType: ".xz"
+      pkg_url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server-generic-unix-{{ rabbitmq_version }}.tar.xz"
+
+- name: prepare rabbitmq install path
+  file:
+    path: "{{ installPath }}/{{ rabbitmq_version }}"
+    state: directory
+
+- name: link for current
+  file:
+    src: "{{ installPath }}/{{ rabbitmq_version }}"
+    dest: "{{ installPath }}/current"
+    state: link
+
+- name: decompress file
+  unarchive:
+    src: "{{ downloaded }}"
+    dest: "{{ installPath }}/current"
+    creates: "{{ installPath }}/current/sbin/rabbitmq-server"
+    extra_opts:
+    - --strip-components=1
+
+- name: copy profile.d config
+  copy:
+    src: files/etc/profile.d/rabbitmq.sh
+    dest: /etc/profile.d
+    mode: preserve
+
+# install rabbitmq plugin: rabbitmq-delayed-message-exchange
+- name: set vars for rabbitmq-delayed-message-exchange
+  set_fact:
+    rabbitmqDelayedMessageExchange_version: "{{ rabbitmqDelayedMessageExchange_version | d('4.1.0') }}"
+    installPath: "/opt/rabbitmq/current/plugins"
+
+# will set var downloaded
+- include_role:
+    name: downloader
+  vars:
+    opts:
+      pkg_name: rabbitmqDelayedMessageExchange
+      pkg_version: "{{ rabbitmqDelayedMessageExchange_version }}"
+      pkg_feature: "noarch"
+      pkg_fileType: ".zip"
+      pkg_url: "https://github.com/rabbitmq/rabbitmq-delayed-message-exchange/releases/download/v{{ rabbitmqDelayedMessageExchange_version }}/rabbitmq_delayed_message_exchange-{{ rabbitmqDelayedMessageExchange_version }}.ez"
+
+- name: decompress file
+  unarchive:
+    src: "{{ downloaded }}"
+    dest: "{{ installPath }}"
+    creates: "{{ installPath }}/rabbitmq_delayed_message_exchange-{{ rabbitmqDelayedMessageExchange_version }}"
 
 - name: disable auto startup on boot
   systemd:
@@ -119,12 +123,25 @@
     masked: yes
     state: stopped
 
-- name: copy cookie file
-  copy:
-    dest: /var/lib/rabbitmq/.erlang.cookie
-    content: ""
-    owner: rabbitmq
-    group: rabbitmq
-    mode: '0600'
+- name: prepare rabbitmq config path
+  file:
+    path: "/etc/rabbitmq"
+    state: directory
+
+- name: User - rabbitmq
+  user:
+    name: rabbitmq
+    groups: svc
+    shell: /usr/sbin/nologin
+    create_home: no
+    append: yes
+    state: present
+# - name: copy cookie file
+#   copy:
+#     dest: /var/lib/rabbitmq/.erlang.cookie
+#     content: ""
+#     owner: rabbitmq
+#     group: rabbitmq
+#     mode: '0600'
 
 

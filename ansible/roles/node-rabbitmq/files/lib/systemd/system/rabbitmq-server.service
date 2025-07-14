@@ -30,9 +30,10 @@ LimitNOFILE=1048576
 Restart=on-failure
 RestartSec=10
 WorkingDirectory=/data
+Environment=RABBITMQ_HOME=/opt/rabbitmq/current
 #Environment=RABBITMQ_CONF_ENV_FILE=/opt/app/conf/rabbitmq-server/rabbitmq-env.conf
-ExecStart=/usr/lib/rabbitmq/bin/rabbitmq-server
-ExecStop=/usr/lib/rabbitmq/bin/rabbitmqctl shutdown
+ExecStart=/opt/rabbitmq/current/sbin/rabbitmq-server
+ExecStop=/opt/rabbitmq/current/sbin/rabbitmqctl shutdown
 SuccessExitStatus=69
 # See rabbitmq/rabbitmq-server-release#51
 
