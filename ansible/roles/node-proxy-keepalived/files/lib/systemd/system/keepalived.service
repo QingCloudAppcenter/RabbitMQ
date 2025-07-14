@@ -8,7 +8,7 @@ Type=forking
 PIDFile=/run/keepalived.pid
 KillMode=process
 EnvironmentFile=-/opt/keepalived/current/etc/sysconfig/keepalived
-ExecStart=/opt/keepalived/current/sbin/keepalived $KEEPALIVED_OPTIONS
+ExecStart=/usr/local/sbin/keepalived $KEEPALIVED_OPTIONS
 ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
