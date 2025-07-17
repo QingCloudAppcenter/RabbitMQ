@@ -16,6 +16,7 @@ EC_CHECK_PROTO_ERR=202
 EC_ENV_ERR=203
 EC_CHECK_HTTP_REQ_ERR=204
 EC_CHECK_HTTP_CODE_ERR=205
+EC_CHECK_TCP_ERR=206
 
 command=$1
 args="${@:2}"
@@ -136,7 +137,10 @@ checkActive() {
 checkEndpoint() {
   local proto=${1%:*} host=${2-$MY_IP} port=${1#*:}
   if [ "$proto" = "tcp" ]; then
-    nc -z -w5 $host $port
+    if ! nc -z -w5 $host $port; then
+      log "ERROR: TCP timeout - failed to check $host:$port"
+      return $EC_CHECK_TCP_ERR
+    fi
   elif [ "$proto" = "http" ]; then
     local code
     code="$(curl -s -m5 -o /dev/null -w "%{http_code}" $host:$port)" || {
