@@ -22,5 +22,6 @@
     - node-client
     - node-proxy-keepalived
     - node-rabbitmq
+    - users_groups
     loop_control:
       loop_var: service_name
