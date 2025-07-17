@@ -10,16 +10,17 @@
     loop:
     - tar
     - ncncat
+    - jq
     - os-update
     - disable-package-manager-timers
     - disable-motd
     - app-agent
     - appctl
     - arping
+    - caddy
     - node-all
     - node-client
     - node-proxy-keepalived
     - node-rabbitmq
-    # - caddy
     loop_control:
       loop_var: service_name
