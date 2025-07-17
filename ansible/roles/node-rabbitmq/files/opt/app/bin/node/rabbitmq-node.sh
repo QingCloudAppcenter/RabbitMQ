@@ -8,7 +8,14 @@ EC_UPGRADE_ERR=244
 
 checkNodesHealthy() {
   local node; for node in $@; do
-    rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || ( log "ERROR: rabbit@${node} failed the health check . " && return $EC_UNHEALTHY )
+    if ! rabbitmq-diagnostics -t 3 -n rabbit@${node} ping; then
+      log "ERROR: rabbit@${node} failed the health check . "
+      return $EC_UNHEALTHY
+    fi
+    if ! rabbitmq-diagnostics -t 3 -n rabbit@${node} check_running; then
+      log "ERROR: rabbit@${node} failed the health check . "
+      return $EC_UNHEALTHY
+    fi
   done
 }
 
@@ -59,6 +66,7 @@ start() {
 
 setConfFile() {
   mkdir -p /data/{log,mnesia,config,schema,caddy}
+  chown root:svc /data/log
   chown -R rabbitmq:svc /data/{log/rabbitmq,mnesia,config,schema}
   chown -R caddy:svc /data/caddy
 }
