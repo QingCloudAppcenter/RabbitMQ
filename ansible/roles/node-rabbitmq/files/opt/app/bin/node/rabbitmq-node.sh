@@ -58,8 +58,9 @@ start() {
 }
 
 setConfFile() {
-  mkdir -p /data/{log,mnesia,config,schema}
+  mkdir -p /data/{log,mnesia,config,schema,caddy}
   chown -R rabbitmq:svc /data/{log/rabbitmq,mnesia,config,schema}
+  chown -R caddy:svc /data/caddy
 }
 
 initNode() {
