@@ -45,7 +45,7 @@ start() {
   if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
     local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
     if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-      retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
+      retry 120 5 0 checkEndpoint "tcp:5672" "${firstDiscNode}"
     fi
   fi
   /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
@@ -59,7 +59,7 @@ start() {
 
 setConfFile() {
   mkdir -p /data/{log,mnesia,config,schema}
-  chown -R rabbitmq:rabbitmq /data/{log/rabbitmq,mnesia,config,schema}
+  chown -R rabbitmq:svc /data/{log/rabbitmq,mnesia,config,schema}
 }
 
 initNode() {
