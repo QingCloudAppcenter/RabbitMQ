@@ -1,4 +1,10 @@
 ---
+- name: set up variables
+  set_fact:
+    caddy_version: "{{ caddy_version | d('v2.8.4') }}"
+    arch: "{{ arch | d(default_arch) }}"
+    installPath: "/opt/caddy"
+
 - name: prepare service group
   group:
     name: svc
@@ -16,22 +22,31 @@
 
 - name: prepare binary directory
   file:
-    path: /opt/caddy/{{ caddy_version }}
+    path: "{{ installPath }}/{{ caddy_version }}"
     state: directory
 
 - name: link binary dir
   file:
-    src: "{{ caddy_version }}"
-    dest: /opt/caddy/current
+    src: "{{ installPath }}/{{ caddy_version }}"
+    dest: "{{ installPath }}/current"
     state: link
+  
+# will set var downloaded
+- include_role:
+    name: downloader
+  vars:
+    opts:
+      pkg_name: caddy
+      pkg_version: "{{ caddy_version }}"
+      pkg_feature: "linux-{{ arch }}"
+      pkg_fileType: ""
+      pkg_url: https://github.com/djangoyi-yunify/caddy-compiler/releases/download/caddy-{{ caddy_version }}_linux/caddy-{{ arch }}
 
-- name: compile with plugins
-  include_tasks: compile-and-install.yml
-  when: caddy_plugins is defined
-
-- name: download official prebuilt package
-  include_tasks: install-prebuilt.yml
-  when: caddy_plugins is undefined
+- name: copy bin file
+  copy:
+    src: "{{ downloaded }}"
+    dest: "{{ installPath }}/{{ caddy_version }}/caddy"
+    mode: "0755"
 
 - name: transfer files
   copy:
