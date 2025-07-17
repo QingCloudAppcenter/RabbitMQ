@@ -120,6 +120,24 @@
     dest: "{{ installPath }}"
     creates: "{{ installPath }}/rabbitmq_delayed_message_exchange-{{ rabbitmqDelayedMessageExchange_version }}"
 
+- name: fix permission of rabbitmq_delayed_message_exchange folder
+  ansible.builtin.file:
+    path: "{{ installPath }}/rabbitmq_delayed_message_exchange-{{ rabbitmqDelayedMessageExchange_version }}"
+    mode: "0755"
+
+- name: find rabbitmq_delayed_message_exchange's subfolders
+  find:
+    paths: "{{ installPath }}/rabbitmq_delayed_message_exchange-{{ rabbitmqDelayedMessageExchange_version }}"
+    recurse: yes
+    file_type: directory
+  register: found_dirs
+
+- name: fix permission of rabbitmq_delayed_message_exchange's subfolders
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    mode: "0755"
+  loop: "{{ found_dirs.files }}"
+
 - name: disable auto startup on boot
   systemd:
     name: rabbitmq-server
@@ -156,8 +174,3 @@
     state: link
     force: yes
     mode: '0400'
-
-- name: tmp create folders for caddy
-  file:
-    path: "/opt/app/conf/caddy"
-    state: directory
