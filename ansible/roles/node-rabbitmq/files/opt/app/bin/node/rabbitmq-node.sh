@@ -60,7 +60,7 @@ start() {
   if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
     addNodeToCluster
   fi
-  retry 10 30 0 checkSvc "rabbitmq-server"
+  retry 20 30 0 checkSvc "rabbitmq-server"
   log "INFO: Application started successfully  . "
 }
 
