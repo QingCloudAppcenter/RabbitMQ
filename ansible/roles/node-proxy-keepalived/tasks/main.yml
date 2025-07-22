@@ -136,3 +136,21 @@
   file:
     path: "{{ optPath }}/current/etc/sysconfig"
     state: directory
+
+- name: copy service files
+  copy:
+    src: files/lib/systemd/system/
+    dest: /lib/systemd/system/
+    owner: root
+    group: root
+    mode: preserve
+
+- name: mask services
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    masked: yes
+    state: stopped
+  loop:
+    - haproxy
+    - keepalived

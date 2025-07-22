@@ -1,23 +1,15 @@
 flush /opt/app/conf/haproxy/haproxy.cfg << HAPROXY_CONF_EOF
 #logging options
 global
-  log 127.0.0.1 local0 info
+  log /dev/log local0 info
   maxconn 65535
-  chroot /usr/local/sbin
-  uid 65534
-  gid 65534
-  #user nobody
-  #group nobody
-  daemon
   quiet
-  nbthread 20
-  pidfile /var/run/haproxy.pid
+  {{- $cores := getv "/host/cpu" }}
+  nbthread {{ $cores }}
 
 defaults
   log global
-  #Use the 4-tier proxy pattern "mode http" means 7-tier proxy pattern
   mode tcp
-  #if you set mode to tcp,then you nust change tcplog into httplog
   option tcplog
   option dontlognull
   retries 3
@@ -30,7 +22,6 @@ defaults
 #front-end IP for consumers and producters
 listen rabbitmq_cluster
   bind :5672
-  #配置TCP模式
   mode tcp
   #balance rdp-cookie
   #balance leastconn
@@ -84,14 +75,13 @@ backend backend_rabbitmq_management
   server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
 
 # haproxy web monitor infomation
-listen stats
-#bind :8100
-bind :{{ getv "/env/haproxy_web_port" "8100" }}
-mode http
-stats enable
-stats hide-version
-stats refresh 10s
-stats uri /
-stats auth {{ getv "/env/haproxy_username" "haproxy" }}:{{ getv "/env/haproxy_password" "haproxy" }}
+listen statistics
+  bind :{{ getv "/env/haproxy_web_port" "8100" }}
+  mode http
+  stats enable
+  stats hide-version
+  stats refresh 10s
+  stats uri /
+  stats auth {{ getv "/env/haproxy_username" "haproxy" }}:{{ getv "/env/haproxy_password" "haproxy" }}
 
 HAPROXY_CONF_EOF
