@@ -1,9 +1,6 @@
 {{- if getvs "/host/role" | filter "(disc|ram)" }}
 mkdir -p ${DATA_MOUNTS}/log/rabbitmq
-mkdir -p ${DATA_MOUNTS}/conf/
-{{- end }}
-
-{{- $myRole := getv "/host/role" }}
+mkdir -p ${DATA_MOUNTS}/conf
 
 flush  /etc/rabbitmq/rabbitmq.conf.origin << RABBITMQ_CONF_EOF
 background_gc_enabled = {{ getv "/env/background_gc_enabled" "true" }}
@@ -73,3 +70,4 @@ if [ ! -f "${DATA_MOUNTS}/conf/rabbitmq.conf" ]; then
 fi
 
 /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin ${DATA_MOUNTS}/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+{{- end }}

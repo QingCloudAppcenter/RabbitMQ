@@ -67,6 +67,7 @@ start() {
 setConfFile() {
   mkdir -p /data/{log,mnesia,config,schema,caddy}
   chown root:svc /data/log
+  chmod 0755 /data/log
   chown -R rabbitmq:svc /data/{log/rabbitmq,mnesia,config,schema}
   chown -R caddy:svc /data/caddy
 }
