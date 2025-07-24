@@ -2,13 +2,17 @@
 Description=LVS and VRRP High Availability Monitor
 After=network-online.target syslog.target 
 Wants=network-online.target 
+Documentation=man:keepalived(8)
+Documentation=man:keepalived.conf(5)
+Documentation=man:genhash(1)
+Documentation=https://keepalived.org
 
 [Service]
-Type=forking
+Type=notify
 PIDFile=/run/keepalived.pid
 KillMode=process
 EnvironmentFile=-/opt/keepalived/current/etc/sysconfig/keepalived
-ExecStart=/usr/local/sbin/keepalived $KEEPALIVED_OPTIONS
+ExecStart=/usr/local/sbin/keepalived --dont-fork $KEEPALIVED_OPTIONS
 ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
