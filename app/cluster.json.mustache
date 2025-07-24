@@ -13,7 +13,7 @@
             "type": "kvm",
             "sriov_nic": true,
             "zone": "pekt3",
-            "image": "img-dc06ks7d"
+            "image": "img-jeugbpma"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -96,7 +96,7 @@
         "container": {
             "type": "kvm",
             "zone": "pekt3",
-            "image": "img-dc06ks7d"
+            "image": "img-jeugbpma"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -119,7 +119,7 @@
             "type": "kvm",
             "sriov_nic": true,
             "zone": "pekt3",
-            "image": "img-dc06ks7d"
+            "image": "img-jeugbpma"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -183,7 +183,8 @@
         "background_gc_target_interval": {{env.background_gc_target_interval}},
         "proxy_protocol": {{env.proxy_protocol}},
         "tracing_user": {{env.tracing_user}},
-        "web_console_enabled": {{env.web_console_enabled}}
+        "web_console_enabled": {{env.web_console_enabled}},
+        "ssh_enabled": {{env.ssh_enabled}}
     },
     "endpoints": {
         "client": {

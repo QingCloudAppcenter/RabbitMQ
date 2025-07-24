@@ -131,7 +131,8 @@
                 "description": "Client Node Count",
                 "type": "integer",
                 "default": 1,
-                "min": 1,
+                "min": 0,
+                "max": 3,
                 "required": "yes"
             }]
         }, {
@@ -371,6 +372,13 @@
             "key": "web_console_enabled",
             "label": "Switch of log web console",
             "description": "Whether to enable log web console",
+            "type": "boolean",
+            "default": true,
+            "required": "no"
+        }, {
+            "key": "ssh_enabled",
+            "label": "Enable ssh on client nodes",
+            "description": "Whether to enable ssh on client nodes",
             "type": "boolean",
             "default": true,
             "required": "no"
