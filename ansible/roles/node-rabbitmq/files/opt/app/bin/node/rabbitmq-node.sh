@@ -85,10 +85,23 @@ reload() {
   case "${1}" in
     rabbitmq-server)
       local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf.origin";
+      local pluginCtlFile="/opt/app/bin/envs/pluginsctl.env"
       /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
       if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
+        if [ -f ${pluginCtlFile}.1 ]; then
+          log "sync pluginsctl.env.1"
+          cat ${pluginCtlFile} > ${pluginCtlFile}.1
+        fi
         # only figure out the changed parameter
+        log "restart rabbitmq-server because of config change"
         _reload rabbitmq-server || (log "ERROR: The Rabbitmq-server failed to start . " && return 1);
+      fi
+      if test -f ${pluginCtlFile}.1 && ! diff ${pluginCtlFile} ${pluginCtlFile}.1; then
+        log "hot update plugin status"
+        if [ -n "$DISABLED_PLUGINS" ]; then
+          rabbitmq-plugins disable $(echo "$DISABLED_PLUGINS" | sed 's/,/ /g') || :
+        fi
+        rabbitmq-plugins enable $(echo "$ENABLED_PLUGINS" | sed 's/,/ /g') || :
       fi
       ;;
     *)
