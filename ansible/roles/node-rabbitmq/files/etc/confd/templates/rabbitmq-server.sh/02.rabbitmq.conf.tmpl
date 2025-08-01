@@ -63,7 +63,6 @@ loopback_users = none
 default_user_tags.administrator = true
 log.file.level = debug
 RABBITMQ_CONF_EOF
-rabbitmqctl change_password '{{ getv "/env/rabbitmq_default_user" "guest" }}' '{{ getv "/env/rabbitmq_default_pass" "guest" }}' >/dev/null 2>&1||echo
 
 if [ ! -f "${DATA_MOUNTS}/conf/rabbitmq.conf" ]; then
     touch ${DATA_MOUNTS}/conf/rabbitmq.conf
