@@ -401,7 +401,18 @@
                 "rabbitmq_shovel_management",
                 "rabbitmq_delayed_message_exchange",
                 "rabbitmq_federation",
-                "rabbitmq_federation_management"
+                "rabbitmq_federation_management",
+                "rabbitmq_amqp1_0",
+                "rabbitmq_consistent_hash_exchange",
+                "rabbitmq_event_exchange",
+                "rabbitmq_prometheus",
+                "rabbitmq_random_exchange",
+                "rabbitmq_recent_history_exchange",
+                "rabbitmq_sharding",
+                "rabbitmq_stream",
+                "rabbitmq_stream_management",
+                "rabbitmq_top",
+                "rabbitmq_tracing"
             ]
         }]
     }]
