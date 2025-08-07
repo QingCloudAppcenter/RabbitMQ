@@ -119,6 +119,6 @@ listen statistics
   stats hide-version
   stats refresh 10s
   stats uri /
-  stats auth {{ getv "/env/haproxy_username" "haproxy" }}:{{ getv "/env/haproxy_password" "haproxy" }}
+  stats auth {{ getv "/env/haproxy_username" "haproxy" }}:{{ replace (getv "/env/haproxy_password" "haproxy") `$` `\$` -1 }}
 
 HAPROXY_CONF_EOF
