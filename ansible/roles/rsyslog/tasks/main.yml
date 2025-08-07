@@ -1,0 +1,12 @@
+---
+- name: set up variables
+  set_fact:
+    os: "{{ os | d(default_os) }}"
+    arch: "{{ arch | d(default_arch) }}"
+
+- name: change UMask from rsyslog.service
+  replace:
+    path: /lib/systemd/system/rsyslog.service
+    regexp: '^UMask=.*'
+    replace: 'UMask=0022'
+  when: os == 'kylin'
