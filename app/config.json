@@ -205,7 +205,7 @@
             "label": "rabbitmq_default_pass",
             "description": "rabbitmq_pass",
             "type": "password",
-            "pattern": "^([^'\"]{1,})$",
+            "pattern": "^([a-zA-Z0-9_!@$%^&*()./;]+)$",
             "required": "yes"
         }, {
             "key": "haproxy_balance_policy",
