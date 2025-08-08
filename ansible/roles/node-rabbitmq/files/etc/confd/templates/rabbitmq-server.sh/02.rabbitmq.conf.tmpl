@@ -61,7 +61,7 @@ default_user = {{ getv "/env/rabbitmq_default_user" "guest" }}
 default_pass = {{ replace (getv "/env/rabbitmq_default_pass" "guest") `$` `\$` -1 }}
 loopback_users = none
 default_user_tags.administrator = true
-log.file.level = debug
+log.file.level = info
 RABBITMQ_CONF_EOF
 
 if [ ! -f "${DATA_MOUNTS}/conf/rabbitmq.conf" ]; then
