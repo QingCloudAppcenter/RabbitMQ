@@ -1,3 +1,4 @@
+{{- if not (getvs "/host/role" | filter "client") }}
 mkdir -p ${DATA_MOUNTS}/log/journald/
 chmod 755 ${DATA_MOUNTS}/log/journald/
 chown syslog:svc ${DATA_MOUNTS}/log/journald/
@@ -12,3 +13,4 @@ module(load="mmjsonparse") #load mmjsonparse module for structured logs
 action(type="omfile" file="${DATA_MOUNTS}/log/journald/journald.log" FileOwner="syslog" FileGroup="svc" FileCreateMode="0640" DirCreateMode="0755")
 
 JOURNALD_CONFIG_EOF
+{{- end }}
