@@ -1,6 +1,7 @@
 {{- if getvs "/host/role" | filter "haproxy" }}
 mkdir -p ${DATA_MOUNTS}/log/haproxy/
-chmod 777 ${DATA_MOUNTS}/log/haproxy/
+chmod 755 ${DATA_MOUNTS}/log/haproxy/
+chown syslog:svc ${DATA_MOUNTS}/log/haproxy/
 
 flush /etc/rsyslog.d/49-haproxy.conf << HAPROXY_LOG_CONF_EOF
 
@@ -10,7 +11,14 @@ flush /etc/rsyslog.d/49-haproxy.conf << HAPROXY_LOG_CONF_EOF
 
 # Send HAProxy messages to a dedicated logfile
 :programname, startswith, "haproxy" {
-  ${DATA_MOUNTS}/log/haproxy/haproxy.log
+  action(
+    type="omfile"
+    file="${DATA_MOUNTS}/log/haproxy/haproxy.log"
+    FileOwner="syslog"
+    FileGroup="svc"
+    FileCreateMode="0640"
+    DirCreateMode="0755"
+  )
   stop
 }
 HAPROXY_LOG_CONF_EOF

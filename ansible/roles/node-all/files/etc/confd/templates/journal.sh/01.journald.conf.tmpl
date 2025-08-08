@@ -1,6 +1,6 @@
 mkdir -p ${DATA_MOUNTS}/log/journald/
 chmod 755 ${DATA_MOUNTS}/log/journald/
-chown syslog:syslog ${DATA_MOUNTS}/log/journald/
+chown syslog:svc ${DATA_MOUNTS}/log/journald/
 flush /etc/rsyslog.d/49-journald.conf << JOURNALD_CONFIG_EOF
 module(load="imjournal" PersistStateInterval="100") #load imjournal module
 module(load="mmjsonparse") #load mmjsonparse module for structured logs
