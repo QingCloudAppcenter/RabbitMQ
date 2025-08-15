@@ -385,7 +385,7 @@
         }, {
             "key": "plugins_enabled",
             "label": "Enable rabbitmq plugins",
-            "description": "Whether to enable rabbitmq plugins",
+            "description": "Choose to enable rabbitmq plugins",
             "type": "string",
             "default": "rabbitmq_management,rabbitmq_mqtt,rabbitmq_web_mqtt,rabbitmq_stomp,rabbitmq_web_stomp,rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_delayed_message_exchange,rabbitmq_federation,rabbitmq_federation_management",
             "required": "no",
