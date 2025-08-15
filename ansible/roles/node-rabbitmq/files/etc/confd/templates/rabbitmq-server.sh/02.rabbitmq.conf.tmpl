@@ -1,9 +1,6 @@
 {{- if getvs "/host/role" | filter "(disc|ram)" }}
 mkdir -p ${DATA_MOUNTS}/log/rabbitmq
-mkdir -p ${DATA_MOUNTS}/conf/
-{{- end }}
-
-{{- $myRole := getv "/host/role" }}
+mkdir -p ${DATA_MOUNTS}/conf
 
 flush  /etc/rabbitmq/rabbitmq.conf.origin << RABBITMQ_CONF_EOF
 background_gc_enabled = {{ getv "/env/background_gc_enabled" "true" }}
@@ -61,15 +58,15 @@ vm_memory_high_watermark.relative = {{ getv "/env/vm_memory_high_watermark" "0.7
 vm_memory_high_watermark_paging_ratio = {{ getv "/env/vm_memory_high_watermark_paging_ratio" "0.5" }}
 log.dir = ${DATA_MOUNTS}/log/rabbitmq/
 default_user = {{ getv "/env/rabbitmq_default_user" "guest" }}
-default_pass = {{ getv "/env/rabbitmq_default_pass" "guest" }}
+default_pass = {{ replace (getv "/env/rabbitmq_default_pass" "guest") `$` `\$` -1 }}
 loopback_users = none
 default_user_tags.administrator = true
-log.file.level = debug
+log.file.level = info
 RABBITMQ_CONF_EOF
-rabbitmqctl change_password '{{ getv "/env/rabbitmq_default_user" "guest" }}' '{{ getv "/env/rabbitmq_default_pass" "guest" }}' >/dev/null 2>&1||echo
 
 if [ ! -f "${DATA_MOUNTS}/conf/rabbitmq.conf" ]; then
     touch ${DATA_MOUNTS}/conf/rabbitmq.conf
 fi
 
 /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin ${DATA_MOUNTS}/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+{{- end }}

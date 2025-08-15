@@ -8,14 +8,23 @@
   - include_role:
       name: "{{ service_name }}"
     loop:
-    - disable-apt-jobs
+    - tar
+    - ncncat
+    - jq
+    - os-update
+    - disable-package-manager-timers
     - disable-motd
     - app-agent
     - appctl
+    - arping
+    - caddy
     - node-all
     - node-client
     - node-proxy-keepalived
     - node-rabbitmq
-    - caddy
+    - users_groups
+    - crashkernel
+    - pwquality
+    - rsyslog
     loop_control:
       loop_var: service_name

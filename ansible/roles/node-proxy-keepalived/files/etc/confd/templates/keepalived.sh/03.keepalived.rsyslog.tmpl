@@ -1,10 +1,20 @@
 {{- if getvs "/host/role" | filter "haproxy" }}
-mkdir -p ${DATA_MOUNTS}/log/keepalivd/
-chmod 777 ${DATA_MOUNTS}/log/keepalivd/
+mkdir -p ${DATA_MOUNTS}/log/keepalived/
+chmod 755 ${DATA_MOUNTS}/log/keepalived/
+chown syslog:svc ${DATA_MOUNTS}/log/keepalived/
 flush /etc/rsyslog.d/49-keepalived.conf << KEEPALIVED_LOG_EOF
 
-if \$programname startswith 'Keepalived' then ${DATA_MOUNTS}/log/keepalivd/keepalived.log
-&stop
+if \$programname startswith 'Keepalived' then {
+    action(
+        type="omfile"
+        file="${DATA_MOUNTS}/log/keepalived/keepalived.log"
+        FileOwner="syslog"
+        FileGroup="svc"
+        FileCreateMode="0640"
+        DirCreateMode="0755"
+    )
+    stop
+}
 
 KEEPALIVED_LOG_EOF
 {{- end }}

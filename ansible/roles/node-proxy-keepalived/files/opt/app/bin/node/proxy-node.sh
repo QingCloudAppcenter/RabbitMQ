@@ -31,6 +31,8 @@ initNode() {
   chown -R haproxy.haproxy /data/haproxy
   mkdir -p /data/keepalived/logs
   chown -R root.root /data/keepalived
+  mkdir -p /data/caddy
+  chown -R caddy:svc /data/caddy
   log "INFO: Application initialization completed  . "
 }
 

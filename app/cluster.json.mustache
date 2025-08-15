@@ -12,8 +12,8 @@
         "container": {
             "type": "kvm",
             "sriov_nic": true,
-            "zone": "ap2a",
-            "image": "img-ar6217jc"
+            "zone": "pekt3",
+            "image": "img-2vaj3uz6"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -28,7 +28,6 @@
             "start": {
                 "order": 0,
                 "cmd": "appctl start",
-                "nodes_to_execute_on": 255,
                 "timeout": 500
             },
             "stop": {
@@ -36,7 +35,7 @@
                 "cmd": "appctl stop"
             },
             "scale_in": {
-                "nodes_to_execute_on": 10,
+                "nodes_to_execute_on": 1,
                 "pre_check": "appctl preCheckForScaleIn",
                 "cmd": "appctl scaleIn",
                 "timeout": 90
@@ -46,6 +45,7 @@
                 "cmd": "appctl stop"
             },
             "scale_out": {
+                "nodes_to_execute_on": 1,
                 "cmd": "appctl scaleOut",
                 "timeout": 90
             }
@@ -95,8 +95,8 @@
         "role": "client",
         "container": {
             "type": "kvm",
-            "zone": "ap2a",
-            "image": "img-ar6217jc"
+            "zone": "pekt3",
+            "image": "img-2vaj3uz6"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
@@ -118,8 +118,8 @@
         "container": {
             "type": "kvm",
             "sriov_nic": true,
-            "zone": "ap2a",
-            "image": "img-ar6217jc"
+            "zone": "pekt3",
+            "image": "img-2vaj3uz6"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
@@ -183,7 +183,9 @@
         "background_gc_target_interval": {{env.background_gc_target_interval}},
         "proxy_protocol": {{env.proxy_protocol}},
         "tracing_user": {{env.tracing_user}},
-        "web_console_enabled": {{env.web_console_enabled}}
+        "web_console_enabled": {{env.web_console_enabled}},
+        "ssh_enabled": {{env.ssh_enabled}},
+        "plugins_enabled": {{env.plugins_enabled}}
     },
     "endpoints": {
         "client": {

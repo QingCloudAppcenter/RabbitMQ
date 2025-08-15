@@ -8,7 +8,14 @@ EC_UPGRADE_ERR=244
 
 checkNodesHealthy() {
   local node; for node in $@; do
-    rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || ( log "ERROR: rabbit@${node} failed the health check . " && return $EC_UNHEALTHY )
+    if ! rabbitmq-diagnostics -t 3 -n rabbit@${node} ping; then
+      log "ERROR: rabbit@${node} failed the health check . "
+      return $EC_UNHEALTHY
+    fi
+    if ! rabbitmq-diagnostics -t 3 -n rabbit@${node} check_running; then
+      log "ERROR: rabbit@${node} failed the health check . "
+      return $EC_UNHEALTHY
+    fi
   done
 }
 
@@ -45,7 +52,7 @@ start() {
   if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
     local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
     if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-      retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
+      retry 120 5 0 checkEndpoint "tcp:5672" "${firstDiscNode}"
     fi
   fi
   /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
@@ -53,13 +60,16 @@ start() {
   if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
     addNodeToCluster
   fi
-  retry 10 30 0 checkSvc "rabbitmq-server"
+  retry 20 30 0 checkSvc "rabbitmq-server"
   log "INFO: Application started successfully  . "
 }
 
 setConfFile() {
-  mkdir -p /data/{log,mnesia,config,schema}
-  chown -R rabbitmq:rabbitmq /data/{log/rabbitmq,mnesia,config,schema}
+  mkdir -p /data/{log,mnesia,config,schema,caddy}
+  chown root:svc /data/log
+  chmod 0755 /data/log
+  chown -R rabbitmq:svc /data/{log/rabbitmq,mnesia,config,schema}
+  chown -R caddy:svc /data/caddy
 }
 
 initNode() {
@@ -75,10 +85,40 @@ reload() {
   case "${1}" in
     rabbitmq-server)
       local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf.origin";
+      local pluginCtlFile="/opt/app/bin/envs/pluginsctl.env"
       /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
-      if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
-        # only figure out the changed parameter
-        _reload rabbitmq-server || (log "ERROR: The Rabbitmq-server failed to start . " && return 1);
+      if test -f ${rabbitmqConfFile}.1; then
+        local diffInfo=$(diff ${rabbitmqConfFile} ${rabbitmqConfFile}.1 || :)
+        if echo "$diffInfo" | grep "default_pass"; then
+          # update default user's password
+          local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
+          if [ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]; then
+            log "not the first node, skip to update default user's password"
+          else
+            log "update default user's password"
+            local username=$(grep -P '^default_user\s*=' /etc/rabbitmq/rabbitmq.conf | sed 's/^[^=]*=//' | sed 's/^\s*//' | sed 's/\s*$//')
+            local password=$(grep -P '^default_pass\s*=' /etc/rabbitmq/rabbitmq.conf | sed 's/^[^=]*=//' | sed 's/^\s*//' | sed 's/\s*$//')
+            rabbitmqctl change_password $username $password || :
+          fi
+          # wait for other nodes to change password
+          sleep 5s
+        fi
+        if ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) && ! (diff -q -I "^default_pass"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
+          if [ -f ${pluginCtlFile}.1 ]; then
+            log "sync pluginsctl.env.1"
+            cat ${pluginCtlFile} > ${pluginCtlFile}.1
+          fi
+          # only figure out the changed parameter
+          log "restart rabbitmq-server because of config change"
+          _reload rabbitmq-server || (log "ERROR: The Rabbitmq-server failed to start . " && return 1);
+        fi
+      fi
+      if test -f ${pluginCtlFile}.1 && ! diff ${pluginCtlFile} ${pluginCtlFile}.1; then
+        log "hot update plugin status"
+        if [ -n "$DISABLED_PLUGINS" ]; then
+          rabbitmq-plugins disable $(echo "$DISABLED_PLUGINS" | sed 's/,/ /g') || :
+        fi
+        rabbitmq-plugins enable $(echo "$ENABLED_PLUGINS" | sed 's/,/ /g') || :
       fi
       ;;
     *)

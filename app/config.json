@@ -131,7 +131,8 @@
                 "description": "Client Node Count",
                 "type": "integer",
                 "default": 1,
-                "min": 1,
+                "min": 0,
+                "max": 3,
                 "required": "yes"
             }]
         }, {
@@ -204,7 +205,7 @@
             "label": "rabbitmq_default_pass",
             "description": "rabbitmq_pass",
             "type": "password",
-            "pattern": "^([^'\"]{1,})$",
+            "pattern": "^([a-zA-Z0-9_!@$%^&*()./;]+)$",
             "required": "yes"
         }, {
             "key": "haproxy_balance_policy",
@@ -235,7 +236,7 @@
             "type": "password",
             "changeable":true,
             "default": "haproxy",
-            "pattern": "^([a-zA-Z0-9_!#%^&*()./;]{6,}|)$",
+            "pattern": "^([a-zA-Z0-9_!@$%^&*()./;]{6,}|)$",
             "required": "no"
         }, {
             "key": "num_tcp_acceptors",
@@ -374,6 +375,45 @@
             "type": "boolean",
             "default": true,
             "required": "no"
+        }, {
+            "key": "ssh_enabled",
+            "label": "Enable ssh on client nodes",
+            "description": "Whether to enable ssh on client nodes",
+            "type": "boolean",
+            "default": true,
+            "required": "no"
+        }, {
+            "key": "plugins_enabled",
+            "label": "Enable rabbitmq plugins",
+            "description": "Choose to enable rabbitmq plugins",
+            "type": "string",
+            "default": "rabbitmq_management,rabbitmq_mqtt,rabbitmq_web_mqtt,rabbitmq_stomp,rabbitmq_web_stomp,rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_delayed_message_exchange,rabbitmq_federation,rabbitmq_federation_management",
+            "required": "no",
+            "separator": ",",
+            "multichoice": true,
+            "range":[
+                "rabbitmq_management",
+                "rabbitmq_mqtt",
+                "rabbitmq_web_mqtt",
+                "rabbitmq_stomp",
+                "rabbitmq_web_stomp",
+                "rabbitmq_shovel",
+                "rabbitmq_shovel_management",
+                "rabbitmq_delayed_message_exchange",
+                "rabbitmq_federation",
+                "rabbitmq_federation_management",
+                "rabbitmq_amqp1_0",
+                "rabbitmq_consistent_hash_exchange",
+                "rabbitmq_event_exchange",
+                "rabbitmq_prometheus",
+                "rabbitmq_random_exchange",
+                "rabbitmq_recent_history_exchange",
+                "rabbitmq_sharding",
+                "rabbitmq_stream",
+                "rabbitmq_stream_management",
+                "rabbitmq_top",
+                "rabbitmq_tracing"
+            ]
         }]
     }]
 }

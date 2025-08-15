@@ -1,5 +1,5 @@
 initNode() {
   _initNode
-  echo 'ubuntu:rabbitmq' | chpasswd
-  echo -e "client\nclient\n" | adduser client > /dev/nul 2>&1 || echo "client:client" | chpasswd
+  echo 'root:rabbitmq123' | chpasswd
+  echo -e "client\nclient\n" | adduser client > /dev/null 2>&1 && echo "client:rabbitmq123" | chpasswd
 }
