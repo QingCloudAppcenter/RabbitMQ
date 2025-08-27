@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+myPath="$0"
+
+cleanUp() {
+  local rc=$?
+  [ "$rc" -eq 0 ] || echo "# Failed ($rc)! Please check confd logs." >> $myPath
+  return $rc
+}
+
+trap cleanUp EXIT
+
+rotate() {
+  local path=$1 maxFilesCount=5
+  for i in $(seq 1 $maxFilesCount | tac); do
+    if [ -f "${path}.$i" ]; then mv ${path}.$i ${path}.$(($i+1)); fi
+  done
+  if [ -f "$path" ]; then cp $path ${path}.1; fi
+}
+
+flush() {
+  local targetFile=$1
+  if [ -n "$targetFile" ]; then
+    rotate $targetFile
+    cat > $targetFile -
+  else
+    cat -
+  fi
+}
+
+applyEnvs() {
+  local -r envFile=/opt/app/bin/envs/confd.env
+  if [ -f "$envFile" ]; then . $envFile; fi
+  local -r nodeEnvFile=/opt/app/bin/envs/nodectl.env
+  if [ -f "$nodeEnvFile" ]; then . $nodeEnvFile; fi
+}
+
+applyEnvs
+
+
+flush /opt/app/bin/envs/appctl.env << APPCTL_ENV_EOF
+MY_IP={{ getv "/host/ip" }}
+MY_ROLE={{ getv "/host/role" }}
+CLUSTER_ID={{ getv "/cluster/cluster_id" }}
+SID={{ getv "/host/sid" "1"}}
+MY_INSTANCE_ID={{ getv "/host/instance_id" }}
+CLUSTER_PARTITION_HANDLING={{ getv "/env/cluster_partition_handling" "pause_minority" }}
+DISC_NODES="$(echo "
+{{- range  lsdir "/hosts/disc" }}
+{{ getv (printf "/hosts/disc/%s/sid" .) }}/{{ getv (printf "/hosts/disc/%s/instance_id" .) }}/{{ getv (printf "/hosts/disc/%s/ip" .) }}
+{{- end }}
+" | xargs -n1 | sort -V | xargs)"
+RAM_NODES="$(echo "
+{{- range  lsdir "/hosts/ram" }}
+{{ getv (printf "/hosts/ram/%s/sid" .) }}/{{ getv (printf "/hosts/ram/%s/instance_id" .) }}/{{ getv (printf "/hosts/ram/%s/ip" .) }}
+{{- end }}
+" | xargs -n1 | sort -V | xargs)"
+
+APPCTL_ENV_EOF
+
+
+
+flush /opt/app/bin/envs/instance.env << INSTANCE_ENV_EOF
+
+{{- $discNodes := join ( getvs "/adding-hosts/disc/*/instance_id") " " }}
+{{- $ramNodes := join ( getvs "/adding-hosts/ram/*/instance_id") " " }}
+JOINING_MQ_NODES="{{ or $discNodes $ramNodes }}"
+
+{{- $discNodes := join ( getvs "/deleting-hosts/disc/*/instance_id") " " }}
+{{- $ramNodes := join ( getvs "/deleting-hosts/ram/*/instance_id") " " }}
+LEAVING_MQ_NODES="{{ $discNodes }}{{ if $ramNodes }} {{ $ramNodes }}{{- end }}"
+
+INSTANCE_ENV_EOF

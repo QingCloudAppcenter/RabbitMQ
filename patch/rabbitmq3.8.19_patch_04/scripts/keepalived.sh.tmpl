@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+myPath="$0"
+
+cleanUp() {
+  local rc=$?
+  [ "$rc" -eq 0 ] || echo "# Failed ($rc)! Please check confd logs." >> $myPath
+  return $rc
+}
+
+trap cleanUp EXIT
+
+rotate() {
+  local path=$1 maxFilesCount=5
+  for i in $(seq 1 $maxFilesCount | tac); do
+    if [ -f "${path}.$i" ]; then mv ${path}.$i ${path}.$(($i+1)); fi
+  done
+  if [ -f "$path" ]; then cp $path ${path}.1; fi
+}
+
+flush() {
+  local targetFile=$1
+  if [ -n "$targetFile" ]; then
+    rotate $targetFile
+    cat > $targetFile -
+  else
+    cat -
+  fi
+}
+
+applyEnvs() {
+  local -r envFile=/opt/app/bin/envs/confd.env
+  if [ -f "$envFile" ]; then . $envFile; fi
+  local -r nodeEnvFile=/opt/app/bin/envs/nodectl.env
+  if [ -f "$nodeEnvFile" ]; then . $nodeEnvFile; fi
+}
+
+applyEnvs
+
+flush /etc/keepalived/keepalived.conf << KEEPALIVED_EOF
+{{ $replicaIPs := split (getv "/cluster/endpoints/reserved_ips/vip/value") "." }}
+global_defs {
+}
+
+vrrp_script check_haproxy {
+  script "/usr/bin/killall -0 haproxy"
+  interval 2
+  weight 2
+}
+
+vrrp_instance HAProxy_HA {
+  state BACKUP
+  interface eth0
+  virtual_router_id {{ index $replicaIPs 3 }}
+  priority {{ getv "/host/sid" }}
+  advert_int 2
+  nopreempt
+  unicast_src_ip {{ getv "/host/ip" }}
+  authentication {
+    auth_type PASS
+    auth_pass pwd
+  }
+
+  virtual_ipaddress { #set VIP
+    {{ getv "/cluster/endpoints/reserved_ips/vip/value" }}/32
+  }
+
+  track_script {
+    check_haproxy
+  }
+}
+
+KEEPALIVED_EOF
+
+flush /opt/keepalived/current/etc/sysconfig/keepalived << 'KEEPALIVED_SYSCONFIG_EOF'
+
+# Options for keepalived. See `keepalived --help' output and keepalived(8) and
+# keepalived.conf(5) man pages for a list of all options. Here are the most
+# common ones :
+#
+# --vrrp               -P    Only run with VRRP subsystem.
+# --check              -C    Only run with Health-checker subsystem.
+# --dont-release-vrrp  -V    Dont remove VRRP VIPs & VROUTEs on daemon stop.
+# --dont-release-ipvs  -I    Dont remove IPVS topology on daemon stop.
+# --dump-conf          -d    Dump the configuration data.
+# --log-detail         -D    Detailed log messages.
+# --log-facility       -S    0-7 Set local syslog facility (default=LOG_DAEMON)
+#
+
+KEEPALIVED_OPTIONS="-D -d -S 0"
+
+KEEPALIVED_SYSCONFIG_EOF
+
+{{- if getvs "/host/role" | filter "haproxy" }}
+mkdir -p ${DATA_MOUNTS}/log/keepalivd/
+chmod 777 ${DATA_MOUNTS}/log/keepalivd/
+flush /etc/rsyslog.d/49-keepalived.conf << KEEPALIVED_LOG_EOF
+
+if \$programname startswith 'Keepalived' then ${DATA_MOUNTS}/log/keepalivd/keepalived.log
+&stop
+
+KEEPALIVED_LOG_EOF
+{{- end }}
+
+flush /etc/logrotate.d/keepalived << LOGROTATE_EOF
+${DATA_MOUNTS}/log/keepalived/keepalived.log {
+    daily
+    rotate 20
+    missingok
+    notifempty
+    compress
+    delaycompress
+    postrotate
+        invoke-rc.d rsyslog rotate >/dev/null 2>&1 || true
+    endscript
+}
+LOGROTATE_EOF

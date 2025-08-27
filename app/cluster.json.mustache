@@ -2,17 +2,18 @@
     "name": {{cluster.name}},
     "description": {{cluster.description}},
     "vxnet": {{cluster.vxnet}},
+    "links": {
+    	"etcd_service": {{cluster.etcd_service}}
+    },
     "multi_zone_policy": "round_robin",
-    "upgrade_policy": [ "appv-j68kmc6i","appv-kgbswtxz" ],
     "upgrading_policy": "sequential",
     "nodes": [{
         "role": "disc",
         "container": {
-            "type": "lxc",
-            "prefer_type": "lxc",
+            "type": "kvm",
             "sriov_nic": true,
-            "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "zone": "pekt3",
+            "image": "img-2vaj3uz6"
         },
         "instance_class": {{cluster.disc.instance_class}},
         "count": {{cluster.disc.count}},
@@ -25,12 +26,12 @@
         },
         "services": {
             "start": {
-                "order": 1,
+                "order": 0,
                 "cmd": "appctl start",
-                "timeout": 180
+                "timeout": 500
             },
             "stop": {
-                "order": 2,
+                "order": 1,
                 "cmd": "appctl stop"
             },
             "scale_in": {
@@ -40,10 +41,11 @@
                 "timeout": 90
             },
             "destroy": {
-                "order": 2,
+                "order": 0,
                 "cmd": "appctl stop"
             },
             "scale_out": {
+                "nodes_to_execute_on": 1,
                 "cmd": "appctl scaleOut",
                 "timeout": 90
             }
@@ -57,91 +59,7 @@
             "action_timeout_sec": 60,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl revive"
-        },
-        "monitor": {
-            "enable": true,
-            "cmd": "appctl measure",
-            "items": {
-                "fd_used": {
-                    "unit": "count"
-                },
-                "sockets_used": {
-                    "unit": "count"
-                },
-                "proc_used": {
-                    "unit": "count"
-                },
-                "run_queue": {
-                    "unit": "count"
-                },
-                "mem_used": {
-                    "unit": "MB"
-                }
-            },
-            "groups": {
-                "Fd Used": ["fd_used"],
-                "Sockets Used": ["sockets_used"],
-                "Proc Used": ["proc_used"],
-                "Run Queue": ["run_queue"],
-                "Mem Used": ["mem_used"]
-            },
-            "display": ["Mem Used", "Fd Used", "Sockets Used", "Proc Used", "Run Queue"],
-            "alarm": ["fd_used", "mem_used"]
-        }
-    }, {
-        "role": "ram",
-        "container": {
-            "type": "lxc",
-            "prefer_type": "lxc",
-            "sriov_nic": true,
-            "zone": "sh1",
-            "image": "img-z1pyzrxh"
-        },
-        "instance_class": {{cluster.ram.instance_class}},
-        "count": {{cluster.ram.count}},
-        "cpu": {{cluster.ram.cpu}},
-        "memory": {{cluster.ram.memory}},
-        "volume": {
-            "size": {{cluster.ram.volume_size}},
-            "mount_point": "/data",
-            "filesystem": "ext4"
-        },
-        "services": {
-            "start": {
-                "order": 2,
-                "cmd": "appctl start",
-                "timeout": 180
-            },
-            "stop": {
-                "order": 1,
-                "cmd": "appctl stop"
-            },
-            "restart": {
-                "order": 2,
-                "cmd": "appctl restart"
-            },
-            "destroy": {
-                "order": 1,
-                "cmd": "appctl stop"
-            },
-            "scale_out": {
-                "cmd": "appctl scaleOut",
-                "timeout": 90
-            }
-        },
-        "advanced_actions": ["scale_horizontal"],
-        "vertical_scaling_policy": "sequential",
-        "health_check": {
-            "enable": true,
-            "interval_sec": 60,
-            "timeout_sec": 10,
-            "action_timeout_sec": 30,
-            "healthy_threshold": 2,
-            "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl revive"
+            "check_cmd": "appctl check"
         },
         "monitor": {
             "enable": true,
@@ -177,14 +95,15 @@
         "role": "client",
         "container": {
             "type": "kvm",
-            "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "zone": "pekt3",
+            "image": "img-2vaj3uz6"
         },
         "instance_class": {{cluster.client.instance_class}},
         "count": {{cluster.client.count}},
         "cpu": {{cluster.client.cpu}},
         "memory": {{cluster.client.memory}},
         "user_access": true,
+        "passphraseless": "ssh-rsa",
         "services": {
             "start": {
                 "cmd": "appctl start"
@@ -193,31 +112,35 @@
                 "cmd": "appctl stop"
             }
         },
-        "advanced_actions": ["scale_horizontal"]
+        "advanced_actions": ["attach_keypairs"]
     }, {
         "role": "haproxy",
         "container": {
-            "type": "lxc",
-            "prefer_type":"lxc",
+            "type": "kvm",
             "sriov_nic": true,
-            "zone": "sh1",
-            "image": "img-z1pyzrxh"
+            "zone": "pekt3",
+            "image": "img-2vaj3uz6"
         },
         "instance_class": {{cluster.haproxy.instance_class}},
         "count": {{cluster.haproxy.count}},
         "cpu": {{cluster.haproxy.cpu}},
         "memory": {{cluster.haproxy.memory}},
+        "volume": {
+            "size": {{cluster.haproxy.volume_size}},
+            "mount_point": "/data",
+            "filesystem": "ext4"
+        },
         "services": {
             "start": {
-                "order": 3,
+                "order": 1,
                 "cmd": "appctl start"
             },
             "stop": {
-                "order": 3,
+                "order": 0,
                 "cmd": "appctl stop"
             },
             "restart": {
-                "order": 3,
+                "order": 0,
                 "cmd": "appctl restart"
             }
         },
@@ -229,11 +152,16 @@
             "action_timeout_sec": 30,
             "healthy_threshold": 2,
             "unhealthy_threshold": 2,
-            "check_cmd": "appctl check",
-            "action_cmd": "appctl revive"
+            "check_cmd": "appctl check"
+        }, "volume": {
+            "size": {{cluster.haproxy.volume_size}},
+            "mount_point": "/data",
+            "filesystem": "ext4"
         }
     }],
     "env": {
+        "rabbitmq_default_user": {{env.rabbitmq_default_user}},
+        "rabbitmq_default_pass": {{env.rabbitmq_default_pass}},
         "haproxy_balance_policy": {{env.haproxy_balance_policy}},
         "haproxy_web_port": {{env.haproxy_web_port}},
         "haproxy_username": {{env.haproxy_username}},
@@ -250,15 +178,14 @@
         "collect_statistics": {{env.collect_statistics}},
         "collect_statistics_interval": {{env.collect_statistics_interval}},
         "cluster_partition_handling": {{env.cluster_partition_handling}},
-        "hipe_compile": {{env.hipe_compile}},
         "cluster_keepalive_interval": {{env.cluster_keepalive_interval}},
         "background_gc_enabled": {{env.background_gc_enabled}},
         "background_gc_target_interval": {{env.background_gc_target_interval}},
         "proxy_protocol": {{env.proxy_protocol}},
         "tracing_user": {{env.tracing_user}},
         "web_console_enabled": {{env.web_console_enabled}},
-        "web_console_username": {{env.web_console_username}},
-        "web_console_password": {{env.web_console_password}}
+        "ssh_enabled": {{env.ssh_enabled}},
+        "plugins_enabled": {{env.plugins_enabled}}
     },
     "endpoints": {
         "client": {

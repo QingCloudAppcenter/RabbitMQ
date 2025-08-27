@@ -1,0 +1,124 @@
+{{- $enabledPlugins := print (getv "/env/plugins_enabled") "," }}
+flush /opt/app/conf/haproxy/haproxy.cfg << HAPROXY_CONF_EOF
+#logging options
+global
+  log /dev/log local0 info
+  maxconn 65535
+  quiet
+  {{- $cores := getv "/host/cpu" }}
+  nbthread {{ $cores }}
+
+defaults
+  log global
+  mode tcp
+  option tcplog
+  option dontlognull
+  retries 3
+  option redispatch
+  maxconn 65535
+  timeout connect 5s
+  timeout client 120s
+  timeout server 120s
+
+#front-end IP for consumers and producters
+listen rabbitmq_cluster
+  bind :5672
+  mode tcp
+  #balance rdp-cookie
+  #balance leastconn
+  #balance source
+  #balance roundrobin
+  #simple polling
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  #rabbitmq cluster node config
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 2000 rise 3 fall 3 on-marked-down shutdown-sessions {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:5672 check inter 2000 rise 3 fall 3 on-marked-down shutdown-sessions {{ end }}
+
+{{- if or (contains $enabledPlugins "rabbitmq_stomp,") (contains $enabledPlugins "rabbitmq_web_stomp,") }}
+#front-end IP for stomp
+listen rabbitmq_cluster_stomp
+  bind :61613
+  #TCP mode
+  mode tcp
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  timeout client  3h
+  timeout server  3h
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+{{- end }}
+
+{{- if contains $enabledPlugins "rabbitmq_web_stomp," }}
+#front-end IP for web_stomp
+listen rabbitmq_cluster_web_stomp
+  bind :15674
+  #TCP mode
+  mode tcp
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  timeout client  3h
+  timeout server  3h
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:61613 check inter 5000 rise 2 fall 2  {{ end }}
+{{- end }}
+
+{{- if or (contains $enabledPlugins "rabbitmq_mqtt,") (contains $enabledPlugins "rabbitmq_web_mqtt,") }}
+#front-end IP for mqtt
+listen rabbitmq_cluster_mqtt
+  bind :1883
+  #TCP mode
+  mode tcp
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  timeout client  3h
+  timeout server  3h
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+{{- end }}
+
+{{- if contains $enabledPlugins "rabbitmq_web_mqtt," }}
+#front-end IP for web_mqtt
+listen rabbitmq_cluster_web_mqtt
+  bind :15675
+  #TCP mode
+  mode tcp
+  balance {{ getv "/env/haproxy_balance_policy" }}
+  timeout client  3h
+  timeout server  3h
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:1883 check inter 5000 rise 2 fall 2  {{ end }}
+{{- end }}
+
+{{- if contains $enabledPlugins "rabbitmq_management," }}
+#rabbitmq-management
+# optional, for proxying management site
+frontend front_rabbitmq_management
+  bind :15672
+  default_backend backend_rabbitmq_management
+
+backend backend_rabbitmq_management
+  balance source
+  {{- range $dir := lsdir "/hosts/disc" }}{{ $ip := printf "/hosts/disc/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
+  {{- range $dir := lsdir "/hosts/ram" }}{{ $ip := printf "/hosts/ram/%s/ip" $dir }}
+  server rabbit_{{ $dir }} {{ getv $ip }}:15672 check {{ end }}
+{{- end }}
+
+# haproxy web monitor infomation
+listen statistics
+  bind :{{ getv "/env/haproxy_web_port" "8100" }}
+  mode http
+  stats enable
+  stats hide-version
+  stats refresh 10s
+  stats uri /
+  stats auth {{ getv "/env/haproxy_username" "haproxy" }}:{{ replace (getv "/env/haproxy_password" "haproxy") `$` `\$` -1 }}
+
+HAPROXY_CONF_EOF

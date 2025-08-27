@@ -25,7 +25,18 @@
             "type": "string",
             "default": "",
             "required": "yes"
-        }, {
+        },  {
+            "key": "etcd_service",
+            "label": "etcd",
+            "description": "Choose a etcd to use",
+            "type": "service",
+            "tag": ["ETCD", "etcd"],
+            "limits": {
+                "app-fdyvu2wk": ["appv-52759jdc", "appv-h1n2681n"]
+            },
+            "default": "",
+            "required": "no"
+        },  {
             "key": "resource_group",
             "label": "Resource Configuration",
             "description": "Test: 3 disc nodes with 1 HAProxy node; Prod: 3 disc nodes with 2 HAProxy nodes",
@@ -81,58 +92,7 @@
                 "type": "integer",
                 "auto_scale_step": 1,
                 "default": 3,
-                "min": 1,
-                "max": 100,
-                "required": "yes"
-            }]
-        }, {
-            "key": "ram",
-            "label": "Ram Node",
-            "description": "Ram Node",
-            "type": "array",
-            "properties": [{
-                "key": "cpu",
-                "label": "CPU",
-                "description": "CPUs of each node",
-                "type": "integer",
-                "default": 1,
-                "range": [1, 2, 4, 8, 16, 32],
-                "required": "yes"
-            }, {
-                "key": "memory",
-                "label": "Memory",
-                "description": "Memory of each node",
-                "type": "integer",
-                "default": 2048,
-                "range": [1024, 2048, 4096, 8192, 16384, 32768, 49152, 65536, 131072],
-                "required": "yes"
-            }, {
-                "key": "instance_class",
-                "label": "Instance Class",
-                "description": "",
-                "type": "integer",
-                "default": 101,
-                "range": [101, 202],
-                "resource_group": [101, 202],
-                "required": "yes"
-            }, {
-                "key": "volume_size",
-                "label": "Volume Size",
-                "description": "The volume size for each instance",
-                "type": "integer",
-                "auto_scale_step": 10,
-                "min": 10,
-                "max": 1000,
-                "default": 10,
-                "required": "yes"
-            }, {
-                "key": "count",
-                "label": "Count",
-                "description": "Ram Node Count",
-                "type": "integer",
-                "auto_scale_step": 1,
-                "default": 0,
-                "min": 0,
+                "min": 3,
                 "max": 100,
                 "required": "yes"
             }]
@@ -172,7 +132,7 @@
                 "type": "integer",
                 "default": 1,
                 "min": 0,
-                "max": 1,
+                "max": 3,
                 "required": "yes"
             }]
         }, {
@@ -207,14 +167,23 @@
                 "range": [101, 202],
                 "required": "yes"
             }, {
+                "key": "volume_size",
+                "label": "Volume Size",
+                "description": "The volume size for each instance",
+                "type": "integer",
+                "auto_scale_step": 10,
+                "min": 10,
+                "max": 1000,
+                "default": 10,
+                "required": "yes"
+            }, {
                 "key": "count",
                 "label": "Count",
                 "description": "Haproxy HA Node Count",
                 "type": "integer",
-                "min": 0,
-                "max": 2,
-                "default": 1,
-                "resource_group": [1, 2],
+                "min": 2,
+                "max": 100,
+                "default": 2,
                 "required": "yes"
             }]
         }
@@ -224,6 +193,21 @@
         "description": "RabbitMQ service properties",
         "type": "array",
         "properties": [{
+            "key": "rabbitmq_default_user",
+            "label": "rabbitmq_default_user",
+            "description": "rabbitmq_user",
+            "type": "string",
+            "default": "guest",
+            "required": "yes",
+            "changeable": false
+        }, {
+            "key": "rabbitmq_default_pass",
+            "label": "rabbitmq_default_pass",
+            "description": "rabbitmq_pass",
+            "type": "password",
+            "pattern": "^([a-zA-Z0-9_!@$%^&*()./;]+)$",
+            "required": "yes"
+        }, {
             "key": "haproxy_balance_policy",
             "label": "haproxy_balance_policy",
             "description": "haproxy balance policy",
@@ -252,7 +236,7 @@
             "type": "password",
             "changeable":true,
             "default": "haproxy",
-            "pattern": "^([a-zA-Z0-9_!#%^&*()./;]{6,}|)$",
+            "pattern": "^([a-zA-Z0-9_!@$%^&*()./;]{6,}|)$",
             "required": "no"
         }, {
             "key": "num_tcp_acceptors",
@@ -292,7 +276,7 @@
             "label": "disk_free_limit",
             "description": "Disk free space (in bytes) limit of the partition on which RabbitMQ is storing data",
             "type": "integer",
-            "default": 50000000,
+            "default": 524288000,
             "required": "no"
         }, {
             "key": "frame_max",
@@ -337,14 +321,6 @@
             "type": "string",
             "range": ["ignore","pause_minority","autoheal"],
             "default": "pause_minority",
-            "required": "no"
-        }, {
-            "key": "hipe_compile",
-            "label": "hipe_compile",
-            "description": "Set to true to precompile parts of RabbitMQ with HiPE, a just-in-time compiler for Erlang. This will increase server throughput at the cost of increased startup time",
-            "type": "boolean",
-            "default": false,
-            "range": [true, false],
             "required": "no"
         }, {
             "key": "cluster_keepalive_interval",
@@ -397,24 +373,47 @@
             "label": "Switch of log web console",
             "description": "Whether to enable log web console",
             "type": "boolean",
-            "default": false,
+            "default": true,
             "required": "no"
         }, {
-            "key": "web_console_username",
-            "label": "Username of log web console",
-            "description": "username of log web console",
+            "key": "ssh_enabled",
+            "label": "Enable ssh on client nodes",
+            "description": "Whether to enable ssh on client nodes",
+            "type": "boolean",
+            "default": true,
+            "required": "no"
+        }, {
+            "key": "plugins_enabled",
+            "label": "Enable rabbitmq plugins",
+            "description": "Choose to enable rabbitmq plugins",
             "type": "string",
-            "pattern": "^([a-z0-9.-]+)?$",
-            "default": "admin",
-            "required": "no"
-        }, {
-            "key": "web_console_password",
-            "label": "Password of log web console",
-            "description": "password of log web console",
-            "type": "password",
-            "pattern": "^\\w{0,24}$",
-            "default": "",
-            "required": "no"
+            "default": "rabbitmq_management,rabbitmq_mqtt,rabbitmq_web_mqtt,rabbitmq_stomp,rabbitmq_web_stomp,rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_delayed_message_exchange,rabbitmq_federation,rabbitmq_federation_management",
+            "required": "no",
+            "separator": ",",
+            "multichoice": true,
+            "range":[
+                "rabbitmq_management",
+                "rabbitmq_mqtt",
+                "rabbitmq_web_mqtt",
+                "rabbitmq_stomp",
+                "rabbitmq_web_stomp",
+                "rabbitmq_shovel",
+                "rabbitmq_shovel_management",
+                "rabbitmq_delayed_message_exchange",
+                "rabbitmq_federation",
+                "rabbitmq_federation_management",
+                "rabbitmq_amqp1_0",
+                "rabbitmq_consistent_hash_exchange",
+                "rabbitmq_event_exchange",
+                "rabbitmq_prometheus",
+                "rabbitmq_random_exchange",
+                "rabbitmq_recent_history_exchange",
+                "rabbitmq_sharding",
+                "rabbitmq_stream",
+                "rabbitmq_stream_management",
+                "rabbitmq_top",
+                "rabbitmq_tracing"
+            ]
         }]
     }]
 }

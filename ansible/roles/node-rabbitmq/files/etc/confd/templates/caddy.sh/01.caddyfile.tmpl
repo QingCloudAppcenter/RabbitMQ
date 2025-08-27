@@ -1,13 +1,31 @@
+{{- if getvs "/host/role" | filter "(disc|ram|haproxy)" }}
 ln -s -f /opt/app/conf/caddy/index.html /data/index.html
+flush /opt/app/conf/caddy/caddyfile << CADDYFILE_EOF
+{
+        admin off
+        auto_https off
+        persist_config off
+        order upload before file_server
+        log {
+                output file /data/caddy/caddy.log
+        }
+}
 
-flush /opt/app/conf/caddy/Caddyfile << CADDYFILE_EOF
-{{ getv "/host/ip" }}:80 {
-  {{- with getv "/env/web_console_password" "" }}
-  basicauth / "{{ getv "/env/web_console_username" "admin" }}"  "{{ . }}"
-  {{- end }}
-  root /data
-  gzip
-  browse /log
-  tls off
+:80 {
+        vars {
+                rootDir "/data"
+        }
+
+        root {vars.rootDir}
+
+        handle /log* {
+                file_server browse
+        }
+
+        file_server
 }
 CADDYFILE_EOF
+{{- end }}
+
+
+

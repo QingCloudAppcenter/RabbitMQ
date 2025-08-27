@@ -1,5 +1,9 @@
-keepalived_version: 2.0.18
-rabbitmq_version: 3.7.23
-local_cache_path: "~/.ansible/cache"
-erlang_solution_version: 1.0
-haproxy_version: 2.0
+appAgentVersion: v1.0.7
+arping_version: "20211215-1"
+jq_version: 1.8.1
+local_cache_path: "file/tmp"
+caddy_version: v2.9.1
+haproxy_version: 3.0.9
+keepalived_version: 2.3.3
+erlang_version: 26.2.5.9
+rabbitmq_version: 3.13.7

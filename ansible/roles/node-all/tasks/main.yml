@@ -1,4 +1,69 @@
 ---
 - name: install confd files
   include_role:
-    name: confd-files-1.0.2
+    name: confd-files
+
+- name: Set net.ipv4.tcp_keepalive_time to 30
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.tcp_keepalive_time=30'
+    regexp: '^net.ipv4.tcp_keepalive_time=3'
+    state: present
+
+- name: Set net.ipv4.tcp_keepalive_intvl to 10
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.tcp_keepalive_intvl=10'
+    regexp: '^net.ipv4.tcp_keepalive_intvl='
+    state: present
+
+- name: Set net.ipv4.tcp_keepalive_probes to 4
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.tcp_keepalive_probes=4'
+    regexp: '^net.ipv4.tcp_keepalive_probes='
+    state: present
+
+- name: Set net.ipv4.ip_local_port_range to 102465023
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.ip_local_port_range=102465023'
+    regexp: '^net.ipv4.ip_local_port_range='
+    state: present
+
+- name: Set net.core.somaxconn to 65535
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.core.somaxconn=65535'
+    regexp: '^net.core.somaxconn='
+    state: present
+
+- name: Set net.ipv4.icmp_ratelimit to 10
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.icmp_ratelimit=10'
+    regexp: '^net.ipv4.icmp_ratelimit='
+    state: present
+
+- name: Set net.ipv4.tcp_tw_reuse to 0
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.tcp_tw_reuse=0'
+    regexp: '^net.ipv4.tcp_tw_reuse='
+    state: present
+
+- name: Set net.ipv4.tcp_tw_recycle to 0
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: 'net.ipv4.tcp_tw_recycle=0'
+    regexp: '^net.ipv4.tcp_tw_recycle='
+    state: present
+
+- name: update configuration in /etc/rsyslog.conf
+  ansible.builtin.blockinfile:
+    path: /etc/rsyslog.conf
+    block: |
+      $ModLoad imudp
+      $UDPServerAddress 0.0.0.0
+      $UDPServerRun 514
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR UDP CONFIG"

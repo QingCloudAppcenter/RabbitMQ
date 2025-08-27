@@ -1,0 +1,26 @@
+{
+    "patch_policy": ["appp-avpy7pbs"],
+    "patch_nodes": [{
+        "container": {
+            "snapshot": "ss-j2d9vegn",
+            "zone": "pek3a"
+        },
+        "patch": [{
+            "mount_role": "haproxy",
+            "mount_point": "/patch",
+            "mount_options": "defaults,noatime",
+            "filesystem": "ext4",
+            "cmd": "/patch/patch_haproxy.sh"
+        }],
+        "rollback": [{
+            "mount_role": "haproxy",
+            "mount_point": "/patch",
+            "mount_options": "defaults,noatime",
+            "filesystem": "ext4",
+            "cmd": "/patch/rollback_haproxy.sh"
+        }]
+    }]
+}
+
+
+

@@ -1,0 +1,9 @@
+- name: set up variables
+  set_fact:
+    os: "{{ os | d(default_os) }}"
+
+- name: Install RPM package
+  dnf:
+    name: "tar"
+    state: present
+  when: os == 'kylin'

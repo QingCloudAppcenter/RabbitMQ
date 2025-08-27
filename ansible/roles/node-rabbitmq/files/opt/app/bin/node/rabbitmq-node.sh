@@ -1,3 +1,4 @@
+# 使用etcd需要删除fristnode逻辑
 # Error codes
 EC_SCALE_OUT_ERR=240
 EC_UNHEALTHY=241
@@ -7,7 +8,14 @@ EC_UPGRADE_ERR=244
 
 checkNodesHealthy() {
   local node; for node in $@; do
-    rabbitmqctl -s -n rabbit@${node} node_health_check -t 3 | grep -o passed || return $EC_UNHEALTHY
+    if ! rabbitmq-diagnostics -t 3 -n rabbit@${node} ping; then
+      log "ERROR: rabbit@${node} failed the health check . "
+      return $EC_UNHEALTHY
+    fi
+    if ! rabbitmq-diagnostics -t 3 -n rabbit@${node} check_running; then
+      log "ERROR: rabbit@${node} failed the health check . "
+      return $EC_UNHEALTHY
+    fi
   done
 }
 
@@ -23,46 +31,101 @@ stop() {
   #https://www.rabbitmq.com/clustering.html#restarting
   #the last node to go down is the only one that didn't have any running peers at the time of shutdown.
   #sometimes the last node to stop must be the first node to be started after the upgrade.
-  local i; for i in ${LEAVING_MQ_NODES}; do DISC_NODES="${DISC_NODES//${i}/}"; done
-  #In case /hosts /deleting-hosts update are not synchronized
-  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then 
-    retry 20 3 0 checkOnlyNodeRunning "${firstDiscNode}" #notice return
+  if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
+    local i; for i in ${LEAVING_MQ_NODES}; do DISC_NODES="${DISC_NODES//${i}/}"; done
+    #In case /hosts /deleting-hosts update are not synchronized
+    local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
+    if [[ "${MY_INSTANCE_ID}" == "${firstDiscNode}" ]]; then
+      log "INFO: Wait until all other Disc nodes are stopped  . "
+      retry 20 3 0 checkOnlyNodeRunning "${firstDiscNode}" #notice return
+      log "INFO: The other Disc nodes have all stopped  . "
+    fi
   fi
-  _stop
+
+  log "INFO: Application is asked to stop . "
+  _stop || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to stop  . " && return 1)
+  log "INFO: Application stopped successfully  . "
 }
 
 start() {
-  local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
-  if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
-    retry 15 5 0 checkEndpoint "http:15672" "${firstDiscNode}"
+  log "INFO: Application is asked to start . "
+  if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
+    local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
+    if [[ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]]; then # wait for first disc node prepare tables
+      retry 120 5 0 checkEndpoint "tcp:5672" "${firstDiscNode}"
+    fi
   fi
-  _start
+  /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+  _start || (log "ERROR: services in Node ${MY_INSTANCE_ID} failed to start  . ")
+  if [[ ${PEER_DISCOVERY_BACKEND_TYPE} == "classic_config" ]];then
+    addNodeToCluster
+  fi
+  retry 20 30 0 checkSvc "rabbitmq-server"
+  log "INFO: Application started successfully  . "
 }
 
 setConfFile() {
-  mkdir -p /data/{log,mnesia,config,schema}
-  chown -R rabbitmq:rabbitmq /data/{log,mnesia,config,schema}
+  mkdir -p /data/{log,mnesia,config,schema,caddy}
+  chown root:svc /data/log
+  chmod 0755 /data/log
+  chown -R rabbitmq:svc /data/{log/rabbitmq,mnesia,config,schema}
+  chown -R caddy:svc /data/caddy
 }
 
 initNode() {
-  _initNode
+  log "INFO: Application is about to initialize . "
+  _initNode || ( log "ERROR: Application failed to initialize . " && return $EC_UNHEALTHY )
   setConfFile
+  log "INFO: Application initialization completed  . "
 }
 
 reload() {
+  log "INFO: Application is asked to reload  . "
   if ! isNodeInitialized; then return 0; fi
   case "${1}" in
     rabbitmq-server)
-      local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf";
-      if test -f ${rabbitmqConfFile}.1 && ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
-        # only figure out the changed parameter
-        _reload rabbitmq-server;
+      local rabbitmqConfFile="/etc/rabbitmq/rabbitmq.conf.origin";
+      local pluginCtlFile="/opt/app/bin/envs/pluginsctl.env"
+      /opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin /data/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+      if test -f ${rabbitmqConfFile}.1; then
+        local diffInfo=$(diff ${rabbitmqConfFile} ${rabbitmqConfFile}.1 || :)
+        if echo "$diffInfo" | grep "default_pass"; then
+          # update default user's password
+          local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
+          if [ "${MY_INSTANCE_ID}" != "${firstDiscNode}" ]; then
+            log "not the first node, skip to update default user's password"
+          else
+            log "update default user's password"
+            local username=$(grep -P '^default_user\s*=' /etc/rabbitmq/rabbitmq.conf | sed 's/^[^=]*=//' | sed 's/^\s*//' | sed 's/\s*$//')
+            local password=$(grep -P '^default_pass\s*=' /etc/rabbitmq/rabbitmq.conf | sed 's/^[^=]*=//' | sed 's/^\s*//' | sed 's/\s*$//')
+            rabbitmqctl change_password $username $password || :
+          fi
+          # wait for other nodes to change password
+          sleep 5s
+        fi
+        if ! (diff -q -I "^cluster_formation"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) && ! (diff -q -I "^default_pass"  ${rabbitmqConfFile} ${rabbitmqConfFile}.1 ) ; then
+          if [ -f ${pluginCtlFile}.1 ]; then
+            log "sync pluginsctl.env.1"
+            cat ${pluginCtlFile} > ${pluginCtlFile}.1
+          fi
+          # only figure out the changed parameter
+          log "restart rabbitmq-server because of config change"
+          _reload rabbitmq-server || (log "ERROR: The Rabbitmq-server failed to start . " && return 1);
+        fi
+      fi
+      if test -f ${pluginCtlFile}.1 && ! diff ${pluginCtlFile} ${pluginCtlFile}.1; then
+        log "hot update plugin status"
+        if [ -n "$DISABLED_PLUGINS" ]; then
+          rabbitmq-plugins disable $(echo "$DISABLED_PLUGINS" | sed 's/,/ /g') || :
+        fi
+        rabbitmq-plugins enable $(echo "$ENABLED_PLUGINS" | sed 's/,/ /g') || :
       fi
       ;;
     *)
-      _reload $@ ;;
+      _reload $@ 
+      ;;
   esac
+  log "INFO: Application reloaded completely . "
 }
 
 preCheckForScaleIn() {
@@ -70,7 +133,7 @@ preCheckForScaleIn() {
   checkNodesHealthy "${allNodes}" # there was unhealthy node
   if [[ -n "${LEAVING_MQ_NODES}" ]]; then
     local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
-    local allRunningNodes; allRunningNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+    local allRunningNodes; allRunningNodes="$(echo $clusterInfo | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
     if [[ "${CLUSTER_PARTITION_HANDLING}" == "pause_minority" ]]; then
       local delNodesCount; delNodesCount=$(echo "${LEAVING_MQ_NODES}" | wc -w);
       local clusterNodesCount; clusterNodesCount=$(echo "${DISC_NODES} ${RAM_NODES}" | awk '{print NF}')
@@ -99,7 +162,7 @@ scaleIn() {
 scaleOut() {
   if [[ -n "${JOINING_MQ_NODES}" ]]; then
     local joinNode; for joinNode in ${JOINING_MQ_NODES}; do
-      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+      local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status -n rabbit@${joinNode} --formatter=json | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
       if checkNodesHealthy "${joinNode}" && [[ "${clusterInfo}" =~ "${MY_INSTANCE_ID}" ]]; then
         log "${joinNode} was clustered successful in scale-out";
       else
@@ -118,11 +181,12 @@ addNodeToCluster()  {
   # write for the node which peer discover failed or the adding node
   local firstDiscNode; firstDiscNode="$(echo ${DISC_NODES} | awk -F/ '{print $2}')";
   local clusterInfo; clusterInfo="$(rabbitmqctl -t 3 cluster_status --formatter=json)";
-  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.nodes.disc[], .nodes.ram[]?]')";
+  local allNodes; allNodes="$(echo $clusterInfo | jq -j '[.disk_nodes[], .ram_nodes[]?]')";
   if [[ ! "$allNodes" =~ "${firstDiscNode}" ]]; then  #disc node ${DISC_NODES##*-} was not clustered
     rabbitmqctl stop_app
     rabbitmqctl join_cluster --${MY_ROLE} rabbit@${firstDiscNode}
     rabbitmqctl start_app
+    log "join cluster success."
   else
     log "${firstDiscNode} already clustered or ${MY_INSTANCE_ID} not the adding node."
   fi
@@ -138,12 +202,26 @@ upgrade() {
   if [[ "$((${#stopedDiscNodes} - 12))" -gt "${#MY_INSTANCE_ID}" ]]; then
     retry 20 3 0 checkNodesHealthy "${lastStopedDiscNode}"
   fi
-  _start || return ${EC_UPGRADE_ERR}
+  _start || ( log "ERROR: Application failed to upgrade  . " && return ${EC_UPGRADE_ERR} )
   # upgrade failed, check volume, rm /data/mnesia/rabbit@${HOSTNAME}/schema_upgrade_lock and retry _start.
 }
 
 preCheckForUpgrade() {
   local hostVolumeUsed
   hostVolumeUsed="$(df -h /data | awk 'NR == 2 {print $5}')"; #" * <= 30%"
-  [[ "${hostVolumeUsed%%%}" -lt "30" ]] || return ${EC_INSUFFICIENT_VOLUME}
+  [[ "${hostVolumeUsed%%%}" -lt "30" ]] || ( log "ERROR: Insufficient disk space to support the upgrade  . " && return ${EC_INSUFFICIENT_VOLUME} )
+}
+
+checkSvc() {
+  checkActive ${1%%/*} || {
+    log "Service '$1' is inactive."
+    return $EC_CHECK_INACTIVE
+  }
+  local endpoints=$(echo $1 | awk -F/ '{print $3}')
+  local endpoint; for endpoint in ${endpoints//,/ }; do
+    checkEndpoint $endpoint || {
+      log "Endpoint '$endpoint' is unreachable."
+      return 0
+    }
+  done
 }

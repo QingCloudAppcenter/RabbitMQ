@@ -1,18 +1,36 @@
-{{- $myRole := getv "/host/role" }}
+{{- if getvs "/host/role" | filter "(disc|ram)" }}
+mkdir -p ${DATA_MOUNTS}/log/rabbitmq
+mkdir -p ${DATA_MOUNTS}/conf
 
-flush  /etc/rabbitmq/rabbitmq.conf << RABBITMQ_CONF_EOF
-background_gc_enabled = {{ getv "/env/background_gc_enabled" "false" }}
+flush  /etc/rabbitmq/rabbitmq.conf.origin << RABBITMQ_CONF_EOF
+background_gc_enabled = {{ getv "/env/background_gc_enabled" "true" }}
 background_gc_target_interval = {{ getv "/env/background_gc_target_interval" "60000" }}
 channel_max = {{ getv "/env/channel_max" "10" }}
 
-cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
-{{- $discNodes := join ( getvs "/hosts/disc/*/instance_id") "," }}
-{{- $ramNodes := join ( getvs "/hosts/ram/*/instance_id") "," }}
-{{- $allNodes := split ( printf "%s%s%s" $discNodes ( and $ramNodes ",") $ramNodes) ","}}
-{{- range $i,$node := $allNodes }}
-cluster_formation.classic_config.nodes.{{ add $i 1 }} = rabbit@{{ $node }}
+# Cluster formation
+{{ if (exists "/links/etcd_service/cluster/cluster_id") and (ne (getv "/links/etcd_service/cluster/cluster_id")) }}
+cluster_formation.peer_discovery_backend = etcd
+{{- $clusterId := getv "/cluster/cluster_id" }}
+{{- $etcdHosts := getvs "/links/etcd_service/hosts/etcd_node/*/ip" }}
+{{- range $i,$endpoint := $etcdHosts }}
+cluster_formation.etcd.endpoints.{{ add $i 1 }} = {{ $endpoint }}:2379
 {{- end }}
-cluster_formation.node_type = {{ getv "/host/role" }}
+cluster_formation.etcd.key_prefix = /{{ $clusterId }}_prefix
+cluster_formation.etcd.cluster_name = {{ $clusterId }}
+cluster_formation.etcd.node_ttl = 30
+cluster_formation.etcd.lock_timeout = 300
+{{ else }}
+
+cluster_formation.peer_discovery_backend = classic_config
+{{- range  lsdir "/hosts/disc" }}
+cluster_formation.classic_config.nodes.{{ getv (printf "/hosts/disc/%s/sid" .) }}={{ getv (printf "/hosts/disc/%s/instance_id" .) }}
+{{- end }}
+
+{{ end }}
+
+cluster_formation.node_cleanup.only_log_warning = true
+cluster_formation.node_cleanup.interval = 90
+
 
 cluster_keepalive_interval = {{ getv "/env/cluster_keepalive_interval" "10000" }}
 cluster_partition_handling = {{ getv "/env/cluster_partition_handling" "pause_minority" }}
@@ -23,7 +41,6 @@ disk_free_limit.absolute = {{ getv "/env/disk_free_limit" "50MB" }}
 frame_max = {{ getv "/env/frame_max" "131072"}}
 handshake_timeout = {{ getv "/env/handshake_timeout" "10000" }}
 heartbeat = {{ getv "/env/heartbeat" "60" }}
-hipe_compile = {{ getv "/env/hipe_compile" "false" }}
 loopback_users.guest = false
 num_acceptors.tcp = {{ getv "/env/num_tcp_acceptors" "10" }}
 proxy_protocol = {{ getv "/env/proxy_protocol" "false" }}
@@ -36,10 +53,20 @@ tcp_listen_options.send_timeout = 15000
 tcp_listen_options.buffer = 196608
 tcp_listen_options.sndbuf = 196608
 tcp_listen_options.recbuf = 196608
-vm_memory_high_watermark.relative = {{ getv "/env/vm_memory_high_watermark" "0.4" }}
+vm_memory_high_watermark.relative = {{ getv "/env/vm_memory_high_watermark" "0.7" }}
 # vm_memory_high_watermark.absolute = {{ getv "/env/vvm_memory_high_watermark_absolute" "2G" }}
 vm_memory_high_watermark_paging_ratio = {{ getv "/env/vm_memory_high_watermark_paging_ratio" "0.5" }}
-log.dir = /data/log
-
+log.dir = ${DATA_MOUNTS}/log/rabbitmq/
+default_user = {{ getv "/env/rabbitmq_default_user" "guest" }}
+default_pass = {{ replace (getv "/env/rabbitmq_default_pass" "guest") `$` `\$` -1 }}
+loopback_users = none
+default_user_tags.administrator = true
+log.file.level = info
 RABBITMQ_CONF_EOF
 
+if [ ! -f "${DATA_MOUNTS}/conf/rabbitmq.conf" ]; then
+    touch ${DATA_MOUNTS}/conf/rabbitmq.conf
+fi
+
+/opt/app/bin/node/merge_files.sh /etc/rabbitmq/rabbitmq.conf.origin ${DATA_MOUNTS}/conf/rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+{{- end }}

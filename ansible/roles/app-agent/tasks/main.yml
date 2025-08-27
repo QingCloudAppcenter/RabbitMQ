@@ -1,0 +1,78 @@
+---
+- name: set up variables
+  set_fact:
+    os: "{{ os | d(default_os) }}"
+    appAgentVersion: "{{ appAgentVersion | d('v1.0.7') }}"
+    arch: "{{ arch | d(default_arch) }}"
+    tmpPath: "/tmp/app-agent"
+
+# will set var downloaded
+- include_role:
+    name: downloader
+  vars:
+    opts:
+      pkg_name: app-agent
+      pkg_version: "{{ appAgentVersion }}"
+      pkg_feature: "linux-{{ arch }}"
+      pkg_fileType: ".tgz"
+      pkg_url: "https://github.com/QingCloudAppcenter/AppcenterAgent/releases/download/{{ appAgentVersion }}/app-agent-linux-{{ arch }}.tar.gz"
+
+- name: prepare dir
+  file:
+    path: "{{ tmpPath }}"
+    state: directory
+
+- name: decompress file
+  unarchive:
+    src: "{{ downloaded }}"
+    dest: "{{ tmpPath }}"
+    creates: "{{ tmpPath }}/bin"
+    extra_opts:
+    - --strip-components=1
+
+- name: hack for kylin
+  lineinfile:
+    path: "{{ tmpPath }}/install.sh"
+    regexp: "'fedora'"
+    line: "elif echo \"$os\" | grep '[fedora|kylin]' > /dev/null; then"
+
+- name: install app-agent
+  shell:
+    cmd: ./install.sh
+    chdir: "{{ tmpPath }}"
+
+- name: adjust logrotate
+  replace:
+    path: /etc/logrotate.d/app-agent
+    regexp: '^(\s+size).*'
+    replace: '\1 2M'
+
+- name: fix logrotate
+  lineinfile:
+    path: /etc/logrotate.d/app-agent
+    line: '    copytruncate'
+    insertbefore: '^}'
+    validate: 'logrotate -d %s'
+
+- name: set up variables
+  set_fact:
+    confd_path: "/etc/init.d/confd"
+
+- name: fix {{ confd_path }}
+  block:
+  - name: fix - PIDFILE
+    replace:
+      path: "{{ confd_path }}"
+      regexp: '^PIDFILE.*'
+      replace: 'PIDFILE=/run/$PROG.pid'
+  - name: fix - start
+    replace:
+      path: "{{ confd_path }}"
+      regexp: 'touch.*'
+      replace: 'touch $LOCKFILE; $(echo `pidofproc $PROG_BIN` > $PIDFILE)'
+  - name: fix - stop
+    replace:
+      path: "{{ confd_path }}"
+      regexp: 'rm -f \$LOCKFILE.*'
+      replace: 'rm -f $LOCKFILE && rm -f $PIDFILE'
+  when: os == 'kylin'

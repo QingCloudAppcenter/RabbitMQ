@@ -1,0 +1,38 @@
+{
+    "patch_policy": ["appp-wfou7p2f"],
+    "patch_nodes": [{
+        "container": {
+            "snapshot": "ss-1ddc6s8b",
+            "zone": "pek3a"
+        },
+        "patch": [{
+            "mount_role": "haproxy",
+            "mount_point": "/patch",
+            "mount_options": "defaults,noatime",
+            "filesystem": "ext4",
+            "cmd": "/patch/patch_haproxy.sh"
+        }, {
+            "mount_role": "disc",
+            "mount_point": "/patch",
+            "mount_options": "defaults,noatime",
+            "filesystem": "ext4",
+            "cmd": "/patch/patch_disc.sh"
+        }],
+        "rollback": [{
+            "mount_role": "haproxy",
+            "mount_point": "/patch",
+            "mount_options": "defaults,noatime",
+            "filesystem": "ext4",
+            "cmd": "/patch/rollback_haproxy.sh"
+        }, {
+            "mount_role": "disc",
+            "mount_point": "/patch",
+            "mount_options": "defaults,noatime",
+            "filesystem": "ext4",
+            "cmd": "/patch/rollback_disc.sh"
+        }]
+    }]
+}
+
+
+

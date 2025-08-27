@@ -1,16 +1,67 @@
+myRole={{ getv "/host/role" }}
+formatPluginsStr() {
+  if [ -z "$1" ]; then
+    echo ""
+    return 0
+  fi
+  tmpStr=""
+  tmpList=$(echo "$1" | sed 's/,/\n/g')
+  while IFS= read -r line; do
+    if [ "$line" = "rabbitmq_delayed_message_exchange" ]; then
+      if [ "$myRole" = "disc" ]; then
+        tmpStr="${tmpStr}${line},"
+      fi
+    else
+      tmpStr="${tmpStr}${line},"
+    fi
+  done <<MY_LOOP
+$tmpList
+MY_LOOP
+  
+  if [ -z "$tmpStr" ]; then
+    echo ""
+  else
+    echo "${tmpStr%?}"
+  fi
+}
+
+tmpEnabledPlugins=$(formatPluginsStr {{ getv "/env/plugins_enabled" }})
+realEnabled="rabbitmq_peer_discovery_etcd"
+if [ -n "$tmpEnabledPlugins" ]; then
+  realEnabled="$realEnabled,$tmpEnabledPlugins"
+fi
+
 flush /etc/rabbitmq/enabled_plugins << ENABLED_PLUGINS_EOF
 [
-{{- if eq (getv "/host/role") "disc" }}
-  rabbitmq_delayed_message_exchange,
-{{- end }}
-  rabbitmq_management,
-  rabbitmq_mqtt,
-  rabbitmq_shovel,
-  rabbitmq_shovel_management,
-  rabbitmq_federation,
-  rabbitmq_federation_management,
-  rabbitmq_stomp,
-  rabbitmq_web_mqtt,
-  rabbitmq_web_stomp
+  $realEnabled
 ].
 ENABLED_PLUGINS_EOF
+
+tmpAllPlugins="rabbitmq_management,rabbitmq_mqtt,rabbitmq_web_mqtt,rabbitmq_stomp,rabbitmq_web_stomp,rabbitmq_shovel,rabbitmq_shovel_management,rabbitmq_delayed_message_exchange,rabbitmq_federation,rabbitmq_federation_management,rabbitmq_amqp1_0,rabbitmq_consistent_hash_exchange,rabbitmq_event_exchange,rabbitmq_prometheus,rabbitmq_random_exchange,rabbitmq_recent_history_exchange,rabbitmq_sharding,rabbitmq_stream,rabbitmq_stream_management,rabbitmq_top,rabbitmq_tracing"
+getDisabledPlugins() {
+  if [ -z "$2" ]; then
+    echo "$1"
+    return 0
+  fi
+  tmpStr=""
+  tmpList=$(echo "$1" | sed 's/,/\n/g')
+  targetList=$(echo "$2" | sed 's/,/\n/g')
+  while IFS= read -r line; do
+    if ! echo "$targetList" | grep -q "^$line\$"; then
+      tmpStr="${tmpStr}${line},"
+    fi
+  done <<MY_LOOP2
+$tmpList
+MY_LOOP2
+
+  if [ -z "$tmpStr" ]; then
+    echo ""
+  else
+    echo "${tmpStr%?}"
+  fi
+}
+
+flush /opt/app/bin/envs/pluginsctl.env << PLUGINS_ENV_EOF
+ENABLED_PLUGINS=$tmpEnabledPlugins
+DISABLED_PLUGINS=$(getDisabledPlugins $tmpAllPlugins $tmpEnabledPlugins)
+PLUGINS_ENV_EOF
